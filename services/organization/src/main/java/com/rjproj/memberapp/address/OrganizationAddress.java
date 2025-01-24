@@ -1,5 +1,6 @@
 package com.rjproj.memberapp.address;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.rjproj.memberapp.organization.Organization;
 import jakarta.persistence.*;
 import lombok.*;
@@ -37,6 +38,8 @@ public class OrganizationAddress {
     @UpdateTimestamp
     private Timestamp updatedAt;
 
+    @JsonIgnore
     @OneToOne(mappedBy = "organizationAddress")
-    private Organization organization; // Bidirectional mapping
+    private Organization organization; // Prevent serialization of the back-reference
+
 }

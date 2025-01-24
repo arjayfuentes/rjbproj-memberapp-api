@@ -31,8 +31,8 @@ public class Organization {
     @UpdateTimestamp
     private Timestamp updatedAt;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "organization_address_id", referencedColumnName = "organizationAddressId", nullable = true, unique = true)
-    private OrganizationAddress organizationAddress; // Maps foreign key in organization table
+    private OrganizationAddress organizationAddress;
 
 }
