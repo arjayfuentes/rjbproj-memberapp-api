@@ -11,6 +11,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="config-server" target="21" />
       <module name="product" target="17" />
     </bytecodeTargetLevel>
   </component>
