@@ -1,5 +1,6 @@
 package com.rjproj.memberapp.address;
 
+import com.rjproj.memberapp.organization.Organization;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -35,4 +36,7 @@ public class OrganizationAddress {
 
     @UpdateTimestamp
     private Timestamp updatedAt;
+
+    @OneToOne(mappedBy = "organizationAddress")
+    private Organization organization; // Bidirectional mapping
 }

@@ -25,14 +25,14 @@ public class Organization {
 
     private String description;
 
-    @OneToOne
-    @JoinColumn(name = "organization_address_id", nullable = false)
-    private OrganizationAddress organizationAddress;
-
     @CreationTimestamp
     private Timestamp createdAt;
 
     @UpdateTimestamp
     private Timestamp updatedAt;
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "organization_address_id", referencedColumnName = "organizationAddressId", nullable = true, unique = true)
+    private OrganizationAddress organizationAddress; // Maps foreign key in organization table
 
 }
