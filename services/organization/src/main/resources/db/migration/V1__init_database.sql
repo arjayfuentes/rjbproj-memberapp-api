@@ -1,26 +1,30 @@
-create table if not exists category
+CREATE TABLE if not exists organization_address
 (
-    id          integer not null
-        primary key,
-    description varchar(255),
-    name        varchar(255)
-);
+    organization_address_id uuid DEFAULT uuid_generate_v4() NOT NULL,
+    street                  varchar(255) NULL,
+    city                    varchar(255) NOT NULL,
+    province_state          varchar(255) NULL,
+    region                  varchar(255) NULL,
+    country                 varchar(255) NOT NULL,
+    created_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT PK_8 PRIMARY KEY ( organization_address_id )
+    );
 
-create table if not exists product
+
+CREATE TABLE if not exists organization
 (
-    id                 integer          not null
-        primary key,
-    available_quantity double precision not null,
-    description        varchar(255),
-    name               varchar(255),
-    price              numeric(38, 2),
-    category_id        integer
-        constraint fk1mtsbur82frn64de7balymq9s
-            references category
-);
+    organization_id         uuid DEFAULT uuid_generate_v4() NOT NULL,
+    name                    varchar(255) NOT NULL,
+    description             varchar(255) NOT NULL,
+    organization_address_id uuid NOT NULL,
+    created_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT PK_3 PRIMARY KEY ( organization_id ),
+    CONSTRAINT FK_9 FOREIGN KEY ( organization_address_id ) REFERENCES organization_address ( organization_address_id )
+    );
 
-create sequence if not exists category_seq increment by 50;
-create sequence if not exists product_seq increment by 50;
-
-
-
+CREATE INDEX FK_1 ON organization
+    (
+     organization_address_id
+        );
