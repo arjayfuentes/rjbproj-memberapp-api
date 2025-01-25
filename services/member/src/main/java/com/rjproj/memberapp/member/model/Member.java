@@ -1,9 +1,9 @@
 package com.rjproj.memberapp.member.model;
 
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.sql.Timestamp;
@@ -32,10 +32,10 @@ public class Member {
 
     private MemberAddress memberAddress;
 
-    @CreationTimestamp
+    @CreatedDate
     private Timestamp createdAt;
 
-    @UpdateTimestamp
+    @LastModifiedDate
     private Timestamp updatedAt;
 
 }
