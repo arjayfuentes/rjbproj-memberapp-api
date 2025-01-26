@@ -1,6 +1,5 @@
 package com.rjproj.memberapp.model;
 
-import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -34,15 +33,5 @@ public class Organization {
 
     @LastModifiedDate
     private Instant updatedAt;
-
-    @PostConstruct
-    public void prePersist() {
-        if (this.createdAt == null) {
-            this.createdAt = Instant.now();
-        }
-        if (this.updatedAt == null) {
-            this.updatedAt = Instant.now();
-        }
-    }
 
 }

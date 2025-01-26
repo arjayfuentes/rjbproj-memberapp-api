@@ -2,6 +2,7 @@ package com.rjproj.memberapp.service;
 
 import com.rjproj.memberapp.dto.OrganizationRequest;
 import com.rjproj.memberapp.dto.OrganizationResponse;
+import com.rjproj.memberapp.exception.OrganizationAddressIsRequiredException;
 import com.rjproj.memberapp.exception.OrganizationNotFoundException;
 import com.rjproj.memberapp.mapper.OrganizationMapper;
 import com.rjproj.memberapp.model.Organization;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,6 +47,9 @@ public class OrganizationService {
         }
         if(organizationRequest.organizationAddress() != null) {
             member.setOrganizationAddress(organizationRequest.organizationAddress());
+        }
+        if(organizationRequest.organizationAddress().getOrganizationAddressId() == null) {
+            member.getOrganizationAddress().setOrganizationAddressId(UUID.randomUUID().toString());
         }
     }
 

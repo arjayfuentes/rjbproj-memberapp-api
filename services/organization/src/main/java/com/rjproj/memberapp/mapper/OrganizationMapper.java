@@ -5,20 +5,28 @@ import com.rjproj.memberapp.dto.OrganizationResponse;
 import com.rjproj.memberapp.model.Organization;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Service
 public class OrganizationMapper {
 
     public Organization toOrganization(OrganizationRequest request) {
+
+        //set organizationId, OgranizationAddressId and createdAt since UUID is not supported in mongodb and changing id manually return null for createdAt
+        String organizationId = request.organizationId() != null ? request.organizationId() : UUID.randomUUID().toString();
         String organizationAddressId = request.organizationAddress().getOrganizationAddressId() != null ? request.organizationAddress().getOrganizationAddressId() : UUID.randomUUID().toString();
+        Instant organizationAddressCreatedAt = request.organizationAddress().getCreatedAt() != null ? request.organizationAddress().getCreatedAt() : Instant.now();
+
         Organization mappedOrganization =  Organization.builder()
-                .organizationId(request.organizationId())
+                .organizationId(organizationId)
                 .name(request.name())
                 .description(request.description())
                 .organizationAddress(request.organizationAddress())
+                .createdAt(Instant.now())
                 .build();
         mappedOrganization.getOrganizationAddress().setOrganizationAddressId(organizationAddressId);
+        mappedOrganization.getOrganizationAddress().setCreatedAt(organizationAddressCreatedAt);
         return mappedOrganization;
     }
 
