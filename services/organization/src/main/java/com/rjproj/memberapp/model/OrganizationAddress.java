@@ -1,24 +1,29 @@
 package com.rjproj.memberapp.model;
 
+
+
+import jakarta.annotation.PostConstruct;
 import lombok.*;
-import org.hibernate.validator.constraints.UUID;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.validation.annotation.Validated;
 
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.UUID;
+
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Getter
 @Setter
-@Document
+@Validated
 public class OrganizationAddress {
 
     @Id
-    private UUID organizationAddressId;
+    private String organizationAddressId;
 
     private String street;
 
@@ -31,9 +36,19 @@ public class OrganizationAddress {
     private String country;
 
     @CreatedDate
-    private Timestamp createdAt;
+    private Instant createdAt;
 
     @LastModifiedDate
-    private Timestamp updatedAt;
+    private Instant updatedAt;
+
+    @PostConstruct
+    public void prePersist() {
+        if (this.createdAt == null) {
+            this.createdAt = Instant.now();
+        }
+        if (this.updatedAt == null) {
+            this.updatedAt = Instant.now();
+        }
+    }
 
 }

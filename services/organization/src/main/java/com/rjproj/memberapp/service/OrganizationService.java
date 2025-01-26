@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,7 +22,7 @@ public class OrganizationService {
     private final OrganizationMapper organizationMapper;
 
 
-    public UUID addOrganization(@Valid OrganizationRequest organizationRequest) {
+    public String addOrganization(@Valid OrganizationRequest organizationRequest) {
         Organization organization = organizationRepository.save(organizationMapper.toOrganization(organizationRequest));
         return organization.getOrganizationId();
     }
@@ -56,7 +55,7 @@ public class OrganizationService {
                 .collect(Collectors.toList());
     }
 
-    public OrganizationResponse findById(UUID organizationId) {
+    public OrganizationResponse findById(String organizationId) {
         return organizationRepository.findById(organizationId)
                 .map(organizationMapper::fromOrganization)
                 .orElseThrow(() -> new OrganizationNotFoundException(
@@ -64,12 +63,12 @@ public class OrganizationService {
                 );
     }
 
-    public Boolean existsById(UUID memberId) {
+    public Boolean existsById(String memberId) {
         return organizationRepository.findById(memberId)
                 .isPresent();
     }
 
-    public void deleteOrganization(UUID memberId) {
+    public void deleteOrganization(String memberId) {
         organizationRepository.deleteById(memberId);
     }
 

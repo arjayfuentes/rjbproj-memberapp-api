@@ -6,25 +6,26 @@ import com.rjproj.memberapp.service.OrganizationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/organization")
 @RequiredArgsConstructor
+@Validated
 public class OrganizationController {
 
     private final OrganizationService organizationService;
 
     @PostMapping
-    public ResponseEntity<UUID> addOrganization(@RequestBody @Valid OrganizationRequest organizationRequest){
+    public ResponseEntity<String> addOrganization(@RequestBody OrganizationRequest organizationRequest){
         return ResponseEntity.ok(organizationService.addOrganization(organizationRequest));
     }
 
     @PutMapping
-    public ResponseEntity<UUID> updateOrganization(@RequestBody @Valid OrganizationRequest organizationRequest){
+    public ResponseEntity<Integer> updateOrganization(@RequestBody @Valid OrganizationRequest organizationRequest){
         organizationService.updateOrganization(organizationRequest);
         return ResponseEntity.accepted().build();
     }
@@ -36,19 +37,19 @@ public class OrganizationController {
 
     @GetMapping("/{organization-id}")
     public ResponseEntity<OrganizationResponse> findById(
-            @PathVariable("organization-id") UUID organizationId
+            @PathVariable("organization-id") String organizationId
     ) {
         return ResponseEntity.ok(organizationService.findById(organizationId));
     }
 
     @GetMapping("/exists/{organization-id}")
-    public ResponseEntity<Boolean> existById(@PathVariable("organization-id") UUID organizationId){
+    public ResponseEntity<Boolean> existById(@PathVariable("organization-id") String organizationId){
         return ResponseEntity.ok(organizationService.existsById(organizationId));
     }
 
     @DeleteMapping("/{organization-id}")
     public ResponseEntity<Void> deleteOrganization(
-            @PathVariable("organization-id") UUID organizationId
+            @PathVariable("organization-id") String organizationId
     ) {
         organizationService.deleteOrganization(organizationId);
         return ResponseEntity.accepted().build();

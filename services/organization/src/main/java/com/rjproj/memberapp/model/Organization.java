@@ -1,13 +1,16 @@
 package com.rjproj.memberapp.model;
 
-import lombok.*;
+import jakarta.annotation.PostConstruct;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.sql.Timestamp;
-import java.util.UUID;
+import java.time.Instant;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -18,7 +21,7 @@ import java.util.UUID;
 public class Organization {
 
     @Id
-    private UUID organizationId;
+    private String organizationId;
 
     private String name;
 
@@ -27,9 +30,19 @@ public class Organization {
     private OrganizationAddress organizationAddress;
 
     @CreatedDate
-    private Timestamp createdAt;
+    private Instant createdAt;
 
     @LastModifiedDate
-    private Timestamp updatedAt;
+    private Instant updatedAt;
+
+    @PostConstruct
+    public void prePersist() {
+        if (this.createdAt == null) {
+            this.createdAt = Instant.now();
+        }
+        if (this.updatedAt == null) {
+            this.updatedAt = Instant.now();
+        }
+    }
 
 }
