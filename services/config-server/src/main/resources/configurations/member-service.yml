@@ -10,6 +10,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+    show-sql: true
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
   flyway:
@@ -19,3 +20,7 @@ spring:
     baseline-version: 0
     user: ${spring.datasource.username}
     password: ${spring.datasource.password}
+#  security:
+#    user:
+#      name: arjay
+#      password: user1234
