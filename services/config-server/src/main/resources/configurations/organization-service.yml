@@ -1,20 +1,12 @@
-server:
-  port: 8050
 spring:
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/organization
-    username: arjay
-    password: arjay
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    database: postgresql
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-  flyway:
-    baseline-on-migrate: true
-    enabled: true
-    baseline-description: "init"
-    baseline-version: 0
-    user: ${spring.datasource.username}
-    password: ${spring.datasource.password}
+  data:
+    mongodb:
+      username: arjay
+      password: arjay
+      host: localhost
+      port: 27017
+      database: organization
+      authentication-database: admin
+
+server:
+  port: 8090
