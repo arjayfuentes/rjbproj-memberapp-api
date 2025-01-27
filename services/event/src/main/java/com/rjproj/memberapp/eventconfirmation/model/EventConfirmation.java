@@ -1,5 +1,6 @@
 package com.rjproj.memberapp.eventconfirmation.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.rjproj.memberapp.event.model.Event;
 import jakarta.persistence.*;
 import lombok.*;
@@ -23,6 +24,7 @@ public class EventConfirmation {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", nullable = false)
+    @JsonIgnore
     private Event event;
 
     private UUID memberId;

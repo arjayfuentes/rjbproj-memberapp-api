@@ -5,6 +5,7 @@ import com.rjproj.memberapp.eventconfirmation.dto.EventConfirmationResponse;
 import com.rjproj.memberapp.eventconfirmation.mapper.EventConfirmationMapper;
 import com.rjproj.memberapp.eventconfirmation.model.EventConfirmation;
 import com.rjproj.memberapp.eventconfirmation.repository.EventConfirmationRepository;
+import com.rjproj.memberapp.exception.BusinessException;
 import com.rjproj.memberapp.kafka.EventProducer;
 import com.rjproj.memberapp.member.MemberClient;
 import jakarta.persistence.EntityNotFoundException;
@@ -31,7 +32,10 @@ public class EventConfirmationService {
 
     public EventConfirmationResponse createEventConfirmation(@Valid EventConfirmationRequest eventRequest) {
         EventConfirmation eventConfirmation = eventConfirmationMapper.toEventConfirmation(eventRequest);
-        eventProducer.sendEventConfirmation(eventConfirmation);
+        //eventProducer.sendEventConfirmation(eventConfirmation);
+
+        var member = this.memberClient.getMember(eventRequest.memberId());
+
         return eventConfirmationMapper.fromEventConfirmation(eventConfirmationRepository.save(eventConfirmation));
     }
 

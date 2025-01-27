@@ -1,6 +1,7 @@
 package com.rjproj.memberapp.event.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.rjproj.memberapp.eventconfirmation.model.EventConfirmation;
 import jakarta.persistence.*;
 import lombok.*;
@@ -35,7 +36,7 @@ public class Event {
     @UpdateTimestamp
     private Timestamp endEventDate;
 
-    @OneToMany(mappedBy = "event")
+    @OneToMany(mappedBy = "event", fetch = FetchType.LAZY)
     private List<EventConfirmation> eventConfirmations;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)

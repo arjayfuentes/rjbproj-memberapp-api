@@ -1,0 +1,39 @@
+server:
+  port: 8222
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: organization-service
+          uri: http://localhost:8090
+          predicates:
+            - Path=/api/v1/organization/**
+        - id: member-service
+          uri: http://localhost:8050
+          predicates:
+            - Path=/api/v1/member/**
+        - id: membership-service
+          uri: lb:http://MEMBER-SERVICE
+          predicates:
+            - Path=/api/v1/membership/**
+        - id: membership-type-service
+          uri: lb:http://MEMBER-SERVICE
+          predicates:
+            - Path=/api/v1/membership-type/**
+        - id: event-service
+          uri: lb:http://EVENT-SERVICE
+          predicates:
+            - Path=/api/v1/event/**
+
+
+#eureka:
+#  client:
+#    serviceUrl:
+#      defaultZone: http://localhost:8761/eureka/  # Eureka server URL
+#    registerWithEureka: true  # Register this service in Eureka
+#    fetchRegistry: true  # Fetch service registry from Eureka
+#  instance:
+#    preferIpAddress: true  #

@@ -8,17 +8,9 @@ spring:
     password: arjay
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-
-#  flyway:
-#    baseline-on-migrate: true
-#    enabled: true
-#    baseline-description: "init"
-#    baseline-version: 0
-#    user: ${spring.datasource.username}
-#    password: ${spring.datasource.password}
   kafka:
     producer:
       bootstrap-servers: localhost:9092
@@ -29,5 +21,8 @@ spring:
 
 application:
   config:
+#    member-url: http://localhost:8050/api/v1/member
+#    organization-url: http://localhost:8090/api/v1/organization
+
     member-url: http://localhost:8222/api/v1/member
     organization-url: http://localhost:8222/api/v1/organization

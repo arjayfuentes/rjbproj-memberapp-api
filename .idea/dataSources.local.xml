@@ -10,7 +10,9 @@
       <user-name>arjay</user-name>
       <schema-mapping>
         <introspection-scope>
-          <node kind="database" qname="member">
+          <node kind="database">
+            <name qname="event" />
+            <name qname="member" />
             <node kind="schema" qname="public" />
           </node>
         </introspection-scope>
