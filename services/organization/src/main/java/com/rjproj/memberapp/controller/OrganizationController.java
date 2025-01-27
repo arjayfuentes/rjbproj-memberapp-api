@@ -5,6 +5,7 @@ import com.rjproj.memberapp.dto.OrganizationResponse;
 import com.rjproj.memberapp.service.OrganizationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -25,9 +26,9 @@ public class OrganizationController {
     }
 
     @PutMapping
-    public ResponseEntity<Integer> updateOrganization(@RequestBody @Valid OrganizationRequest organizationRequest){
-        organizationService.updateOrganization(organizationRequest);
-        return ResponseEntity.accepted().build();
+    public ResponseEntity<OrganizationResponse> updateOrganization(@RequestBody @Valid OrganizationRequest organizationRequest){
+        OrganizationResponse updatedOrganizationResponse = organizationService.updateOrganization(organizationRequest);
+        return new ResponseEntity(updatedOrganizationResponse, HttpStatus.ACCEPTED);
     }
 
     @GetMapping
@@ -36,7 +37,7 @@ public class OrganizationController {
     }
 
     @GetMapping("/{organization-id}")
-    public ResponseEntity<OrganizationResponse> findById(
+    public ResponseEntity<OrganizationResponse> findOrganizationById(
             @PathVariable("organization-id") String organizationId
     ) {
         return ResponseEntity.ok(organizationService.findById(organizationId));

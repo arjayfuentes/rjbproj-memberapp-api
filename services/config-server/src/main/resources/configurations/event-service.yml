@@ -1,0 +1,33 @@
+server:
+  port: 8070
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/event
+    username: arjay
+    password: arjay
+  jpa:
+    hibernate:
+      ddl-auto: create
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+#  flyway:
+#    baseline-on-migrate: true
+#    enabled: true
+#    baseline-description: "init"
+#    baseline-version: 0
+#    user: ${spring.datasource.username}
+#    password: ${spring.datasource.password}
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.type.mapping: eventConfirmation:com.rjbproj.memberapp.eventconfirmation.model.EventConfirmation
+
+application:
+  config:
+    member-url: http://localhost:8222/api/v1/member
+    organization-url: http://localhost:8222/api/v1/organization

@@ -29,13 +29,14 @@ public class OrganizationService {
         return organization.getOrganizationId();
     }
 
-    public void updateOrganization(@Valid OrganizationRequest organizationRequest) {
+    public OrganizationResponse updateOrganization(@Valid OrganizationRequest organizationRequest) {
         Organization organization = organizationRepository.findById(organizationRequest.organizationId())
                 .orElseThrow(() -> new OrganizationNotFoundException(
                         String.format("Cannot update member with id %s", organizationRequest.organizationId())
                 ));
         mergeOrganization(organization, organizationRequest);
-        organizationRepository.save(organization);
+        Organization updatedOrganization = organizationRepository.save(organization);
+        return organizationMapper.fromOrganization(updatedOrganization);
     }
 
     private void mergeOrganization(Organization member, @Valid OrganizationRequest organizationRequest) {
