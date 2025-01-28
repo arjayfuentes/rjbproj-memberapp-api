@@ -11,18 +11,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MemberDetails extends User {
 
+public class MemberDetails implements UserDetails {
 
     private Member member;
 
     public MemberDetails(Member member) {
-        super(member.getEmail(), member.getPassword(), true, true, true,
-                true, getAuthorities(member));
+//        super(getAuthorities(), member.getPassword(), true, true, true,
+//                true);
         this.member = member;
     }
 
-    private static Collection<? extends GrantedAuthority> getAuthorities(Member member) {
+
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
         return member.getPermissionNames().stream().map(p -> new SimpleGrantedAuthority(p)).collect(Collectors.toList());
     }
 

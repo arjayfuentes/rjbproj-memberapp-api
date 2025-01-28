@@ -1,20 +1,28 @@
 package com.rjproj.memberapp.service;
 
+import com.rjproj.memberapp.dto.LoginRequest;
+import com.rjproj.memberapp.dto.LoginResponse;
 import com.rjproj.memberapp.dto.MemberRequest;
 import com.rjproj.memberapp.dto.MemberResponse;
 import com.rjproj.memberapp.mapper.MemberMapper;
 import com.rjproj.memberapp.model.Member;
 import com.rjproj.memberapp.repository.MemberRepository;
+import com.rjproj.memberapp.security.JWTUtil;
+import com.rjproj.memberapp.security.MemberDetails;
+import com.rjproj.memberapp.util.ResponseHandler;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -35,11 +43,17 @@ public class MemberService {
     @Autowired
     AuthenticationManager authenticationManager;
 
-    @Autowired
-    JwtEncoder jwtEncoder;
+//    @Autowired
+//    JwtEncoder jwtEncoder;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private UserDetailsServiceImpl userDetailsServiceImpl;
+
+    @Autowired
+    JWTUtil jwtUtil;
 
     private final MemberMapper memberMapper;
 
@@ -103,40 +117,27 @@ public class MemberService {
         return memberMapper.fromMember(memberRepository.save(member));
     }
 
-    public Map<String, Object> login(String username, String password) {
-        Optional<Member> userEntity = memberRepository.findByEmail(username);
-        Map<String, Object> response = new HashMap<>();
-        if (!userEntity.isPresent()){
-            response.put("status", "Member Not Found");
-            return response;
+    public ResponseEntity<Object> login(LoginRequest loginRequest) {
+        try {
+            Authentication authenticate = authenticationManager
+                    .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password()));
+
+            Optional<Member> userEntity = memberRepository.findByEmail(loginRequest.email());
+
+            Optional<Member> member = memberRepository.findByEmail(loginRequest.email());
+            UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(loginRequest.email());
+            String jwt = jwtUtil.generateToken(userDetails.getUsername());
+            MemberResponse memberResponse = memberMapper.fromMember(member.get());
+            LoginResponse loginResponse = new LoginResponse(
+                    jwt,
+                    "Bearer",
+                    memberResponse
+            );
+            return ResponseHandler.generateResponse("User logged in successfully", HttpStatus.OK, loginResponse);
         }
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-        if(authentication.isAuthenticated()) {
-            String accessToken = generateToken(userEntity.get(), authentication, 3600);
-            response.put("access_token", accessToken);
-            response.put("expires_in", 3600);
-            return response;
-        } else {
-             throw new RuntimeException("Authentication failed");
+        catch (Exception e)
+        {
+            return new ResponseEntity<>("Incorrect username or password", HttpStatus.BAD_REQUEST);
         }
-    }
-
-    private String generateToken(Member member, Authentication authentication, long expiryDuration){
-        Instant now = Instant.now();
-        JwtClaimsSet claimsSet = JwtClaimsSet.builder()
-                .issuer("Ornate")
-                .issuedAt(now)
-                .expiresAt(now.plusSeconds(expiryDuration))
-                .subject(authentication.getName())
-                .claim("role", authentication.getAuthorities().stream()
-                        .map(GrantedAuthority::getAuthority)
-                        .collect(Collectors.toSet()))
-                .claim("firstName", member.getFirstName())
-                .claim("lastName", member.getLastName())
-                .claim("userId", member.getMemberId())
-                .build();
-
-        return jwtEncoder.encode(JwtEncoderParameters.from(claimsSet)).getTokenValue();
-
     }
 }
