@@ -34,7 +34,7 @@ public class EventConfirmationService {
         EventConfirmation eventConfirmation = eventConfirmationMapper.toEventConfirmation(eventRequest);
         eventProducer.sendEventConfirmation(eventConfirmation);
 
-        var member = this.memberClient.getMember(eventRequest.memberId());
+        //var member = this.memberClient.getMember(eventRequest.memberId());
 
         return eventConfirmationMapper.fromEventConfirmation(eventConfirmationRepository.save(eventConfirmation));
     }

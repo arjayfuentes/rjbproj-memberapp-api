@@ -27,6 +27,10 @@ spring:
           uri: lb:http://EVENT-SERVICE
           predicates:
             - Path=/api/v1/event/**
+        - id: event-confirmation-service
+          uri: lb:http://EVENT-SERVICE
+          predicates:
+            - Path=/api/v1/event-confirmation/**
 
 
 #eureka:
