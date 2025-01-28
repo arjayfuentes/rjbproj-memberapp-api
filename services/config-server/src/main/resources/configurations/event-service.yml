@@ -14,15 +14,16 @@ spring:
   kafka:
     producer:
       bootstrap-servers: localhost:9092
+      group-id: eventGroup
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
-        spring.json.type.mapping: eventConfirmation:com.rjbproj.memberapp.eventconfirmation.model.EventConfirmation
+        spring.json.type.mapping: eventConfirmation:com.rjproj.memberapp.eventconfirmation.model.EventConfirmation
 
 application:
   config:
-#    member-url: http://localhost:8050/api/v1/member
-#    organization-url: http://localhost:8090/api/v1/organization
+    member-url: http://localhost:8050/api/v1/member
+    organization-url: http://localhost:8090/api/v1/organization
 
-    member-url: http://localhost:8222/api/v1/member
-    organization-url: http://localhost:8222/api/v1/organization
+#    member-url: http://localhost:8222/api/v1/member
+#    organization-url: http://localhost:8222/api/v1/organization

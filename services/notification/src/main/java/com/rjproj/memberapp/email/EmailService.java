@@ -1,5 +1,7 @@
 package com.rjproj.memberapp.email;
 
+import com.rjproj.memberapp.kafka.event.ConfirmationStatus;
+import com.rjproj.memberapp.kafka.event.Event;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -28,20 +31,31 @@ public class EmailService {
 
     @Async
     public void sendConfirmationSuccessfulEmail(
-            String destinationEmail,
+            UUID eventConfirmationId,
+            Event event,
             UUID memberId,
-            String confirmationStatus
+            ConfirmationStatus confirmationStatus,
+            Timestamp confirmationDate,
+            Timestamp createdAt,
+            Timestamp updatedAt
     ) throws MessagingException {
 
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, UTF_8.name());
         messageHelper.setFrom("arjay2489@gmail.com");
+        String destinationEmail = "arjay630@gmail.com";
 
         final String templateName = YES.getTemplate();
 
         Map<String, Object> variables = new HashMap<>();
+        variables.put("eventConfirmationId", eventConfirmationId);
+        variables.put("event", event);
         variables.put("memberId", memberId);
         variables.put("confirmationStatus", confirmationStatus);
+        variables.put("confirmationDate", confirmationDate);
+        variables.put("createdAt", createdAt);
+        variables.put("updatedAt", updatedAt);
+
         //variables.put("orderReference", orderReference);
 
         Context context = new Context();

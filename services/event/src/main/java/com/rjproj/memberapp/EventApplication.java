@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
 @EnableFeignClients
-@EnableJpaAuditing //
+//@EnableJpaAuditing //
 public class EventApplication {
 
 	public static void main(String[] args) {

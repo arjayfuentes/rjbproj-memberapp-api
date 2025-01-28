@@ -34,9 +34,13 @@ public class NotificationsConsumer {
         );
         var customerName = eventConfirmation.memberId() + " " + eventConfirmation.confirmationStatus();
         emailService.sendConfirmationSuccessfulEmail(
-                "arjay60@gmail.com",
+                eventConfirmation.eventConfirmationId(),
+                eventConfirmation.event(),
                 eventConfirmation.memberId(),
-                eventConfirmation.confirmationStatus().toString()
+                eventConfirmation.confirmationStatus(),
+                eventConfirmation.confirmationDate(),
+                eventConfirmation.createdAt(),
+                eventConfirmation.updatedAt()
         );
     }
 

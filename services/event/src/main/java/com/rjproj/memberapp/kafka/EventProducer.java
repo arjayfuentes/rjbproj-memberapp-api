@@ -22,7 +22,7 @@ public class EventProducer {
         log.info("Sending event confirmation");
         Message<EventConfirmation> message = MessageBuilder
                 .withPayload(eventConfirmation)
-                .setHeader(TOPIC, "order-topic")
+                .setHeader(TOPIC, "event-topic")
                 .build();
 
         kafkaTemplate.send(message);

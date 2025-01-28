@@ -32,7 +32,7 @@ public class EventConfirmationService {
 
     public EventConfirmationResponse createEventConfirmation(@Valid EventConfirmationRequest eventRequest) {
         EventConfirmation eventConfirmation = eventConfirmationMapper.toEventConfirmation(eventRequest);
-        //eventProducer.sendEventConfirmation(eventConfirmation);
+        eventProducer.sendEventConfirmation(eventConfirmation);
 
         var member = this.memberClient.getMember(eventRequest.memberId());
 

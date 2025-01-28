@@ -8,11 +8,11 @@ spring:
           enabled: true
       routes:
         - id: organization-service
-          uri: http://localhost:8090
+          uri: lb:http://ORGANIZATION-SERVICE
           predicates:
             - Path=/api/v1/organization/**
         - id: member-service
-          uri: http://localhost:8050
+          uri: lb:http://MEMBER-SERVICE
           predicates:
             - Path=/api/v1/member/**
         - id: membership-service
