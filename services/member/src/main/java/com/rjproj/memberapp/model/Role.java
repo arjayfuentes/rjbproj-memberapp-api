@@ -1,46 +1,39 @@
 package com.rjproj.memberapp.model;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
-import java.util.Collections;
-import java.util.List;
+import java.sql.Timestamp;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
-import static com.rjproj.memberapp.model.Permission.*;
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Getter
+@Setter
+@Entity
+public class Role {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID roleId;
 
-@RequiredArgsConstructor
-public enum Role {
+    private String name;
 
-    USER(Collections.emptySet()),
-    ADMIN(
-            Set.of(
-                    USER_READ_ALL,
-                    USER_UPDATE_ALL,
-                    USER_CREATE,
-                    USER_DELETE
-            )
-    ),
-    MEMBER(
-            Set.of(
-                    USER_READ_OWN,
-                    USER_UPDATE_OWN
-            )
-    )
+    @ManyToMany(mappedBy = "roles")
+    private Set<Member> members;
 
-    ;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "role_permission", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
+    private Set<Permission> permissions;
 
-    @Getter
-    private final Set<Permission> permissions;
+    @CreationTimestamp
+    private Timestamp createdAt;
 
-//    public List<SimpleGrantedAuthority> getAuthorities() {
-//        var authorities = getPermissions()
-//                .stream()
-//                .map(permission -> new SimpleGrantedAuthority(permission.getPermission()))
-//                .collect(Collectors.toList());
-//        authorities.add(new SimpleGrantedAuthority("ROLE_" + this.name()));
-//        return authorities;
-//    }
+    @UpdateTimestamp
+    private Timestamp updatedAt;
+
 }

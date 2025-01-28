@@ -1,23 +1,26 @@
 package com.rjproj.memberapp.model;
 
+import jakarta.persistence.*;
+import lombok.*;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import java.util.Set;
+import java.util.UUID;
 
-@RequiredArgsConstructor
-public enum Permission {
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Getter
+@Setter
+@Entity
+public class Permission {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID permissionId;
 
-    USER_READ_ALL("com.rjproj.memberapp.permission.user.readAll"),
-    USER_READ_OWN("com.rjproj.memberapp.permission.user.readOwn"),
-    USER_UPDATE_ALL("com.rjproj.memberapp.permission.user.updateAll"),
-    USER_UPDATE_OWN("com.rjproj.memberapp.permission.user.updateOwn"),
-    USER_CREATE("com.rjproj.memberapp.permission.user.create"),
-    USER_DELETE("com.rjproj.memberapp.permission.user.delete"),
+    private String name;
 
-    //ORG_READ_ALL("com.rjproj.memberapp.permission.user.readAll"),
-    ;
+    @ManyToMany(mappedBy = "permissions")
+    private Set<Role> roles;
 
-    @Getter
-    private final String permission;
 }

@@ -15,3 +15,7 @@ management:
   tracing:
     sampling:
       probability: 1.0
+
+keyStore:
+  path: keystore.jks
+  password: password

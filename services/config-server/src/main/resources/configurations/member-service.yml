@@ -20,6 +20,10 @@ spring:
     baseline-version: 0
     user: ${spring.datasource.username}
     password: ${spring.datasource.password}
+
+keyStore:
+  path: keystore.jks
+  password: password
 #  security:
 #    user:
 #      name: arjay

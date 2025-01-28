@@ -1,14 +1,14 @@
 package com.rjproj.memberapp.model;
 
+import com.rjproj.memberapp.util.CollectionUtil;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -32,12 +32,13 @@ public class Member {
 
     private String phoneNumber;
 
-//    @Enumerated(EnumType.STRING)
-//    private Role role;
-
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "member_address_id", referencedColumnName = "memberAddressId", nullable = true, unique = true)
     private MemberAddress memberAddress;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "member_role", joinColumns = @JoinColumn(name = "member_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles;
 
     @CreationTimestamp
     private Timestamp createdAt;
@@ -45,38 +46,14 @@ public class Member {
     @UpdateTimestamp
     private Timestamp updatedAt;
 
-//    @Override
-//    public Collection<? extends GrantedAuthority> getAuthorities() {
-//        return List.of(new SimpleGrantedAuthority(role.name()));
-//    }
-//
-//    @Override
-//    public String getPassword() {
-//        return password;
-//    }
-//
-//    @Override
-//    public String getUsername() {
-//        return email;
-//    }
-//
-//    @Override
-//    public boolean isAccountNonExpired() {
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean isAccountNonLocked() {
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean isCredentialsNonExpired() {
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean isEnabled() {
-//        return true;
-//    }
+    public Set<String> getPermissionNames() {
+        if (CollectionUtil.isEmpty(this.roles)) {
+            return Collections.emptySet();
+        }
+        Set<Permission> emptyPermissionsSet = Collections.emptySet();
+        return this.getRoles().stream()
+                .map(r -> CollectionUtil.isEmpty(r.getPermissions()) ? emptyPermissionsSet : r.getPermissions())
+                .flatMap(p1 -> p1.stream().map(p2 -> p2.getName())).collect(Collectors.toSet());
+    }
+
 }

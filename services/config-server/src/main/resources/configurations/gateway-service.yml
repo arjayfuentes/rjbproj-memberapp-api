@@ -23,6 +23,10 @@ spring:
           uri: lb:http://MEMBER-SERVICE
           predicates:
             - Path=/api/v1/membership-type/**
+        - id: authentication-service
+          uri: lb:http://MEMBER-SERVICE
+          predicates:
+            - Path=/api/v1/auth/**
         - id: event-service
           uri: lb:http://EVENT-SERVICE
           predicates:
