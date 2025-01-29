@@ -12,10 +12,8 @@ public record MemberResponse (
         String firstName,
         String lastName,
         String email,
-        String password,
         String phoneNumber,
-        MemberAddress memberAddress,
-        Timestamp createdAt,
-        Timestamp updatedAt
+        MemberAddressResponse memberAddressResponse,
+        Timestamp createdAt
 ) {
 }

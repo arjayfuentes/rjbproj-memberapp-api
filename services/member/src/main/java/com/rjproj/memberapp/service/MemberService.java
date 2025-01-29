@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -33,6 +34,8 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.rjproj.memberapp.exception.MemberErrorMessage.*;
 
 @Service
 @RequiredArgsConstructor
@@ -113,7 +116,7 @@ public class MemberService {
         Optional<Member> retrievedMember = memberRepository.findByEmail(memberRequest.email());
         Member member = memberMapper.toMember(memberRequest);
         if (retrievedMember.isPresent()){
-            throw new MemberException("Member with email address " + memberRequest.email() + " already exists");
+            throw new MemberException("Member with email address " + memberRequest.email() + " already exists", MEMBER_EXISTS.getMessage(), HttpStatus.CONFLICT);
         }
         member.setPassword(passwordEncoder.encode(member.getPassword()));
 
@@ -123,12 +126,15 @@ public class MemberService {
 
     public ResponseEntity<Object> login(LoginRequest loginRequest) {
         try {
-            Authentication authenticate = authenticationManager
-                    .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password()));
-
             Optional<Member> userEntity = memberRepository.findByEmail(loginRequest.email());
 
             Optional<Member> member = memberRepository.findByEmail(loginRequest.email());
+            if(!member.isPresent()) {
+                throw new MemberException("Member with email address " + loginRequest.email() + " does not exists", MEMBER_NOT_EXISTS.getMessage(), HttpStatus.BAD_REQUEST);
+            }
+            Authentication authenticate = authenticationManager
+                    .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password()));
+
             UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(loginRequest.email());
             String jwt = jwtUtil.generateToken(userDetails.getUsername());
             MemberResponse memberResponse = memberMapper.fromMember(member.get());
@@ -139,9 +145,9 @@ public class MemberService {
             );
             return ResponseHandler.generateResponse("User logged in successfully", HttpStatus.OK, loginResponse);
         }
-        catch (Exception e)
+        catch (BadCredentialsException e)
         {
-            return new ResponseEntity<>("Incorrect username or password", HttpStatus.BAD_REQUEST);
+            throw new MemberException("Incorrect password for " + loginRequest.email(), PASSWORD_INCORRECT.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 }

@@ -16,9 +16,9 @@ public class MemberExceptionHandler {
     @ExceptionHandler(MemberException.class)
     public ResponseEntity<Object> handleMemberException(MemberException ex) {
         Map<String, Object> response = new HashMap<>();
-        response.put("error", MEMBER_EXISTS.getMessage());
+        response.put("error", ex.getErrorMessage());
         response.put("message", ex.getMessage());
-        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+        return new ResponseEntity<>(response, ex.getHttpStatus());
     }
 
     @ExceptionHandler(Exception.class)

@@ -1,8 +1,10 @@
 package com.rjproj.memberapp.mapper;
 
+import com.rjproj.memberapp.dto.MemberAddressResponse;
 import com.rjproj.memberapp.dto.MemberRequest;
 import com.rjproj.memberapp.dto.MemberResponse;
 import com.rjproj.memberapp.model.Member;
+import com.rjproj.memberapp.model.MemberAddress;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 
@@ -27,11 +29,19 @@ public class MemberMapper {
                 member.getFirstName(),
                 member.getLastName(),
                 member.getEmail(),
-                member.getPassword(),
                 member.getPhoneNumber(),
-                member.getMemberAddress(),
-                member.getCreatedAt(),
-                member.getUpdatedAt()
+                fromMemberAddress(member.getMemberAddress()),
+                member.getCreatedAt()
+        );
+    }
+
+    public MemberAddressResponse fromMemberAddress(MemberAddress memberAddress) {
+        return new MemberAddressResponse(
+                memberAddress.getStreet(),
+                memberAddress.getCity(),
+                memberAddress.getProvinceState(),
+                memberAddress.getRegion(),
+                memberAddress.getCountry()
         );
     }
 }
