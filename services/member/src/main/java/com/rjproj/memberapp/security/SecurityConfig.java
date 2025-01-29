@@ -93,7 +93,7 @@ public class SecurityConfig {
     @Bean
     public AuthenticationEntryPoint unauthorizedHandler() {
         return (HttpServletRequest request, HttpServletResponse response, org.springframework.security.core.AuthenticationException authException) -> {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.setContentType("application/json");
             PrintWriter writer = response.getWriter();
             writer.write(String.format(
@@ -107,7 +107,7 @@ public class SecurityConfig {
     @Bean
     public AccessDeniedHandler customAccessDeniedHandler() {
         return (HttpServletRequest request, HttpServletResponse response, org.springframework.security.access.AccessDeniedException accessDeniedException) -> {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             PrintWriter writer = response.getWriter();
             writer.write(String.format(

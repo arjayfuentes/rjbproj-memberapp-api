@@ -55,10 +55,10 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
                     if (hasPermissionForRequest(exchange, permissions)) {
                         return chain.filter(exchange);
                     } else {
-                        return handleForbiddenResponse(exchange, "You do not have the required permission to access this resource.");
+                        return handleUnauthorizedResponse(exchange, "You do not have permission to access this resource.");
                     }
                 } else {
-                    return handleUnauthorizedResponse(exchange, "Unauthorized: Missing or invalid token.");
+                    return handleForbiddenResponse(exchange, "You must log in to access this resource.");
                 }
             } catch (SignatureException e) {
                 return handleUnauthorizedResponse(exchange, "Unauthorized: Missing or invalid token.");
