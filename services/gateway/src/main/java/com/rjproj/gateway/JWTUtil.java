@@ -1,4 +1,7 @@
-package com.rjproj.memberapp.security;
+package com.rjproj.gateway;
+
+import io.jsonwebtoken.security.Keys;
+import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -10,6 +13,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 
 @Service
 public class JWTUtil {
@@ -27,6 +31,17 @@ public class JWTUtil {
 
     public Date extractExpiration(String token) {
         return extractAllClaims(token).getExpiration();
+    }
+
+    // Extract Permissions from JWT (new method)
+    public List<String> extractPermissions(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("permissions", List.class);  // Assuming permissions are stored in the "permissions" claim
+    }
+
+    public List<String> extractRoles(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("role", List.class);  // Assuming permissions are stored in the "permissions" claim
     }
 
     private Claims extractAllClaims(String token) {

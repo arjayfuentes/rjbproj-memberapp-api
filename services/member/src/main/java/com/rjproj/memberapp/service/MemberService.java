@@ -136,7 +136,9 @@ public class MemberService {
                     .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password()));
 
             UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(loginRequest.email());
-            String jwt = jwtUtil.generateToken(userDetails.getUsername());
+            List<String> roles = member.get().getRoles().stream().map( p -> p.getName()).collect(Collectors.toList());
+            List<String> permissions = member.get().getPermissionNames().stream().map( p -> p.toString()).collect(Collectors.toList());
+            String jwt = jwtUtil.generateToken(userDetails.getUsername(), roles, permissions);
             MemberResponse memberResponse = memberMapper.fromMember(member.get());
             LoginResponse loginResponse = new LoginResponse(
                     jwt,

@@ -1,6 +1,9 @@
 server:
   port: 8222
 spring:
+  security:
+    csrf:
+      enabled: false
   cloud:
     gateway:
       discovery:
@@ -11,6 +14,10 @@ spring:
           uri: lb:http://ORGANIZATION-SERVICE
           predicates:
             - Path=/api/v1/organization/**
+            - Header=Authorization, Bearer (.*)
+          filters:
+            - RemoveRequestHeader=Cookie
+            - AuthorizationHeaderFilter
         - id: member-service
           uri: lb:http://MEMBER-SERVICE
           predicates:
@@ -35,6 +42,10 @@ spring:
           uri: lb:http://EVENT-SERVICE
           predicates:
             - Path=/api/v1/event-confirmation/**
+
+token:
+  secret: TaK+HaV^uvCHEFsEVfypW#7g9^k*Z8$V
+
 
 
 #eureka:

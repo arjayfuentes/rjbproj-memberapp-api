@@ -61,6 +61,13 @@ public class OrganizationService {
                 .collect(Collectors.toList());
     }
 
+    public List<OrganizationResponse> findMyOrganization() {
+        return organizationRepository.findAll()
+                .stream()
+                .map(organizationMapper::fromOrganization)
+                .collect(Collectors.toList());
+    }
+
     public OrganizationResponse findById(String organizationId) {
         return organizationRepository.findById(organizationId)
                 .map(organizationMapper::fromOrganization)

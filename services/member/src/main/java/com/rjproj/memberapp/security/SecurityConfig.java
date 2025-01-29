@@ -90,9 +90,6 @@ public class SecurityConfig {
         return  authenticationConfiguration.getAuthenticationManager();
     }
 
-    /**
-     * Handles 401 Unauthorized - When the user is not authenticated
-     */
     @Bean
     public AuthenticationEntryPoint unauthorizedHandler() {
         return (HttpServletRequest request, HttpServletResponse response, org.springframework.security.core.AuthenticationException authException) -> {
@@ -107,9 +104,6 @@ public class SecurityConfig {
         };
     }
 
-    /**
-     * Handles 403 Forbidden - When the user is authenticated but lacks permissions
-     */
     @Bean
     public AccessDeniedHandler customAccessDeniedHandler() {
         return (HttpServletRequest request, HttpServletResponse response, org.springframework.security.access.AccessDeniedException accessDeniedException) -> {

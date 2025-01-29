@@ -31,9 +31,14 @@ public class OrganizationController {
         return new ResponseEntity(updatedOrganizationResponse, HttpStatus.ACCEPTED);
     }
 
-    @GetMapping
+    @GetMapping("/viewAllOrganization")
     public ResponseEntity<List<OrganizationResponse>> getOrganizations(){
         return ResponseEntity.ok(organizationService.findAllOrganization());
+    }
+
+    @GetMapping("/viewMyOrganization")
+    public ResponseEntity<List<OrganizationResponse>> getMyOrganizations(){
+        return ResponseEntity.ok(organizationService.findMyOrganization());
     }
 
     @GetMapping("/{organization-id}")
