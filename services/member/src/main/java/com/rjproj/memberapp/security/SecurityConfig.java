@@ -67,6 +67,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/member/**").hasAuthority("com.rjproj.memberapp.permission.user.viewAll")
                         .requestMatchers("/api/v1/membership/**").hasAuthority("com.rjproj.memberapp.permission.user.viewAll")
+                        .requestMatchers("/api/v1/membership-type/**").hasAuthority("com.rjproj.memberapp.permission.user.viewAll")
                         .anyRequest()
                         .authenticated())
                 .exceptionHandling(exception -> exception
