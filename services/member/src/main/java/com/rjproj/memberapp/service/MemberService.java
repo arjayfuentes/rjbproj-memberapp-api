@@ -4,6 +4,7 @@ import com.rjproj.memberapp.dto.LoginRequest;
 import com.rjproj.memberapp.dto.LoginResponse;
 import com.rjproj.memberapp.dto.MemberRequest;
 import com.rjproj.memberapp.dto.MemberResponse;
+import com.rjproj.memberapp.exception.MemberException;
 import com.rjproj.memberapp.mapper.MemberMapper;
 import com.rjproj.memberapp.model.Member;
 import com.rjproj.memberapp.repository.MemberRepository;
@@ -58,9 +59,7 @@ public class MemberService {
     private final MemberMapper memberMapper;
 
     public MemberResponse createMember(@Valid MemberRequest memberRequest) {
-        Member member = memberMapper.toMember(memberRequest);
-        member.setPassword(passwordEncoder.encode(member.getPassword()));
-        return memberMapper.fromMember(memberRepository.save(member));
+        return addMember(memberRequest);
     }
 
     public List<MemberResponse> findAll() {
@@ -106,16 +105,21 @@ public class MemberService {
         }
     }
 
-    public MemberResponse registerMember(MemberRequest memberRequest){
+    public MemberResponse registerMember(MemberRequest memberRequest) {
+        return addMember(memberRequest);
+    }
+
+    public MemberResponse addMember(MemberRequest memberRequest) {
         Optional<Member> retrievedMember = memberRepository.findByEmail(memberRequest.email());
         Member member = memberMapper.toMember(memberRequest);
         if (retrievedMember.isPresent()){
-            //throw
+            throw new MemberException("Member with email address " + memberRequest.email() + " already exists");
         }
         member.setPassword(passwordEncoder.encode(member.getPassword()));
 
         return memberMapper.fromMember(memberRepository.save(member));
     }
+
 
     public ResponseEntity<Object> login(LoginRequest loginRequest) {
         try {
