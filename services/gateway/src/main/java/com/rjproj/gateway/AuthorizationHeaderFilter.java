@@ -88,6 +88,9 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
         if (path.startsWith("/api/v1/organization/viewMyOrganization")) {
             return "com.rjproj.memberapp.permission.organization.viewOwn";
         }
+        if (path.startsWith("/api/v1/organization/viewMyOrganization")) {
+            return "com.rjproj.memberapp.permission.organization.viewOwn";
+        }
         return null;  // Def
     }
 
@@ -99,7 +102,7 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
 
         // Set the response body with a custom JSON message
         response.getHeaders().set("Content-Type", "application/json");
-        String body = "{ \"error\": \"Forbidden\", \"message\": \"" + message + "\" }";  // Correct JSON format
+        String body = "{ \"error\": \"Access denied\", \"message\": \"" + message + "\" }";  // Correct JSON format
 
         DataBuffer buffer = response.bufferFactory().wrap(body.getBytes());
 
