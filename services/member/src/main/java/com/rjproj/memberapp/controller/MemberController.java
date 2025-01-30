@@ -2,6 +2,7 @@ package com.rjproj.memberapp.controller;
 
 import com.rjproj.memberapp.dto.MemberRequest;
 import com.rjproj.memberapp.dto.MemberResponse;
+import com.rjproj.memberapp.organization.OrganizationResponse;
 import com.rjproj.memberapp.service.MemberService;
 
 import jakarta.validation.Valid;
@@ -52,5 +53,9 @@ public class MemberController {
         memberService.deleteMember(memberId);
         return ResponseEntity.accepted().build();
     }
+
+
+
+
 
 }

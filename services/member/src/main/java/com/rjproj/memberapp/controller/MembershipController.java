@@ -2,6 +2,7 @@ package com.rjproj.memberapp.controller;
 
 import com.rjproj.memberapp.dto.MembershipRequest;
 import com.rjproj.memberapp.dto.MembershipResponse;
+import com.rjproj.memberapp.organization.OrganizationResponse;
 import com.rjproj.memberapp.service.MemberService;
 import com.rjproj.memberapp.service.MembershipService;
 import jakarta.validation.Valid;
@@ -51,6 +52,11 @@ public class MembershipController {
     ) {
         membershipService.deleteMembership(membershipId);
         return ResponseEntity.accepted().build();
+    }
+
+    @GetMapping("/getOrganizationByMemberId/{member-id}")
+    public ResponseEntity<List<OrganizationResponse>> getOrganizationByMemberId( @PathVariable("member-id") UUID memberId) {
+        return ResponseEntity.ok(membershipService.getOrganizationByMemberId(memberId));
     }
 
 

@@ -1,13 +1,14 @@
 package com.rjproj.memberapp.service;
 
-import com.rjproj.memberapp.dto.LoginRequest;
-import com.rjproj.memberapp.dto.LoginResponse;
-import com.rjproj.memberapp.dto.MemberRequest;
-import com.rjproj.memberapp.dto.MemberResponse;
+import com.rjproj.memberapp.dto.*;
 import com.rjproj.memberapp.exception.MemberException;
 import com.rjproj.memberapp.mapper.MemberMapper;
 import com.rjproj.memberapp.model.Member;
+import com.rjproj.memberapp.model.Role;
+import com.rjproj.memberapp.organization.OrganizationResponse;
 import com.rjproj.memberapp.repository.MemberRepository;
+import com.rjproj.memberapp.repository.MemberRoleRepository;
+import com.rjproj.memberapp.repository.RoleRepository;
 import com.rjproj.memberapp.security.JWTUtil;
 import com.rjproj.memberapp.security.MemberDetails;
 import com.rjproj.memberapp.util.ResponseHandler;
@@ -24,6 +25,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
@@ -43,6 +46,10 @@ public class MemberService {
 
     @Autowired
     private MemberRepository memberRepository;
+
+
+    @Autowired
+    private MemberRoleRepository memberRoleRepository;
 
     @Autowired
     AuthenticationManager authenticationManager;
@@ -66,6 +73,13 @@ public class MemberService {
     }
 
     public List<MemberResponse> findAll() {
+//        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        UUID memberId = ((MemberDetails)principal).getMember().getMemberId();
+//        if (principal instanceof UserDetails) {
+//            String username = ((UserDetails)principal).getUsername();
+//        } else {
+//            String username = principal.toString();
+//        }
         return memberRepository.findAll()
                 .stream()
                 .map(memberMapper::fromMember)
@@ -136,14 +150,15 @@ public class MemberService {
                     .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password()));
 
             UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(loginRequest.email());
-            List<String> roles = member.get().getRoles().stream().map( p -> p.getName()).collect(Collectors.toList());
-            List<String> permissions = member.get().getPermissionNames().stream().map( p -> p.toString()).collect(Collectors.toList());
-            String jwt = jwtUtil.generateToken(userDetails.getUsername(), roles, permissions);
+            List<String> temporaryPermissions = new ArrayList<>();
+            temporaryPermissions.add("com.rjproj.memberapp.membership.chooseOrganization");
+            String jwt = jwtUtil.generateToken(userDetails.getUsername(), null, temporaryPermissions);
             MemberResponse memberResponse = memberMapper.fromMember(member.get());
             LoginResponse loginResponse = new LoginResponse(
                     jwt,
                     "Bearer",
-                    memberResponse
+                    memberResponse,
+                    temporaryPermissions
             );
             return ResponseHandler.generateResponse("User logged in successfully", HttpStatus.OK, loginResponse);
         }
@@ -151,5 +166,59 @@ public class MemberService {
         {
             throw new MemberException("Incorrect password for " + loginRequest.email(), PASSWORD_INCORRECT.getMessage(), HttpStatus.BAD_REQUEST);
         }
+    }
+
+    public ResponseEntity<Object> selectLoginOrganization(@Valid SelectOrganizationRequest selectOrganizationRequest) {
+
+        try {
+            Role activeRole = memberRoleRepository.findRolesByMemberAndOrganization(selectOrganizationRequest.memberId(), selectOrganizationRequest.organizationId());
+
+
+            //get user details again
+            Member member = memberRepository.findById(selectOrganizationRequest.memberId())
+                    .orElseThrow(() -> new NotFoundException(
+                            String.format("Cannot update member with id %s", selectOrganizationRequest.memberId())
+                    ));
+
+            List<String> activeAuthorities = activeRole.getPermissions().stream().map(p -> p.getName()).toList();
+
+            //update token again
+            String jwt = jwtUtil.generateToken(member.getEmail(), activeRole, activeAuthorities);
+
+            Authentication currentAuth = SecurityContextHolder.getContext().getAuthentication();
+
+            // Extract the current user details
+            MemberDetails currentUser = (MemberDetails) currentAuth.getPrincipal();
+            currentUser.setActiveRole(activeRole);
+
+            // Extract the current user details
+            List<SimpleGrantedAuthority> updatedAuthorities = activeAuthorities.stream()
+            .map(SimpleGrantedAuthority::new)
+            .collect(Collectors.toList());
+
+            // Create a new Authentication object with the updated authorities
+            Authentication newAuth = new UsernamePasswordAuthenticationToken(
+                    currentUser, currentUser.getPassword(), updatedAuthorities);
+
+            // Update the SecurityContext with the new authentication object
+            SecurityContextHolder.getContext().setAuthentication(newAuth);
+
+            LoginResponse loginResponse = new LoginResponse(
+                    jwt,
+                    "Bearer",
+                    memberMapper.fromMember(member),
+                    activeAuthorities
+            );
+
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+
+            return ResponseHandler.generateResponse("User logged in successfully", HttpStatus.OK, loginResponse);
+        }
+        catch (BadCredentialsException e)
+        {
+            throw new MemberException("Incorrect password for " + selectOrganizationRequest.memberId(), PASSWORD_INCORRECT.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
     }
 }

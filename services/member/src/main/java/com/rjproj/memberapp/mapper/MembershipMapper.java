@@ -25,7 +25,6 @@ public class MembershipMapper {
         return new MembershipResponse(
                 membership.getMembershipId(),
                 membership.getOrganizationId(),
-                membership.getMember(),
                 membership.getMembershipType(),
                 membership.getStatus(),
                 membership.getStartDate(),

@@ -1,5 +1,6 @@
 package com.rjproj.memberapp.security;
 
+import com.rjproj.memberapp.model.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -16,6 +17,8 @@ public class JWTUtil {
 
     private String SECRET_KEY = "TaK+HaV^uvCHEFsEVfypW#7g9^k*Z8$V";
 
+    private String token;
+
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
@@ -27,6 +30,11 @@ public class JWTUtil {
 
     public Date extractExpiration(String token) {
         return extractAllClaims(token).getExpiration();
+    }
+
+    public List<String> extractPermissions(String token) {
+        Claims claims = extractAllClaims(token);
+        return (List<String>) claims.get("permissions");
     }
 
     private Claims extractAllClaims(String token) {
@@ -41,15 +49,15 @@ public class JWTUtil {
         return extractExpiration(token).before(new Date());
     }
 
-    public String generateToken(String username, List<String> roles, List<String> permissions) {
+    public String generateToken(String username, Role role, List<String> permissions) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("roles", roles);
+        //claims.put("role", role);
         claims.put("permissions", permissions);
         return createToken(claims, username);
     }
 
     private String createToken(Map<String, Object> claims, String subject) {
-        return Jwts.builder()
+        token = Jwts.builder()
                 .claims(claims)
                 .subject(subject)
                 .header().empty().add("typ","JWT")
@@ -58,9 +66,14 @@ public class JWTUtil {
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 50)) // 5 minutes expiration time
                 .signWith(getSigningKey())
                 .compact();
+        return token;
     }
 
     public Boolean validateToken(String token) {
         return !isTokenExpired(token);
+    }
+
+    public String getToken() {
+        return token;
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/organization")
@@ -36,9 +37,18 @@ public class OrganizationController {
         return ResponseEntity.ok(organizationService.findAllOrganization());
     }
 
-    @GetMapping("/viewMyOrganization")
-    public ResponseEntity<List<OrganizationResponse>> getMyOrganizations(){
-        return ResponseEntity.ok(organizationService.findMyOrganization());
+//    @GetMapping("/viewMyOrganization/{member-id}")
+//    public ResponseEntity<List<OrganizationResponse>> getMyOrganizations(
+//            @RequestBody @Valid OrganizationRequest organizationRequest
+//    ){
+//        return ResponseEntity.ok(organizationService.findMyOrganization(memberId));
+//    }
+
+    @PostMapping("/findOrganizationsByIds")
+    public ResponseEntity<List<OrganizationResponse>> findOrganizationsByIds(
+            @RequestBody @Valid List<String> organizationIds
+    ){
+        return ResponseEntity.ok(organizationService.findOrganizationsByIds(organizationIds));
     }
 
     @GetMapping("/{organization-id}")

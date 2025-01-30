@@ -1,18 +1,27 @@
 package com.rjproj.memberapp.security;
 
 import com.rjproj.memberapp.model.Member;
+import com.rjproj.memberapp.model.Permission;
+import com.rjproj.memberapp.model.Role;
+import com.rjproj.memberapp.util.CollectionUtil;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
 public class MemberDetails implements UserDetails {
 
     private Member member;
+
+
+    private Role activeRole;
 
     public MemberDetails(Member member) {
 //        super(getAuthorities(), member.getPassword(), true, true, true,
@@ -22,7 +31,21 @@ public class MemberDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return member.getPermissionNames().stream().map(p -> new SimpleGrantedAuthority(p)).collect(Collectors.toList());
+        return getActivePermissionNames().stream().map(p -> new SimpleGrantedAuthority(p)).collect(Collectors.toList());
+    }
+
+    public void setActiveRole(Role role) {
+        this.activeRole = role;
+    }
+
+
+    public Set<String> getActivePermissionNames() {
+        if (Optional.ofNullable(activeRole).isEmpty()) {
+            return Collections.emptySet();
+        }
+        Set<Permission> emptyPermissionsSet = Collections.emptySet();
+        return activeRole.getPermissions().stream()
+                .map(r -> r.getName()).collect(Collectors.toSet());
     }
 
     @Override

@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 public class OrganizationService {
 
     private final OrganizationRepository organizationRepository;
+
     private final OrganizationMapper organizationMapper;
 
 
@@ -61,7 +62,7 @@ public class OrganizationService {
                 .collect(Collectors.toList());
     }
 
-    public List<OrganizationResponse> findMyOrganization() {
+    public List<OrganizationResponse> findMyOrganization(UUID memberId) {
         return organizationRepository.findAll()
                 .stream()
                 .map(organizationMapper::fromOrganization)
@@ -85,4 +86,10 @@ public class OrganizationService {
         organizationRepository.deleteById(memberId);
     }
 
+    public List<OrganizationResponse> findOrganizationsByIds(List<String> organizationIds) {
+        return organizationRepository.findByOrganizationIdIn(organizationIds)
+                .stream()
+                .map(organizationMapper::fromOrganization)
+                .collect(Collectors.toList());
+    }
 }

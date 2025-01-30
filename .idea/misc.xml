@@ -2,10 +2,12 @@
 <project version="4">
   <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="FrameworkDetectionExcludesConfiguration">
+    <file type="web" url="file://$PROJECT_DIR$/services/config-server" />
     <file type="web" url="file://$PROJECT_DIR$/services/discovery" />
     <file type="web" url="file://$PROJECT_DIR$/services/event" />
     <file type="web" url="file://$PROJECT_DIR$/services/gateway" />
     <file type="web" url="file://$PROJECT_DIR$/services/member" />
+    <file type="web" url="file://$PROJECT_DIR$/services/notification" />
     <file type="web" url="file://$PROJECT_DIR$/services/organization" />
   </component>
   <component name="MavenProjectsManager">

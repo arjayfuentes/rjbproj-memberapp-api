@@ -5,6 +5,8 @@ import com.rjproj.memberapp.dto.MembershipResponse;
 import com.rjproj.memberapp.mapper.MembershipMapper;
 import com.rjproj.memberapp.model.Member;
 import com.rjproj.memberapp.model.Membership;
+import com.rjproj.memberapp.organization.OrganizationClient;
+import com.rjproj.memberapp.organization.OrganizationResponse;
 import com.rjproj.memberapp.repository.MemberRepository;
 import com.rjproj.memberapp.repository.MembershipRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -28,6 +30,9 @@ public class MembershipService {
     private final MembershipRepository membershipRepository;
 
     private final MembershipMapper membershipMapper;
+
+    private final OrganizationClient organizationClient;
+
 
     public MembershipResponse createMembership(@Valid MembershipRequest membershipRequest) {
 //        Member member = memberRepository.findById(membershipRequest.memberId())
@@ -86,5 +91,15 @@ public class MembershipService {
             membership.setEndDate(membershipRequest.endDate());
         }
 
+    }
+
+    public List<OrganizationResponse> getOrganizationByMemberId(UUID memberId) {
+        List<UUID> organizationIds = membershipRepository.findOrganizationIdsByMemberId(memberId);
+        List<String> organizationIdsAsStrings = organizationIds.stream()
+                .map(UUID::toString)  // Convert UUID to String
+                .collect(Collectors.toList());
+
+        return this.organizationClient.findOrganizationsByIds(organizationIdsAsStrings)
+                .orElseThrow(() -> new NotFoundException("Organization not found"));
     }
 }
