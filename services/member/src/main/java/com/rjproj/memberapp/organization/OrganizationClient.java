@@ -19,5 +19,5 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface OrganizationClient {
 
     @PostMapping({"/findOrganizationsByIds"})
-    Optional<List<OrganizationResponse>> findOrganizationsByIds(@RequestBody @Valid List<String> organizationIds);
+    Optional<List<OrganizationResponse>> findOrganizationsByIds(@RequestBody @Valid List<UUID> organizationIds);
 }

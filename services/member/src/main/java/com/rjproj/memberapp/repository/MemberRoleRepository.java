@@ -14,4 +14,5 @@ public interface MemberRoleRepository extends JpaRepository<MemberRole, MemberRo
 
     @Query("SELECT mr.role FROM MemberRole mr WHERE mr.id.memberId = :memberId AND mr.id.organizationId = :organizationId")
     Role findRolesByMemberAndOrganization(@Param("memberId") UUID memberId, @Param("organizationId") UUID organizationId);
+
 }

@@ -94,12 +94,13 @@ public class MembershipService {
     }
 
     public List<OrganizationResponse> getOrganizationByMemberId(UUID memberId) {
-        List<UUID> organizationIds = membershipRepository.findOrganizationIdsByMemberId(memberId);
-        List<String> organizationIdsAsStrings = organizationIds.stream()
-                .map(UUID::toString)  // Convert UUID to String
-                .collect(Collectors.toList());
+        List<UUID> organizationIdsAsStrings = getOrganizationIdsByMemberId(memberId);
 
         return this.organizationClient.findOrganizationsByIds(organizationIdsAsStrings)
                 .orElseThrow(() -> new NotFoundException("Organization not found"));
+    }
+
+    public List<UUID> getOrganizationIdsByMemberId(UUID memberId) {
+        return membershipRepository.findOrganizationIdsByMemberId(memberId);
     }
 }

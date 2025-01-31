@@ -4,11 +4,11 @@ import com.rjproj.memberapp.dto.*;
 import com.rjproj.memberapp.exception.MemberException;
 import com.rjproj.memberapp.mapper.MemberMapper;
 import com.rjproj.memberapp.model.Member;
+import com.rjproj.memberapp.model.Permission;
 import com.rjproj.memberapp.model.Role;
-import com.rjproj.memberapp.organization.OrganizationResponse;
 import com.rjproj.memberapp.repository.MemberRepository;
 import com.rjproj.memberapp.repository.MemberRoleRepository;
-import com.rjproj.memberapp.repository.RoleRepository;
+import com.rjproj.memberapp.repository.PermissionRepository;
 import com.rjproj.memberapp.security.JWTUtil;
 import com.rjproj.memberapp.security.MemberDetails;
 import com.rjproj.memberapp.util.ResponseHandler;
@@ -24,17 +24,12 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -47,6 +42,8 @@ public class MemberService {
     @Autowired
     private MemberRepository memberRepository;
 
+    @Autowired
+    private PermissionRepository permissionRepository;
 
     @Autowired
     private MemberRoleRepository memberRoleRepository;
@@ -62,6 +59,9 @@ public class MemberService {
 
     @Autowired
     private UserDetailsServiceImpl userDetailsServiceImpl;
+
+    @Autowired
+    private MembershipService membershipService;
 
     @Autowired
     JWTUtil jwtUtil;
@@ -150,15 +150,37 @@ public class MemberService {
                     .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password()));
 
             UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(loginRequest.email());
-            List<String> temporaryPermissions = new ArrayList<>();
-            temporaryPermissions.add("com.rjproj.memberapp.permission.organization.viewOwn");
-            String jwt = jwtUtil.generateToken(userDetails.getUsername(), null, temporaryPermissions);
+
+            List<UUID> organizationIdsOfMember = membershipService.getOrganizationIdsByMemberId(member.get().getMemberId());
+
+            List<String> preLogInPermissions = new ArrayList<>();
+
+            UUID activeOrganizationId;
+            Role activeRole = null;
+
+            if(organizationIdsOfMember.size() == 1) {
+                activeOrganizationId = organizationIdsOfMember.getFirst();
+                activeRole = memberRoleRepository.findRolesByMemberAndOrganization(member.get().getMemberId(), activeOrganizationId);
+                preLogInPermissions = activeRole.getPermissions().stream().map(p -> p.getName()).collect(Collectors.toList());
+            } else {
+                preLogInPermissions.add("com.rjproj.memberapp.permission.organization.viewOwn");
+            }
+
+
+
+            String jwt = jwtUtil.generateToken(userDetails.getUsername(), activeRole, preLogInPermissions);
             MemberResponse memberResponse = memberMapper.fromMember(member.get());
+
+
+
+
             LoginResponse loginResponse = new LoginResponse(
                     jwt,
                     "Bearer",
                     memberResponse,
-                    temporaryPermissions
+                    preLogInPermissions,
+                    organizationIdsOfMember.size() == 1 ? organizationIdsOfMember.get(0) : null,
+                    organizationIdsOfMember.size() == 0 ? null : organizationIdsOfMember
             );
             return ResponseHandler.generateResponse("User logged in successfully", HttpStatus.OK, loginResponse);
         }
@@ -168,19 +190,23 @@ public class MemberService {
         }
     }
 
-    public ResponseEntity<Object> selectLoginOrganization(@Valid SelectOrganizationRequest selectOrganizationRequest) {
+
+
+
+
+    public  ResponseEntity<Object>  selectLoginOrganization(@Valid SelectOrganizationLoginRequest selectOrganizationRequest) {
 
         try {
             Role activeRole = memberRoleRepository.findRolesByMemberAndOrganization(selectOrganizationRequest.memberId(), selectOrganizationRequest.organizationId());
 
-
-            //get user details again
             Member member = memberRepository.findById(selectOrganizationRequest.memberId())
                     .orElseThrow(() -> new NotFoundException(
                             String.format("Cannot update member with id %s", selectOrganizationRequest.memberId())
                     ));
 
-            List<String> activeAuthorities = activeRole.getPermissions().stream().map(p -> p.getName()).toList();
+            List<String> activeAuthorities = Optional.ofNullable(activeRole)
+                    .map(role -> role.getPermissions().stream().map(p -> p.getName()).toList())
+                    .orElse(Collections.emptyList());
 
             //update token again
             String jwt = jwtUtil.generateToken(member.getEmail(), activeRole, activeAuthorities);
@@ -203,15 +229,18 @@ public class MemberService {
             // Update the SecurityContext with the new authentication object
             SecurityContextHolder.getContext().setAuthentication(newAuth);
 
+            List<UUID> organizationIdsOfMember = membershipService.getOrganizationIdsByMemberId(member.getMemberId());
+
             LoginResponse loginResponse = new LoginResponse(
                     jwt,
                     "Bearer",
                     memberMapper.fromMember(member),
-                    activeAuthorities
+                    activeAuthorities,
+                    selectOrganizationRequest.organizationId(),
+                    organizationIdsOfMember
             );
 
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
 
             return ResponseHandler.generateResponse("User logged in successfully", HttpStatus.OK, loginResponse);
         }
