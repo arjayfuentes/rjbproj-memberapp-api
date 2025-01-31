@@ -82,6 +82,9 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
 
     private String getRequiredPermissionForRequest(ServerWebExchange exchange) {
         String path = exchange.getRequest().getURI().getPath();
+        if (path.startsWith("/api/v1/organization/findOrganizationsByIds")) {
+            return "com.rjproj.memberapp.permission.organization.viewOwn";
+        }
         if (path.startsWith("/api/v1/organization/viewAllOrganization")) {
             return "com.rjproj.memberapp.permission.organization.viewAll";
         }

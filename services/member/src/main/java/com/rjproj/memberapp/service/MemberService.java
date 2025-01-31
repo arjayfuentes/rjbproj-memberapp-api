@@ -151,7 +151,7 @@ public class MemberService {
 
             UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(loginRequest.email());
             List<String> temporaryPermissions = new ArrayList<>();
-            temporaryPermissions.add("com.rjproj.memberapp.membership.chooseOrganization");
+            temporaryPermissions.add("com.rjproj.memberapp.permission.organization.viewOwn");
             String jwt = jwtUtil.generateToken(userDetails.getUsername(), null, temporaryPermissions);
             MemberResponse memberResponse = memberMapper.fromMember(member.get());
             LoginResponse loginResponse = new LoginResponse(
