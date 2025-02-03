@@ -2,6 +2,7 @@ package com.rjproj.memberapp.service;
 
 import com.rjproj.memberapp.dto.*;
 import com.rjproj.memberapp.exception.MemberException;
+import com.rjproj.memberapp.exception.MemberExceptionHandler;
 import com.rjproj.memberapp.mapper.MemberMapper;
 import com.rjproj.memberapp.mapper.MembershipMapper;
 import com.rjproj.memberapp.mapper.OrganizationMapper;
@@ -152,6 +153,7 @@ public class MemberService {
     }
 
 
+
     public Session login(LoginRequest loginRequest) {
 
         try {
@@ -173,22 +175,27 @@ public class MemberService {
             List<UUID> organizationIdsOfMember = membershipService.getOrganizationIdsByMemberId(member.get().getMemberId());
             MembershipResponse activeMembership = null;
 
-            UUID activeOrganizationId;
+            UUID activeOrganizationId = null;
+
+            String jwt = null;
 
             if(organizationIdsOfMember.size() == 1) {
                 activeOrganizationId = organizationIdsOfMember.getFirst();
-                activeOrganization = this.organizationClient.findOrganizationById(activeOrganizationId);
 
                 activeRole = memberRoleRepository.findRolesByMemberAndOrganization(member.get().getMemberId(), activeOrganizationId);
                 roleResponse = roleMapper.fromRole(activeRole);
                 preLogInPermissions = activeRole.getPermissions().stream().map(p -> p.getName()).collect(Collectors.toList());
                 activeMembership =  membershipMapper.fromMembership(membershipService.getMembershipByMemberIdAndOrganizationId(member.get().getMemberId(), activeOrganizationId));
+                jwt = jwtUtil.generateToken(userDetails.getUsername(), activeRole, preLogInPermissions, activeOrganizationId, member.get().getMemberId());
+
+                activeOrganization = this.organizationClient.findMyOrganizationById(activeOrganizationId);
+
             } else {
                 preLogInPermissions.add("com.rjproj.memberapp.permission.organization.viewOwn");
             }
 
 
-            String jwt = jwtUtil.generateToken(userDetails.getUsername(), activeRole, preLogInPermissions);
+            jwt = jwtUtil.generateToken(userDetails.getUsername(), activeRole, preLogInPermissions, activeOrganizationId, member.get().getMemberId());
 
             return new Session(
                     jwt,
@@ -201,9 +208,79 @@ public class MemberService {
                     activeMembership
             );
         }
-        catch (BadCredentialsException e)
+        catch (Exception e)
         {
+            System.out.println(e);
             throw new MemberException("Incorrect password for " + loginRequest.email(), PASSWORD_INCORRECT.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+
+    public Session getLoginSession(String token) {
+        if(jwtUtil.validateToken(token)) {
+
+            UUID selectedOrganizationId = jwtUtil.extractSelectedOrganizationId(token);
+            UUID memberId = jwtUtil.extractMemberId(token);
+
+            Role activeRole = null;
+            Member member = memberRepository.findById(memberId)
+                    .orElseThrow(() -> new NotFoundException(
+                            String.format("Cannot update member with id %s", memberId)
+                    ));
+
+            List<String> activeAuthorities = Optional.ofNullable(activeRole)
+                    .map(role -> role.getPermissions().stream().map(p -> p.getName()).toList())
+                    .orElse(Collections.emptyList());
+            List<SimpleGrantedAuthority> updatedAuthorities = activeAuthorities.stream()
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toList());
+
+            if(selectedOrganizationId != null) {
+                activeRole = memberRoleRepository.findRolesByMemberAndOrganization(memberId, selectedOrganizationId);
+            }
+
+            MemberDetails memberDetails = (MemberDetails) userDetailsServiceImpl.loadUserByUsername(member.getEmail());
+            memberDetails.setActiveRole(activeRole);
+
+
+            Authentication authentication = new UsernamePasswordAuthenticationToken(
+                    memberDetails, null, updatedAuthorities);
+
+            // Set authentication in the security context
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+
+
+
+            MemberResponse memberResponse = memberMapper.fromMember(member);
+            RoleResponse roleResponse = null;
+
+            if(activeRole != null) {
+                roleResponse = roleMapper.fromRole(activeRole);
+            }
+
+
+            OrganizationResponse organizationResponse = null;
+            MembershipResponse membershipResponse = null;
+
+            if(selectedOrganizationId != null) {
+                organizationResponse = this.organizationClient.findMyOrganizationById(selectedOrganizationId);
+                membershipResponse = membershipMapper.fromMembership(membershipService.getMembershipByMemberIdAndOrganizationId(member.getMemberId(), selectedOrganizationId));
+            }
+            List<UUID> organizationIdsOfMember = membershipService.getOrganizationIdsByMemberId(member.getMemberId());
+
+
+            return new Session(
+                    token,
+                    "Bearer",
+                    memberResponse,
+                    roleResponse,
+                    activeAuthorities,
+                    organizationResponse,
+                    organizationIdsOfMember,
+                    membershipResponse);
+        } else {
+            throw new MemberException("Please login again", UNAUTHORIZED.getMessage(), HttpStatus.UNAUTHORIZED);
         }
     }
 
@@ -225,7 +302,7 @@ public class MemberService {
                     .orElse(Collections.emptyList());
 
             //update token again
-            String jwt = jwtUtil.generateToken(member.getEmail(), activeRole, activeAuthorities);
+            String jwt = jwtUtil.generateToken(member.getEmail(), activeRole, activeAuthorities, selectOrganizationRequest.organizationId(), member.getMemberId());
 
             Authentication currentAuth = SecurityContextHolder.getContext().getAuthentication();
 
@@ -247,7 +324,7 @@ public class MemberService {
 
             MemberResponse memberResponse = memberMapper.fromMember(member);
             RoleResponse roleResponse  = roleMapper.fromRole(activeRole);
-            OrganizationResponse organizationResponse = this.organizationClient.findOrganizationById(selectOrganizationRequest.organizationId());
+            OrganizationResponse organizationResponse = this.organizationClient.findMyOrganizationById(selectOrganizationRequest.organizationId());
             List<UUID> organizationIdsOfMember = membershipService.getOrganizationIdsByMemberId(member.getMemberId());
             MembershipResponse membershipResponse =  membershipMapper.fromMembership(membershipService.getMembershipByMemberIdAndOrganizationId(member.getMemberId(), selectOrganizationRequest.organizationId()));
 
@@ -268,4 +345,7 @@ public class MemberService {
         }
 
     }
+
+
+
 }

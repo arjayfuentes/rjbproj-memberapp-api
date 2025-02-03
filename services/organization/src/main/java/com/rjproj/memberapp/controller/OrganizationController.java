@@ -58,6 +58,14 @@ public class OrganizationController {
         return ResponseEntity.ok(organizationService.findById(organizationId));
     }
 
+
+    @GetMapping("/findMyOrganizationById/{organization-id}")
+    public ResponseEntity<OrganizationResponse> findMyOrganizationById(
+            @PathVariable("organization-id") String organizationId
+    ) {
+        return ResponseEntity.ok(organizationService.findById(organizationId));
+    }
+
     @GetMapping("/exists/{organization-id}")
     public ResponseEntity<Boolean> existById(@PathVariable("organization-id") String organizationId){
         return ResponseEntity.ok(organizationService.existsById(organizationId));

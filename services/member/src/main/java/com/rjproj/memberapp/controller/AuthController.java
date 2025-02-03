@@ -21,6 +21,11 @@ public class AuthController {
         return ResponseEntity.ok(memberService.login(loginRequest));
     }
 
+    @PostMapping("/getLoginSession")
+    public ResponseEntity<Session> getLoginSession(@RequestBody @Valid String token){
+        return ResponseEntity.ok(memberService.getLoginSession(token));
+    }
+
     @PostMapping("/register")
     public ResponseEntity<MemberResponse> registerMember(@RequestBody @Valid MemberRequest memberRequest) {
         return ResponseEntity.ok(memberService.registerMember(memberRequest));

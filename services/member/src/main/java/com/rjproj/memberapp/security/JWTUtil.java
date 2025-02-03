@@ -7,10 +7,7 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class JWTUtil {
@@ -34,7 +31,24 @@ public class JWTUtil {
 
     public List<String> extractPermissions(String token) {
         Claims claims = extractAllClaims(token);
-        return (List<String>) claims.get("permissions");
+        if(claims.get("permissions") != null) {
+            return (List<String>) claims.get("permissions");
+        }
+        return null;
+
+    }
+
+    public UUID extractSelectedOrganizationId(String token) {
+        Claims claims = extractAllClaims(token);
+        if(claims.get("selectedOrganizationId") != null) {
+            return UUID.fromString((String) claims.get("selectedOrganizationId"));
+        }
+        return null;
+    }
+
+    public UUID extractMemberId(String token) {
+        Claims claims = extractAllClaims(token);
+        return UUID.fromString((String) claims.get("memberId"));
     }
 
     private Claims extractAllClaims(String token) {
@@ -49,10 +63,12 @@ public class JWTUtil {
         return extractExpiration(token).before(new Date());
     }
 
-    public String generateToken(String username, Role role, List<String> permissions) {
+    public String generateToken(String username, Role role, List<String> permissions, UUID selectedOrganizationId, UUID memberId) {
         Map<String, Object> claims = new HashMap<>();
         //claims.put("role", role);
         claims.put("permissions", permissions);
+        claims.put("selectedOrganizationId", selectedOrganizationId);
+        claims.put("memberId", memberId);
         return createToken(claims, username);
     }
 

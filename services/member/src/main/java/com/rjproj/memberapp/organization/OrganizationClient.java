@@ -23,4 +23,7 @@ public interface OrganizationClient {
 
     @GetMapping("/{organization-id}")
     OrganizationResponse findOrganizationById(@PathVariable("organization-id") UUID organizationId);
+
+    @GetMapping("/findMyOrganizationById/{organization-id}")
+    OrganizationResponse findMyOrganizationById(@PathVariable("organization-id") UUID organizationId);
 }

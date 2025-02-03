@@ -48,6 +48,7 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
         return (exchange, chain) -> {
 
             String token = extractJwtFromRequest(exchange);
+            System.out.println(token);
 
             try {
                 if (token != null && jwtUtil.validateToken(token)) {
@@ -88,7 +89,7 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
         if (path.startsWith("/api/v1/organization/viewAllOrganization")) {
             return "com.rjproj.memberapp.permission.organization.viewAll";
         }
-        if (path.startsWith("/api/v1/organization/viewMyOrganization")) {
+        if (path.startsWith("/api/v1/organization/findMyOrganizationById")) {
             return "com.rjproj.memberapp.permission.organization.viewOwn";
         }
         if (path.startsWith("/api/v1/organization/viewMyOrganization")) {
