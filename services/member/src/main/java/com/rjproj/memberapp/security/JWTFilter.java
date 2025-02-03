@@ -29,6 +29,14 @@ public class JWTFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
+
+        // Skip JWT filtering for the logout endpoint
+        String requestURI = request.getRequestURI();
+        if (requestURI.contains("/api/v1/auth/logout")) {
+            chain.doFilter(request, response);  // Let the request proceed without JWT validation
+            return;
+        }
+
         String authorizationHeader = request.getHeader("Authorization");
         String username = null;
         String jwt = null;
@@ -47,7 +55,13 @@ public class JWTFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
         }
+
         chain.doFilter(request, response);
+    }
+
+
+    public void deleteToken() {
+        jwtUtil.deleteToken();
     }
 
 

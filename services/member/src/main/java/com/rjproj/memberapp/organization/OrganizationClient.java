@@ -20,4 +20,7 @@ public interface OrganizationClient {
 
     @PostMapping({"/findOrganizationsByIds"})
     Optional<List<OrganizationResponse>> findOrganizationsByIds(@RequestBody @Valid List<UUID> organizationIds);
+
+    @GetMapping("/{organization-id}")
+    OrganizationResponse findOrganizationById(@PathVariable("organization-id") UUID organizationId);
 }

@@ -28,9 +28,7 @@ public class MembershipMapper {
                 membership.getMembershipType(),
                 membership.getStatus(),
                 membership.getStartDate(),
-                membership.getEndDate(),
-                membership.getCreatedAt(),
-                membership.getUpdatedAt()
+                membership.getEndDate()
         );
     }
 }

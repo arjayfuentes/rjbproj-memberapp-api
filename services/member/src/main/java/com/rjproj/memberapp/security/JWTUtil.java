@@ -73,6 +73,10 @@ public class JWTUtil {
         return !isTokenExpired(token);
     }
 
+    public void deleteToken() {
+        this.token = null;
+    }
+
     public String getToken() {
         return token;
     }

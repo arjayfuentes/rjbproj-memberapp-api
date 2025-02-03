@@ -103,4 +103,8 @@ public class MembershipService {
     public List<UUID> getOrganizationIdsByMemberId(UUID memberId) {
         return membershipRepository.findOrganizationIdsByMemberId(memberId);
     }
+
+    public Membership getMembershipByMemberIdAndOrganizationId(UUID memberId, UUID organizationId) {
+        return membershipRepository.findMembershipByMemberIdAndOrganizationId(memberId, organizationId);
+    }
 }

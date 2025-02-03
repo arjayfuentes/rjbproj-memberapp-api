@@ -12,8 +12,6 @@ public record MembershipResponse(
         MembershipType membershipType,
         String status,
         Timestamp startDate,
-        Timestamp endDate,
-        Timestamp createdAt,
-        Timestamp updatedAt
+        Timestamp endDate
 ) {
 }

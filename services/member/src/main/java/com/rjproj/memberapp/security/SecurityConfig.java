@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -61,10 +62,9 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
-
         return http.authorizeHttpRequests(request -> request
                         .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/api/v1/auth/logout").permitAll()
                         .requestMatchers("/api/v1/member/**").hasAuthority("com.rjproj.memberapp.permission.user.viewAll")
                         .requestMatchers("/api/v1/membership/getOrganizationByMemberId/**").hasAuthority("com.rjproj.memberapp.permission.organization.viewOwn")
                         .requestMatchers("/api/v1/membership/**").hasAuthority("com.rjproj.memberapp.permission.user.viewAll")
@@ -75,6 +75,16 @@ public class SecurityConfig {
                         .authenticationEntryPoint(unauthorizedHandler())  // Handle 401 Unauthorized
                         .accessDeniedHandler(customAccessDeniedHandler()) // Handle 403 Forbidden
                 )
+                .logout(logout -> logout
+                        .logoutUrl("/api/v1/auth/logout")  // Specify the logout URL
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            jwtFilter.deleteToken();
+                            SecurityContextHolder.clearContext();
+                            response.setStatus(HttpServletResponse.SC_OK);  // Return HTTP 200 for successful logout
+                            response.getWriter().write("{\"message\": \"Logout successful\"}");  // Optional success message
+                        })
+                        .clearAuthentication(true)  // Clear authentication information after logout
+                        .deleteCookies("JSESSIONID"))
                 .csrf(AbstractHttpConfigurer::disable)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

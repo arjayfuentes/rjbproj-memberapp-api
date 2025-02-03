@@ -5,12 +5,14 @@ import com.rjproj.memberapp.organization.OrganizationResponse;
 import java.util.List;
 import java.util.UUID;
 
-public record LoginResponse(
+public record Session(
         String accessToken,
         String tokenType,
         MemberResponse member,
+        RoleResponse role,
         List<String> permissions,
-        UUID selectedOrganizationId,
-        List<UUID> organizationIdsOfMember
+        OrganizationResponse organization,
+        List<UUID> organizationIdsOfMember,
+        MembershipResponse membership
 ) {
 }

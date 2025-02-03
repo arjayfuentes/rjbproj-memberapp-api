@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -17,5 +18,6 @@ public interface MembershipRepository extends JpaRepository<Membership, UUID> {
     @Query("SELECT m.organizationId FROM Membership m WHERE m.member.memberId = :memberId")
     List<UUID> findOrganizationIdsByMemberId(@Param("memberId") UUID memberId);
 
-
+    @Query("SELECT m FROM Membership m WHERE m.member.memberId = :memberId AND m.organizationId = :organizationId")
+    Membership findMembershipByMemberIdAndOrganizationId(@Param("memberId") UUID memberId, @Param("organizationId") UUID organizationId);
 }

@@ -3,23 +3,26 @@ package com.rjproj.memberapp.service;
 import com.rjproj.memberapp.dto.*;
 import com.rjproj.memberapp.exception.MemberException;
 import com.rjproj.memberapp.mapper.MemberMapper;
+import com.rjproj.memberapp.mapper.MembershipMapper;
+import com.rjproj.memberapp.mapper.OrganizationMapper;
+import com.rjproj.memberapp.mapper.RoleMapper;
 import com.rjproj.memberapp.model.Member;
-import com.rjproj.memberapp.model.Permission;
 import com.rjproj.memberapp.model.Role;
+import com.rjproj.memberapp.organization.OrganizationClient;
+import com.rjproj.memberapp.organization.OrganizationResponse;
 import com.rjproj.memberapp.repository.MemberRepository;
 import com.rjproj.memberapp.repository.MemberRoleRepository;
 import com.rjproj.memberapp.repository.PermissionRepository;
 import com.rjproj.memberapp.security.JWTUtil;
 import com.rjproj.memberapp.security.MemberDetails;
-import com.rjproj.memberapp.util.ResponseHandler;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -66,7 +69,18 @@ public class MemberService {
     @Autowired
     JWTUtil jwtUtil;
 
+    private final OrganizationClient organizationClient;
+
     private final MemberMapper memberMapper;
+
+    private final MembershipMapper membershipMapper;
+
+    private final RoleMapper roleMapper;
+
+    private final OrganizationMapper organizationMapper;
+
+    @Autowired
+    private ModelMapper modelMapper;
 
     public MemberResponse createMember(@Valid MemberRequest memberRequest) {
         return addMember(memberRequest);
@@ -138,51 +152,54 @@ public class MemberService {
     }
 
 
-    public ResponseEntity<Object> login(LoginRequest loginRequest) {
-        try {
-            Optional<Member> userEntity = memberRepository.findByEmail(loginRequest.email());
+    public Session login(LoginRequest loginRequest) {
 
+        try {
             Optional<Member> member = memberRepository.findByEmail(loginRequest.email());
+
             if(!member.isPresent()) {
                 throw new MemberException("Member with email address " + loginRequest.email() + " does not exists", MEMBER_NOT_EXISTS.getMessage(), HttpStatus.BAD_REQUEST);
             }
+
             Authentication authenticate = authenticationManager
                     .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password()));
-
             UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(loginRequest.email());
 
-            List<UUID> organizationIdsOfMember = membershipService.getOrganizationIdsByMemberId(member.get().getMemberId());
-
+            MemberResponse memberResponse = memberMapper.fromMember(member.get());
+            Role activeRole = null;
+            RoleResponse roleResponse = null;
             List<String> preLogInPermissions = new ArrayList<>();
+            OrganizationResponse activeOrganization = null;
+            List<UUID> organizationIdsOfMember = membershipService.getOrganizationIdsByMemberId(member.get().getMemberId());
+            MembershipResponse activeMembership = null;
 
             UUID activeOrganizationId;
-            Role activeRole = null;
 
             if(organizationIdsOfMember.size() == 1) {
                 activeOrganizationId = organizationIdsOfMember.getFirst();
+                activeOrganization = this.organizationClient.findOrganizationById(activeOrganizationId);
+
                 activeRole = memberRoleRepository.findRolesByMemberAndOrganization(member.get().getMemberId(), activeOrganizationId);
+                roleResponse = roleMapper.fromRole(activeRole);
                 preLogInPermissions = activeRole.getPermissions().stream().map(p -> p.getName()).collect(Collectors.toList());
+                activeMembership =  membershipMapper.fromMembership(membershipService.getMembershipByMemberIdAndOrganizationId(member.get().getMemberId(), activeOrganizationId));
             } else {
                 preLogInPermissions.add("com.rjproj.memberapp.permission.organization.viewOwn");
             }
 
 
-
             String jwt = jwtUtil.generateToken(userDetails.getUsername(), activeRole, preLogInPermissions);
-            MemberResponse memberResponse = memberMapper.fromMember(member.get());
 
-
-
-
-            LoginResponse loginResponse = new LoginResponse(
+            return new Session(
                     jwt,
                     "Bearer",
                     memberResponse,
+                    roleResponse,
                     preLogInPermissions,
-                    organizationIdsOfMember.size() == 1 ? organizationIdsOfMember.get(0) : null,
-                    organizationIdsOfMember.size() == 0 ? null : organizationIdsOfMember
+                    activeOrganization,
+                    organizationIdsOfMember.size() == 0 ? null : organizationIdsOfMember,
+                    activeMembership
             );
-            return ResponseHandler.generateResponse("User logged in successfully", HttpStatus.OK, loginResponse);
         }
         catch (BadCredentialsException e)
         {
@@ -194,11 +211,10 @@ public class MemberService {
 
 
 
-    public  ResponseEntity<Object>  selectLoginOrganization(@Valid SelectOrganizationLoginRequest selectOrganizationRequest) {
+    public Session selectLoginOrganization(@Valid SelectOrganizationLoginRequest selectOrganizationRequest) {
 
         try {
             Role activeRole = memberRoleRepository.findRolesByMemberAndOrganization(selectOrganizationRequest.memberId(), selectOrganizationRequest.organizationId());
-
             Member member = memberRepository.findById(selectOrganizationRequest.memberId())
                     .orElseThrow(() -> new NotFoundException(
                             String.format("Cannot update member with id %s", selectOrganizationRequest.memberId())
@@ -229,20 +245,22 @@ public class MemberService {
             // Update the SecurityContext with the new authentication object
             SecurityContextHolder.getContext().setAuthentication(newAuth);
 
+            MemberResponse memberResponse = memberMapper.fromMember(member);
+            RoleResponse roleResponse  = roleMapper.fromRole(activeRole);
+            OrganizationResponse organizationResponse = this.organizationClient.findOrganizationById(selectOrganizationRequest.organizationId());
             List<UUID> organizationIdsOfMember = membershipService.getOrganizationIdsByMemberId(member.getMemberId());
+            MembershipResponse membershipResponse =  membershipMapper.fromMembership(membershipService.getMembershipByMemberIdAndOrganizationId(member.getMemberId(), selectOrganizationRequest.organizationId()));
 
-            LoginResponse loginResponse = new LoginResponse(
+            return new Session(
                     jwt,
                     "Bearer",
-                    memberMapper.fromMember(member),
+                    memberResponse,
+                    roleResponse,
                     activeAuthorities,
-                    selectOrganizationRequest.organizationId(),
-                    organizationIdsOfMember
+                    organizationResponse,
+                    organizationIdsOfMember,
+                    membershipResponse
             );
-
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-            return ResponseHandler.generateResponse("User logged in successfully", HttpStatus.OK, loginResponse);
         }
         catch (BadCredentialsException e)
         {

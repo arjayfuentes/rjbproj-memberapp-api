@@ -35,6 +35,19 @@ public class MemberMapper {
         );
     }
 
+
+//    public Member fromMemberResponseToMember(MemberResponse memberResponse) {
+//        return Member.builder()
+//                .memberId(memberResponse.memberId())
+//                .firstName(memberResponse.firstName())
+//                .lastName(memberResponse.lastName())
+//                .email(memberResponse.email())
+//                .password(memberResponse.password())
+//                .phoneNumber(memberResponse.phoneNumber())
+//                .memberAddress(memberResponse.memberAddress())
+//                .build();
+//    }
+
     public MemberAddressResponse fromMemberAddress(MemberAddress memberAddress) {
         return new MemberAddressResponse(
                 memberAddress.getStreet(),

@@ -17,8 +17,8 @@ public class AuthController {
     private MemberService memberService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> loginMember(@RequestBody @Valid LoginRequest loginRequest){
-        return memberService.login(loginRequest);
+    public ResponseEntity<Session> loginMember(@RequestBody @Valid LoginRequest loginRequest){
+        return ResponseEntity.ok(memberService.login(loginRequest));
     }
 
     @PostMapping("/register")
@@ -27,8 +27,8 @@ public class AuthController {
     }
 
     @PostMapping("/selectLoginOrganization")
-    public ResponseEntity<?> selectLoginOrganization(@RequestBody @Valid SelectOrganizationLoginRequest selectOrganizationLoginRequest) {
-        return memberService.selectLoginOrganization(selectOrganizationLoginRequest);
+    public ResponseEntity<Session> selectLoginOrganization(@RequestBody @Valid SelectOrganizationLoginRequest selectOrganizationLoginRequest) {
+        return ResponseEntity.ok(memberService.selectLoginOrganization(selectOrganizationLoginRequest));
     }
 
 
