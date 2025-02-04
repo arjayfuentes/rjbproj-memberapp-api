@@ -18,16 +18,13 @@ public record MembershipRequest (
 //        UUID memberId,
         Member member,
 
-        @NotNull(message = "Member is required")
 //        UUID membershipTypeId,
         MembershipType membershipType,
 
         String status,
 
-        @NotNull(message = "Start Date is required")
         Timestamp startDate,
 
-        @NotNull(message = "End Date is required")
         Timestamp endDate
 ) {
 }

@@ -66,7 +66,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/auth/logout").permitAll()
                         .requestMatchers("/api/v1/auth/getLoginSession").permitAll()
-
+                        .requestMatchers("/api/v1/membership/requestMembership/**").permitAll()
                         .requestMatchers("/api/v1/member/**").hasAuthority("com.rjproj.memberapp.permission.user.viewAll")
                         .requestMatchers("/api/v1/membership/getOrganizationByMemberId/**").hasAuthority("com.rjproj.memberapp.permission.organization.viewOwn")
                         .requestMatchers("/api/v1/membership/**").hasAuthority("com.rjproj.memberapp.permission.user.viewAll")

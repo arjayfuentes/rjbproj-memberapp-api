@@ -47,12 +47,28 @@ public class OrganizationService {
         if(StringUtils.isNotBlank(organizationRequest.description())) {
             member.setDescription(organizationRequest.description());
         }
+        if(StringUtils.isNotBlank(organizationRequest.logoUrl())) {
+            member.setLogoUrl(organizationRequest.logoUrl());
+        }
+        if(StringUtils.isNotBlank(organizationRequest.backgroundImageUrl())) {
+            member.setBackgroundImageUrl(organizationRequest.backgroundImageUrl());
+        }
+        if(StringUtils.isNotBlank(organizationRequest.email())) {
+            member.setEmail(organizationRequest.email());
+        }
+        if(StringUtils.isNotBlank(organizationRequest.phoneNumber())) {
+            member.setPhoneNumber(organizationRequest.phoneNumber());
+        }
+        if(StringUtils.isNotBlank(organizationRequest.websiteUrl())) {
+            member.setWebsiteUrl(organizationRequest.websiteUrl());
+        }
         if(organizationRequest.organizationAddress() != null) {
             member.setOrganizationAddress(organizationRequest.organizationAddress());
         }
         if(organizationRequest.organizationAddress().getOrganizationAddressId() == null) {
             member.getOrganizationAddress().setOrganizationAddressId(UUID.randomUUID().toString());
         }
+
     }
 
     public List<OrganizationResponse> findAllOrganization() {

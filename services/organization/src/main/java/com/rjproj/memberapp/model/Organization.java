@@ -26,6 +26,16 @@ public class Organization {
 
     private String description;
 
+    private String logoUrl;
+
+    private String backgroundImageUrl;
+
+    private String email;
+
+    private String phoneNumber;
+
+    private String websiteUrl;
+
     private OrganizationAddress organizationAddress;
 
     @CreatedDate

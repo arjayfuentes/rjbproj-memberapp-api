@@ -13,6 +13,17 @@ public record OrganizationRequest(
         @NotNull(message = "Description name is required")
         String description,
 
+        String logoUrl,
+
+        String backgroundImageUrl,
+
+        @NotNull(message = "Email is required")
+        String email,
+
+        String phoneNumber,
+
+        String websiteUrl,
+
         OrganizationAddress organizationAddress
 
 ) {

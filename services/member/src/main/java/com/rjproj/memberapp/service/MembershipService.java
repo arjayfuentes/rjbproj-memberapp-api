@@ -1,5 +1,6 @@
 package com.rjproj.memberapp.service;
 
+import com.rjproj.memberapp.dto.JoinOrganizationRequest;
 import com.rjproj.memberapp.dto.MembershipRequest;
 import com.rjproj.memberapp.dto.MembershipResponse;
 import com.rjproj.memberapp.mapper.MembershipMapper;
@@ -35,11 +36,27 @@ public class MembershipService {
 
 
     public MembershipResponse createMembership(@Valid MembershipRequest membershipRequest) {
-//        Member member = memberRepository.findById(membershipRequest.memberId())
-//                .orElseThrow(() -> new EntityNotFoundException("Membership not found with ID:: " + membershipRequest.membershipId()));;
-//
         Membership membership = membershipMapper.toMembership(membershipRequest);
         return membershipMapper.fromMembership(membershipRepository.save(membership));
+    }
+
+    public MembershipResponse requestMembership(@Valid JoinOrganizationRequest joinOrganizationRequest) {
+        Member member = memberRepository.findById(joinOrganizationRequest.memberId())
+                .orElseThrow(() -> new EntityNotFoundException("Membership not found with ID:: " + joinOrganizationRequest.memberId()));
+        OrganizationResponse organizationResponse = this.organizationClient.findMyOrganizationById(joinOrganizationRequest.organizationId());
+        if(organizationResponse == null) {
+            throw new NotFoundException("Organization not found with ID:: " + joinOrganizationRequest.organizationId());
+        }
+        MembershipRequest membershipRequest = new MembershipRequest(
+                null,
+                joinOrganizationRequest.organizationId(),
+                member,
+                null,
+                null,
+                null,
+                null
+        );
+        return createMembership(membershipRequest);
     }
 
     public List<MembershipResponse> findAll() {
@@ -94,7 +111,7 @@ public class MembershipService {
     }
 
     public List<OrganizationResponse> getOrganizationByMemberId(UUID memberId) {
-        List<UUID> organizationIdsAsStrings = getOrganizationIdsByMemberId(memberId);
+        List<UUID> organizationIdsAsStrings = getActiveOrganizationIdsByMemberId(memberId);
 
         return this.organizationClient.findOrganizationsByIds(organizationIdsAsStrings)
                 .orElseThrow(() -> new NotFoundException("Organization not found"));
@@ -102,6 +119,10 @@ public class MembershipService {
 
     public List<UUID> getOrganizationIdsByMemberId(UUID memberId) {
         return membershipRepository.findOrganizationIdsByMemberId(memberId);
+    }
+
+    public List<UUID> getActiveOrganizationIdsByMemberId(UUID memberId) {
+        return membershipRepository.findActiveOrganizationIdsByMemberId(memberId);
     }
 
     public Membership getMembershipByMemberIdAndOrganizationId(UUID memberId, UUID organizationId) {

@@ -22,6 +22,11 @@ public class OrganizationMapper {
                 .organizationId(organizationId)
                 .name(request.name())
                 .description(request.description())
+                .logoUrl(request.logoUrl())
+                .backgroundImageUrl(request.backgroundImageUrl())
+                .email(request.email())
+                .phoneNumber(request.phoneNumber())
+                .websiteUrl(request.websiteUrl())
                 .organizationAddress(request.organizationAddress())
                 .createdAt(Instant.now())
                 .build();
@@ -36,6 +41,11 @@ public class OrganizationMapper {
                 organization.getOrganizationId(),
                 organization.getName(),
                 organization.getDescription(),
+                organization.getLogoUrl(),
+                organization.getBackgroundImageUrl(),
+                organization.getEmail(),
+                organization.getPhoneNumber(),
+                organization.getWebsiteUrl(),
                 organization.getOrganizationAddress(),
                 organization.getCreatedAt(),
                 organization.getUpdatedAt()

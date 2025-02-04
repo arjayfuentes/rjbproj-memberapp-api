@@ -3,9 +3,9 @@
   <database-model serializer="dbm" dbms="POSTGRES" family-id="POSTGRES" format-version="4.53">
     <root id="1">
       <DateStyle>mdy</DateStyle>
-      <IntrospectionStateNumber>1399</IntrospectionStateNumber>
+      <IntrospectionStateNumber>1465</IntrospectionStateNumber>
       <ServerVersion>17.2</ServerVersion>
-      <StartupTime>1738053290</StartupTime>
+      <StartupTime>1738685805</StartupTime>
       <TimeZones>true ACDT
 true ACSST
 false ACST
@@ -1424,7 +1424,7 @@ false posixrules
 13219||10|C|G
 13219||-9223372036854775808|U|G
 13219||10|U|G</Grants>
-      <IntrospectionStateNumber>1399</IntrospectionStateNumber>
+      <IntrospectionStateNumber>1465</IntrospectionStateNumber>
       <ObjectId>24581</ObjectId>
       <OwnerName>arjay</OwnerName>
     </database>
@@ -8235,8 +8235,8 @@ false posixrules
     <schema id="512" parent="4" name="public">
       <Comment>standard public schema</Comment>
       <Current>1</Current>
-      <IntrospectionStateNumber>1399</IntrospectionStateNumber>
-      <LastIntrospectionLocalTimestamp>2025-01-28.15:26:22</LastIntrospectionLocalTimestamp>
+      <IntrospectionStateNumber>1465</IntrospectionStateNumber>
+      <LastIntrospectionLocalTimestamp>2025-02-04.23:14:29</LastIntrospectionLocalTimestamp>
       <ObjectId>2200</ObjectId>
       <StateNumber>532</StateNumber>
       <OwnerName>pg_database_owner</OwnerName>
@@ -9056,30 +9056,26 @@ organization_id</ColNames>
       <TypeId>2950</TypeId>
     </column>
     <column id="634" parent="530" name="membership_type_id">
-      <NotNull>1</NotNull>
       <Position>4</Position>
-      <StateNumber>1394</StateNumber>
+      <StateNumber>1458</StateNumber>
       <StoredType>uuid|0s</StoredType>
       <TypeId>2950</TypeId>
     </column>
     <column id="635" parent="530" name="status">
-      <NotNull>1</NotNull>
       <Position>5</Position>
-      <StateNumber>1394</StateNumber>
+      <StateNumber>1457</StateNumber>
       <StoredType>varchar(50)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
     <column id="636" parent="530" name="start_date">
-      <NotNull>1</NotNull>
       <Position>6</Position>
-      <StateNumber>1394</StateNumber>
+      <StateNumber>1460</StateNumber>
       <StoredType>timestamp|0s</StoredType>
       <TypeId>1114</TypeId>
     </column>
     <column id="637" parent="530" name="end_date">
-      <NotNull>1</NotNull>
       <Position>7</Position>
-      <StateNumber>1394</StateNumber>
+      <StateNumber>1464</StateNumber>
       <StoredType>timestamp|0s</StoredType>
       <TypeId>1114</TypeId>
     </column>
