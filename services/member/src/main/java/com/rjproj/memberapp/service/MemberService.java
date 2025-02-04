@@ -160,7 +160,7 @@ public class MemberService {
             Optional<Member> member = memberRepository.findByEmail(loginRequest.email());
 
             if(!member.isPresent()) {
-                throw new MemberException("Member with email address " + loginRequest.email() + " does not exists", MEMBER_NOT_EXISTS.getMessage(), HttpStatus.BAD_REQUEST);
+                throw new MemberException("The email address you provided does not exists.", MEMBER_NOT_EXISTS.getMessage(), HttpStatus.BAD_REQUEST);
             }
 
             Authentication authenticate = authenticationManager
@@ -208,10 +208,10 @@ public class MemberService {
                     activeMembership
             );
         }
-        catch (Exception e)
+        catch (BadCredentialsException e)
         {
             System.out.println(e);
-            throw new MemberException("Incorrect password for " + loginRequest.email(), PASSWORD_INCORRECT.getMessage(), HttpStatus.BAD_REQUEST);
+            throw new MemberException("Incorrect password", PASSWORD_INCORRECT.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
