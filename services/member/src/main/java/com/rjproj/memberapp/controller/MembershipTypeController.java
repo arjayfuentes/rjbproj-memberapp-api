@@ -2,7 +2,10 @@ package com.rjproj.memberapp.controller;
 
 import com.rjproj.memberapp.dto.MembershipTypeRequest;
 import com.rjproj.memberapp.dto.MembershipTypeResponse;
+import com.rjproj.memberapp.dto.MembershipTypeValidityResponse;
+import com.rjproj.memberapp.model.MembershipTypeValidity;
 import com.rjproj.memberapp.service.MembershipTypeService;
+import com.rjproj.memberapp.service.MembershipTypeValidityService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,6 +21,9 @@ import java.util.UUID;
 public class MembershipTypeController {
 
     private final MembershipTypeService membershipTypeService;
+
+    private final MembershipTypeValidityService membershipTypeValidityService;
+
 
     @PostMapping
     public ResponseEntity<MembershipTypeResponse> createMembershipType(@RequestBody @Valid MembershipTypeRequest membershipTypeRequest) {
@@ -51,4 +57,10 @@ public class MembershipTypeController {
         membershipTypeService.deleteMembershipType(membershipTypeId);
         return ResponseEntity.accepted().build();
     }
+
+    @GetMapping("/findAllMembershipTypeValidity")
+    public ResponseEntity<List<MembershipTypeValidityResponse>> findAllMembershipTypeValidity() {
+        return ResponseEntity.ok(membershipTypeValidityService.findAll());
+    }
+
 }

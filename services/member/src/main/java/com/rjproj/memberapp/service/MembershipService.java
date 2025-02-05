@@ -1,5 +1,6 @@
 package com.rjproj.memberapp.service;
 
+import com.rjproj.memberapp.dto.GetMembershipRequest;
 import com.rjproj.memberapp.dto.JoinOrganizationRequest;
 import com.rjproj.memberapp.dto.MembershipRequest;
 import com.rjproj.memberapp.dto.MembershipResponse;
@@ -125,7 +126,12 @@ public class MembershipService {
         return membershipRepository.findActiveOrganizationIdsByMemberId(memberId);
     }
 
-    public Membership getMembershipByMemberIdAndOrganizationId(UUID memberId, UUID organizationId) {
-        return membershipRepository.findMembershipByMemberIdAndOrganizationId(memberId, organizationId);
+    public Membership getMembership(UUID memberId, UUID organizationId) {
+          return membershipRepository.findMembershipByMemberIdAndOrganizationId(memberId, organizationId);
+    }
+
+    public MembershipResponse getMembershipByMemberIdAndOrganizationId(UUID memberId, UUID organizationId) {
+        Membership membership = membershipRepository.findMembershipByMemberIdAndOrganizationId(memberId, organizationId);
+        return membershipMapper.fromMembership(membership);
     }
 }

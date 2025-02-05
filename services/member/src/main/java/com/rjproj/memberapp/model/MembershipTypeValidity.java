@@ -1,6 +1,5 @@
 package com.rjproj.memberapp.model;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -15,21 +14,17 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-public class MembershipType {
+public class MembershipTypeValidity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID membershipTypeId;
+    private UUID membershipTypeValidityId;
 
-    UUID organizationId;
+    private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "membership_type_validity_id")
-    private MembershipTypeValidity membershipTypeValidity;
+    private Integer duration; // Nullable duration
 
-    String name;
-
-    String description;
+    private String description;
 
     @CreationTimestamp
     private Timestamp createdAt;
@@ -37,3 +32,4 @@ public class MembershipType {
     @UpdateTimestamp
     private Timestamp updatedAt;
 }
+

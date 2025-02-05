@@ -1,5 +1,6 @@
 package com.rjproj.memberapp.controller;
 
+import com.rjproj.memberapp.dto.GetMembershipRequest;
 import com.rjproj.memberapp.dto.JoinOrganizationRequest;
 import com.rjproj.memberapp.dto.MembershipRequest;
 import com.rjproj.memberapp.dto.MembershipResponse;
@@ -45,6 +46,13 @@ public class MembershipController {
             @PathVariable("membership-id") UUID membershipId
     ) {
         return ResponseEntity.ok(membershipService.findById(membershipId));
+    }
+
+    @PostMapping("/getMembershipByMemberIdAndOrganizationId")
+    public ResponseEntity<MembershipResponse> getMembershipByMemberIdAndOrganizationId(
+            @RequestBody @Valid GetMembershipRequest getMembershipRequest
+    ) {
+        return ResponseEntity.ok(membershipService.getMembershipByMemberIdAndOrganizationId(getMembershipRequest.memberId(),getMembershipRequest.organizationId()));
     }
 
     @GetMapping

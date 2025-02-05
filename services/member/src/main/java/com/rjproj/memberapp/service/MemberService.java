@@ -185,7 +185,7 @@ public class MemberService {
                 activeRole = memberRoleRepository.findRolesByMemberAndOrganization(member.get().getMemberId(), activeOrganizationId);
                 roleResponse = roleMapper.fromRole(activeRole);
                 preLogInPermissions = activeRole.getPermissions().stream().map(p -> p.getName()).collect(Collectors.toList());
-                activeMembership =  membershipMapper.fromMembership(membershipService.getMembershipByMemberIdAndOrganizationId(member.get().getMemberId(), activeOrganizationId));
+                activeMembership =  membershipMapper.fromMembership(membershipService.getMembership(member.get().getMemberId(), activeOrganizationId));
                 jwt = jwtUtil.generateToken(userDetails.getUsername(), activeRole, preLogInPermissions, activeOrganizationId, member.get().getMemberId());
 
                 activeOrganization = this.organizationClient.findMyOrganizationById(activeOrganizationId);
@@ -265,7 +265,7 @@ public class MemberService {
 
             if(selectedOrganizationId != null) {
                 organizationResponse = this.organizationClient.findMyOrganizationById(selectedOrganizationId);
-                membershipResponse = membershipMapper.fromMembership(membershipService.getMembershipByMemberIdAndOrganizationId(member.getMemberId(), selectedOrganizationId));
+                membershipResponse = membershipMapper.fromMembership(membershipService.getMembership(member.getMemberId(), selectedOrganizationId));
             }
             List<UUID> organizationIdsOfMember = membershipService.getActiveOrganizationIdsByMemberId(member.getMemberId());
 
@@ -329,7 +329,7 @@ public class MemberService {
             }
             OrganizationResponse organizationResponse = this.organizationClient.findMyOrganizationById(selectOrganizationRequest.organizationId());
             List<UUID> organizationIdsOfMember = membershipService.getActiveOrganizationIdsByMemberId(member.getMemberId());
-            MembershipResponse membershipResponse =  membershipMapper.fromMembership(membershipService.getMembershipByMemberIdAndOrganizationId(member.getMemberId(), selectOrganizationRequest.organizationId()));
+            MembershipResponse membershipResponse =  membershipMapper.fromMembership(membershipService.getMembership(member.getMemberId(), selectOrganizationRequest.organizationId()));
 
             return new Session(
                     jwt,
