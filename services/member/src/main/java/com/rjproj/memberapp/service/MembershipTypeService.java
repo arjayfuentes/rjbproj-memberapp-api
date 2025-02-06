@@ -69,4 +69,12 @@ public class MembershipTypeService {
             membershipType.setDescription(membershipTypeRequest.description());
         }
     }
+
+    public List<MembershipTypeResponse> createMembershipTypes(@Valid List<MembershipTypeRequest> membershipTypeRequests) {
+        List<MembershipType> membershipTypes = membershipTypeRequests.stream().map(membershipTypeMapper::toMembershipType).collect(Collectors.toList());
+        return membershipTypeRepository.saveAll(membershipTypes)
+                .stream()
+                .map(membershipTypeMapper::fromMembershipType)
+                .collect(Collectors.toList());
+    }
 }

@@ -31,6 +31,8 @@ public class MembershipType {
 
     String description;
 
+    Boolean isDefault;
+
     @CreationTimestamp
     private Timestamp createdAt;
 

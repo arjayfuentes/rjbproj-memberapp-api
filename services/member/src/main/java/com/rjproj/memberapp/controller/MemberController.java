@@ -55,6 +55,17 @@ public class MemberController {
     }
 
 
+    @PostMapping("/createDefaultAdminOrganizationRoleForOwner")
+    public ResponseEntity<String> createDefaultAdminOrganizationRoleForOwner(@RequestBody @Valid UUID organizationId) {
+        return ResponseEntity.ok(memberService.createDefaultAdminOrganizationRoleForOwner(organizationId));
+    }
+
+    @GetMapping("/organization/{organizationId}")
+    public ResponseEntity<List<MemberResponse>> getMembersByOrganization(@PathVariable UUID organizationId) {
+        return ResponseEntity.ok(memberService.getMembersByOrganization(organizationId));
+    }
+
+
 
 
 

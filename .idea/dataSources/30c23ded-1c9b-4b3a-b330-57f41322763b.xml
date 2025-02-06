@@ -3,9 +3,17 @@
   <database-model serializer="dbm" dbms="POSTGRES" family-id="POSTGRES" format-version="4.53">
     <root id="1">
       <DateStyle>mdy</DateStyle>
-      <IntrospectionStateNumber>1476</IntrospectionStateNumber>
+      <Grants>1||-9223372036854775808|c|G
+1||10|c|G
+1||10|C|G
+1||10|T|G
+4||-9223372036854775808|c|G
+4||10|c|G
+4||10|C|G
+4||10|T|G</Grants>
+      <IntrospectionStateNumber>1482</IntrospectionStateNumber>
       <ServerVersion>17.2</ServerVersion>
-      <StartupTime>1738744119</StartupTime>
+      <StartupTime>1738833646</StartupTime>
       <TimeZones>true ACDT
 true ACSST
 false ACST
@@ -1424,7 +1432,7 @@ false posixrules
 13219||10|C|G
 13219||-9223372036854775808|U|G
 13219||10|U|G</Grants>
-      <IntrospectionStateNumber>1476</IntrospectionStateNumber>
+      <IntrospectionStateNumber>1482</IntrospectionStateNumber>
       <ObjectId>24581</ObjectId>
       <OwnerName>arjay</OwnerName>
     </database>
@@ -8235,8 +8243,8 @@ false posixrules
     <schema id="512" parent="4" name="public">
       <Comment>standard public schema</Comment>
       <Current>1</Current>
-      <IntrospectionStateNumber>1476</IntrospectionStateNumber>
-      <LastIntrospectionLocalTimestamp>2025-02-05.20:13:28</LastIntrospectionLocalTimestamp>
+      <IntrospectionStateNumber>1482</IntrospectionStateNumber>
+      <LastIntrospectionLocalTimestamp>2025-02-06.12:53:35</LastIntrospectionLocalTimestamp>
       <ObjectId>2200</ObjectId>
       <StateNumber>532</StateNumber>
       <OwnerName>pg_database_owner</OwnerName>
@@ -8398,7 +8406,7 @@ false posixrules
     </table>
     <table id="531" parent="512" name="membership_type">
       <ObjectId>41264</ObjectId>
-      <StateNumber>1472</StateNumber>
+      <StateNumber>1481</StateNumber>
       <AccessMethodId>2</AccessMethodId>
       <OwnerName>arjay</OwnerName>
     </table>
@@ -9188,14 +9196,22 @@ organization_id</ColNames>
       <StoredType>uuid|0s</StoredType>
       <TypeId>2950</TypeId>
     </column>
-    <foreign-key id="654" parent="531" name="fk_15">
+    <column id="654" parent="531" name="is_default">
+      <DefaultExpression>false</DefaultExpression>
+      <NotNull>1</NotNull>
+      <Position>8</Position>
+      <StateNumber>1481</StateNumber>
+      <StoredType>boolean|0s</StoredType>
+      <TypeId>16</TypeId>
+    </column>
+    <foreign-key id="655" parent="531" name="fk_15">
       <ColNames>membership_type_validity_id</ColNames>
       <ObjectId>49162</ObjectId>
       <StateNumber>1472</StateNumber>
       <RefKeyColPositions>1</RefKeyColPositions>
       <RefTableId>49157</RefTableId>
     </foreign-key>
-    <index id="655" parent="531" name="pk_membership_type">
+    <index id="656" parent="531" name="pk_membership_type">
       <ColNames>membership_type_id</ColNames>
       <ObjectId>41270</ObjectId>
       <Primary>1</Primary>
@@ -9203,59 +9219,59 @@ organization_id</ColNames>
       <Unique>1</Unique>
       <AccessMethodId>403</AccessMethodId>
     </index>
-    <index id="656" parent="531" name="fk_4">
+    <index id="657" parent="531" name="fk_4">
       <ColNames>membership_type_validity_id</ColNames>
       <ObjectId>49167</ObjectId>
       <StateNumber>1473</StateNumber>
       <AccessMethodId>403</AccessMethodId>
     </index>
-    <key id="657" parent="531" name="pk_membership_type">
+    <key id="658" parent="531" name="pk_membership_type">
       <ObjectId>41271</ObjectId>
       <Primary>1</Primary>
       <StateNumber>1394</StateNumber>
       <UnderlyingIndexId>41270</UnderlyingIndexId>
     </key>
-    <column id="658" parent="532" name="membership_type_validity_id">
+    <column id="659" parent="532" name="membership_type_validity_id">
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StateNumber>1470</StateNumber>
       <StoredType>uuid|0s</StoredType>
       <TypeId>2950</TypeId>
     </column>
-    <column id="659" parent="532" name="duration">
+    <column id="660" parent="532" name="duration">
       <Position>2</Position>
       <StateNumber>1470</StateNumber>
       <StoredType>integer|0s</StoredType>
       <TypeId>23</TypeId>
     </column>
-    <column id="660" parent="532" name="description">
+    <column id="661" parent="532" name="description">
       <Position>3</Position>
       <StateNumber>1470</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="661" parent="532" name="created_at">
+    <column id="662" parent="532" name="created_at">
       <NotNull>1</NotNull>
       <Position>4</Position>
       <StateNumber>1470</StateNumber>
       <StoredType>timestamp|0s</StoredType>
       <TypeId>1114</TypeId>
     </column>
-    <column id="662" parent="532" name="updated_at">
+    <column id="663" parent="532" name="updated_at">
       <NotNull>1</NotNull>
       <Position>5</Position>
       <StateNumber>1470</StateNumber>
       <StoredType>timestamp|0s</StoredType>
       <TypeId>1114</TypeId>
     </column>
-    <column id="663" parent="532" name="name">
+    <column id="664" parent="532" name="name">
       <NotNull>1</NotNull>
       <Position>6</Position>
       <StateNumber>1475</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <index id="664" parent="532" name="pk_15">
+    <index id="665" parent="532" name="pk_15">
       <ColNames>membership_type_validity_id</ColNames>
       <ObjectId>49160</ObjectId>
       <Primary>1</Primary>
@@ -9263,48 +9279,48 @@ organization_id</ColNames>
       <Unique>1</Unique>
       <AccessMethodId>403</AccessMethodId>
     </index>
-    <key id="665" parent="532" name="pk_15">
+    <key id="666" parent="532" name="pk_15">
       <ObjectId>49161</ObjectId>
       <Primary>1</Primary>
       <StateNumber>1470</StateNumber>
       <UnderlyingIndexId>49160</UnderlyingIndexId>
     </key>
-    <column id="666" parent="533" name="permission_id">
+    <column id="667" parent="533" name="permission_id">
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StateNumber>1394</StateNumber>
       <StoredType>uuid|0s</StoredType>
       <TypeId>2950</TypeId>
     </column>
-    <column id="667" parent="533" name="name">
+    <column id="668" parent="533" name="name">
       <NotNull>1</NotNull>
       <Position>2</Position>
       <StateNumber>1394</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="668" parent="533" name="version">
+    <column id="669" parent="533" name="version">
       <NotNull>1</NotNull>
       <Position>3</Position>
       <StateNumber>1394</StateNumber>
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="669" parent="533" name="created_at">
+    <column id="670" parent="533" name="created_at">
       <NotNull>1</NotNull>
       <Position>4</Position>
       <StateNumber>1394</StateNumber>
       <StoredType>timestamp|0s</StoredType>
       <TypeId>1114</TypeId>
     </column>
-    <column id="670" parent="533" name="updated_at">
+    <column id="671" parent="533" name="updated_at">
       <NotNull>1</NotNull>
       <Position>5</Position>
       <StateNumber>1394</StateNumber>
       <StoredType>timestamp|0s</StoredType>
       <TypeId>1114</TypeId>
     </column>
-    <index id="671" parent="533" name="pk_permission">
+    <index id="672" parent="533" name="pk_permission">
       <ColNames>permission_id</ColNames>
       <ObjectId>41299</ObjectId>
       <Primary>1</Primary>
@@ -9312,41 +9328,41 @@ organization_id</ColNames>
       <Unique>1</Unique>
       <AccessMethodId>403</AccessMethodId>
     </index>
-    <key id="672" parent="533" name="pk_permission">
+    <key id="673" parent="533" name="pk_permission">
       <ObjectId>41300</ObjectId>
       <Primary>1</Primary>
       <StateNumber>1394</StateNumber>
       <UnderlyingIndexId>41299</UnderlyingIndexId>
     </key>
-    <column id="673" parent="534" name="role_id">
+    <column id="674" parent="534" name="role_id">
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StateNumber>1394</StateNumber>
       <StoredType>uuid|0s</StoredType>
       <TypeId>2950</TypeId>
     </column>
-    <column id="674" parent="534" name="name">
+    <column id="675" parent="534" name="name">
       <NotNull>1</NotNull>
       <Position>2</Position>
       <StateNumber>1394</StateNumber>
       <StoredType>varchar(50)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="675" parent="534" name="created_at">
+    <column id="676" parent="534" name="created_at">
       <NotNull>1</NotNull>
       <Position>3</Position>
       <StateNumber>1394</StateNumber>
       <StoredType>timestamp|0s</StoredType>
       <TypeId>1114</TypeId>
     </column>
-    <column id="676" parent="534" name="updated_at">
+    <column id="677" parent="534" name="updated_at">
       <NotNull>1</NotNull>
       <Position>4</Position>
       <StateNumber>1394</StateNumber>
       <StoredType>timestamp|0s</StoredType>
       <TypeId>1114</TypeId>
     </column>
-    <index id="677" parent="534" name="pk_role">
+    <index id="678" parent="534" name="pk_role">
       <ColNames>role_id</ColNames>
       <ObjectId>41292</ObjectId>
       <Primary>1</Primary>
@@ -9354,41 +9370,41 @@ organization_id</ColNames>
       <Unique>1</Unique>
       <AccessMethodId>403</AccessMethodId>
     </index>
-    <key id="678" parent="534" name="pk_role">
+    <key id="679" parent="534" name="pk_role">
       <ObjectId>41293</ObjectId>
       <Primary>1</Primary>
       <StateNumber>1394</StateNumber>
       <UnderlyingIndexId>41292</UnderlyingIndexId>
     </key>
-    <column id="679" parent="535" name="permission_id">
+    <column id="680" parent="535" name="permission_id">
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StateNumber>1394</StateNumber>
       <StoredType>uuid|0s</StoredType>
       <TypeId>2950</TypeId>
     </column>
-    <column id="680" parent="535" name="role_id">
+    <column id="681" parent="535" name="role_id">
       <NotNull>1</NotNull>
       <Position>2</Position>
       <StateNumber>1394</StateNumber>
       <StoredType>uuid|0s</StoredType>
       <TypeId>2950</TypeId>
     </column>
-    <foreign-key id="681" parent="535" name="fk_role_permission">
+    <foreign-key id="682" parent="535" name="fk_role_permission">
       <ColNames>permission_id</ColNames>
       <ObjectId>41306</ObjectId>
       <StateNumber>1394</StateNumber>
       <RefKeyColPositions>1</RefKeyColPositions>
       <RefTableId>41294</RefTableId>
     </foreign-key>
-    <foreign-key id="682" parent="535" name="fk_permission_role">
+    <foreign-key id="683" parent="535" name="fk_permission_role">
       <ColNames>role_id</ColNames>
       <ObjectId>41311</ObjectId>
       <StateNumber>1394</StateNumber>
       <RefKeyColPositions>1</RefKeyColPositions>
       <RefTableId>41289</RefTableId>
     </foreign-key>
-    <index id="683" parent="535" name="pk_role_permission">
+    <index id="684" parent="535" name="pk_role_permission">
       <ColNames>permission_id
 role_id</ColNames>
       <ObjectId>41304</ObjectId>
@@ -9397,19 +9413,19 @@ role_id</ColNames>
       <Unique>1</Unique>
       <AccessMethodId>403</AccessMethodId>
     </index>
-    <index id="684" parent="535" name="idx_role_permission_id">
+    <index id="685" parent="535" name="idx_role_permission_id">
       <ColNames>permission_id</ColNames>
       <ObjectId>41316</ObjectId>
       <StateNumber>1394</StateNumber>
       <AccessMethodId>403</AccessMethodId>
     </index>
-    <index id="685" parent="535" name="idx_permission_role_id">
+    <index id="686" parent="535" name="idx_permission_role_id">
       <ColNames>role_id</ColNames>
       <ObjectId>41317</ObjectId>
       <StateNumber>1394</StateNumber>
       <AccessMethodId>403</AccessMethodId>
     </index>
-    <key id="686" parent="535" name="pk_role_permission">
+    <key id="687" parent="535" name="pk_role_permission">
       <ObjectId>41305</ObjectId>
       <Primary>1</Primary>
       <StateNumber>1394</StateNumber>

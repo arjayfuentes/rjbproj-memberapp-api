@@ -23,4 +23,6 @@ public interface MembershipRepository extends JpaRepository<Membership, UUID> {
 
     @Query("SELECT m FROM Membership m WHERE m.member.memberId = :memberId AND m.organizationId = :organizationId")
     Membership findMembershipByMemberIdAndOrganizationId(@Param("memberId") UUID memberId, @Param("organizationId") UUID organizationId);
+
+    List<Membership> findByOrganizationId(UUID organizationId);
 }

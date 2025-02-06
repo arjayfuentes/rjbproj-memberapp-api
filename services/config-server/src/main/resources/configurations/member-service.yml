@@ -29,6 +29,7 @@ keyStore:
 #      name: arjay
 #      password: user1234
 
+
 application:
   config:
     organization-url: http://localhost:8222/api/v1/organization

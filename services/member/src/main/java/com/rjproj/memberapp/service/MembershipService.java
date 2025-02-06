@@ -1,23 +1,27 @@
 package com.rjproj.memberapp.service;
 
-import com.rjproj.memberapp.dto.GetMembershipRequest;
-import com.rjproj.memberapp.dto.JoinOrganizationRequest;
-import com.rjproj.memberapp.dto.MembershipRequest;
-import com.rjproj.memberapp.dto.MembershipResponse;
+import com.rjproj.memberapp.dto.*;
 import com.rjproj.memberapp.mapper.MembershipMapper;
+import com.rjproj.memberapp.mapper.MembershipTypeMapper;
 import com.rjproj.memberapp.model.Member;
 import com.rjproj.memberapp.model.Membership;
+import com.rjproj.memberapp.model.MembershipType;
 import com.rjproj.memberapp.organization.OrganizationClient;
 import com.rjproj.memberapp.organization.OrganizationResponse;
 import com.rjproj.memberapp.repository.MemberRepository;
 import com.rjproj.memberapp.repository.MembershipRepository;
+import com.rjproj.memberapp.repository.MembershipTypeRepository;
+import com.rjproj.memberapp.security.JWTUtil;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,9 +35,16 @@ public class MembershipService {
 
     private final MembershipRepository membershipRepository;
 
+    private final MembershipTypeRepository membershipTypeRepository;
+
     private final MembershipMapper membershipMapper;
 
+    private final MembershipTypeMapper membershipTypeMapper;
+
     private final OrganizationClient organizationClient;
+
+    @Autowired
+    JWTUtil jwtUtil;
 
 
     public MembershipResponse createMembership(@Valid MembershipRequest membershipRequest) {
@@ -44,7 +55,7 @@ public class MembershipService {
     public MembershipResponse requestMembership(@Valid JoinOrganizationRequest joinOrganizationRequest) {
         Member member = memberRepository.findById(joinOrganizationRequest.memberId())
                 .orElseThrow(() -> new EntityNotFoundException("Membership not found with ID:: " + joinOrganizationRequest.memberId()));
-        OrganizationResponse organizationResponse = this.organizationClient.findMyOrganizationById(joinOrganizationRequest.organizationId());
+        OrganizationResponse organizationResponse = this.organizationClient.findOrganizationById(joinOrganizationRequest.organizationId());
         if(organizationResponse == null) {
             throw new NotFoundException("Organization not found with ID:: " + joinOrganizationRequest.organizationId());
         }
@@ -133,5 +144,31 @@ public class MembershipService {
     public MembershipResponse getMembershipByMemberIdAndOrganizationId(UUID memberId, UUID organizationId) {
         Membership membership = membershipRepository.findMembershipByMemberIdAndOrganizationId(memberId, organizationId);
         return membershipMapper.fromMembership(membership);
+    }
+
+    public MembershipResponse createMembershipForCurrentMember(@RequestBody @Valid CreateMembershipRequest createMembershipRequest) {
+        UUID memberId = jwtUtil.extractMemberIdInternally();
+        return createMembershipByOrganizationIdAndMemberId(createMembershipRequest.organizationId(), memberId, createMembershipRequest.membershipTypeId());
+
+    }
+
+    public MembershipResponse createMembershipByOrganizationIdAndMemberId(UUID organizationId, UUID memberId, UUID membershipTypeId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new NotFoundException(
+                        String.format("Cannot update member with id %s", memberId)
+                ));
+
+        Optional<MembershipType> membershipType = membershipTypeRepository.findById(membershipTypeId);
+
+        Membership membership = Membership.builder()
+                .member(member)
+                .organizationId(organizationId)
+                .membershipType(membershipType.get())
+                .status("Owner")
+                .startDate(new Timestamp(System.currentTimeMillis()))
+                .endDate(null)
+                .build();
+
+        return membershipMapper.fromMembership(membershipRepository.save(membership));
     }
 }

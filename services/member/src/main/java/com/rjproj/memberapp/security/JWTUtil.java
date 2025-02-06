@@ -51,6 +51,11 @@ public class JWTUtil {
         return UUID.fromString((String) claims.get("memberId"));
     }
 
+    public UUID extractMemberIdInternally() {
+        Claims claims = extractAllClaims(this.token);
+        return UUID.fromString((String) claims.get("memberId"));
+    }
+
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getSigningKey())

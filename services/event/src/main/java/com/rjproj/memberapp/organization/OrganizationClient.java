@@ -14,7 +14,7 @@ import java.util.UUID;
 )
 public interface OrganizationClient {
 
-    @GetMapping("/{organization-id}")
+    @GetMapping("/findOrganizationById/{organization-id}")
     Optional<OrganizationResponse> findOrganizationById(@PathVariable("organization-id") UUID organizationId);
 
 }

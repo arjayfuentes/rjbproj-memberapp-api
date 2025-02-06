@@ -40,12 +40,12 @@ public class MemberDetails implements UserDetails {
 
 
     public Set<String> getActivePermissionNames() {
-        if (Optional.ofNullable(activeRole).isEmpty()) {
-            return Collections.emptySet();
+        if (activeRole == null) {
+            return Collections.emptySet(); // No permissions if no active role
         }
-        Set<Permission> emptyPermissionsSet = Collections.emptySet();
         return activeRole.getPermissions().stream()
-                .map(r -> r.getName()).collect(Collectors.toSet());
+                .map(Permission::getName)
+                .collect(Collectors.toSet());
     }
 
     @Override

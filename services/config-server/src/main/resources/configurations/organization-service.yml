@@ -8,5 +8,25 @@ spring:
       database: organization
       authentication-database: admin
 
+aws:
+  s3:
+    access:
+      key: AKIAT4GVRMTPCE7WS4MA
+    secret:
+      key: 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
+    region: eu-north-1
+    bucket: arjay-fileupload
+
 server:
   port: 8090
+
+
+application:
+  config:
+    membership-type-url: http://localhost:8222/api/v1/membership-type
+    membership-url: http://localhost:8222/api/v1/membership
+    member-url: http://localhost:8222/api/v1/member
+
+
+#  feign.compression.response.enabled=true
+#  feign.compression.response.useGzipDecoder=true

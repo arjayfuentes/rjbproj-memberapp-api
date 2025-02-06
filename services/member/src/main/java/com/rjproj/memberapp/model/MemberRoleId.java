@@ -12,4 +12,5 @@ public class MemberRoleId implements Serializable {
     private UUID organizationId;
     private UUID memberId;
     private UUID roleId;
+
 }

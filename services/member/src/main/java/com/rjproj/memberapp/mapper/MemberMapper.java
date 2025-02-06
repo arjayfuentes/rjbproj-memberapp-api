@@ -36,6 +36,20 @@ public class MemberMapper {
     }
 
 
+//    public MemberResponse fromMemberWithMembership(Member member) {
+//        return new MemberResponse(
+//                member.getMemberId(),
+//                member.getFirstName(),
+//                member.getLastName(),
+//                member.getEmail(),
+//                member.getPhoneNumber(),
+//                null,
+//                fromMemberAddress(member.getMemberAddress()),
+//                member.getCreatedAt()
+//        );
+//    }
+
+
 //    public Member fromMemberResponseToMember(MemberResponse memberResponse) {
 //        return Member.builder()
 //                .memberId(memberResponse.memberId())

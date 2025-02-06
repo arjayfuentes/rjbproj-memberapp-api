@@ -13,8 +13,10 @@ public class MembershipTypeMapper {
         return MembershipType.builder()
                 .membershipTypeId(membershipTypeRequest.membershipTypeId())
                 .organizationId(membershipTypeRequest.organizationId())
+                .membershipTypeValidity(membershipTypeRequest.membershipTypeValidity())
                 .name(membershipTypeRequest.name())
                 .description(membershipTypeRequest.description())
+                .isDefault(membershipTypeRequest.isDefault())
                 .build();
     }
 
@@ -22,10 +24,10 @@ public class MembershipTypeMapper {
         return new MembershipTypeResponse(
                 membershipType.getMembershipTypeId(),
                 membershipType.getOrganizationId(),
+                membershipType.getMembershipTypeValidity(),
                 membershipType.getName(),
                 membershipType.getDescription(),
-                membershipType.getCreatedAt(),
-                membershipType.getUpdatedAt()
+                membershipType.getIsDefault()
         );
     }
 }

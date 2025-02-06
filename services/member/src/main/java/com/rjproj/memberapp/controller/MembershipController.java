@@ -1,9 +1,6 @@
 package com.rjproj.memberapp.controller;
 
-import com.rjproj.memberapp.dto.GetMembershipRequest;
-import com.rjproj.memberapp.dto.JoinOrganizationRequest;
-import com.rjproj.memberapp.dto.MembershipRequest;
-import com.rjproj.memberapp.dto.MembershipResponse;
+import com.rjproj.memberapp.dto.*;
 import com.rjproj.memberapp.organization.OrganizationResponse;
 import com.rjproj.memberapp.service.MemberService;
 import com.rjproj.memberapp.service.MembershipService;
@@ -27,6 +24,12 @@ public class MembershipController {
     public ResponseEntity<MembershipResponse> createMembership(@RequestBody @Valid MembershipRequest membershipRequest) {
         return ResponseEntity.ok(membershipService.createMembership(membershipRequest));
     }
+
+    @PostMapping("/createMembershipForCurrentMember")
+    public ResponseEntity<MembershipResponse> createMembershipForCurrentMember(@RequestBody @Valid CreateMembershipRequest createMembershipRequest) {
+        return ResponseEntity.ok(membershipService.createMembershipForCurrentMember(createMembershipRequest));
+    }
+
 
     @PostMapping(path = "/requestMembership")
     public ResponseEntity<MembershipResponse> requestMembership(@RequestBody @Valid JoinOrganizationRequest organizationRequest) {

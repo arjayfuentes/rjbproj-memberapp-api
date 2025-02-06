@@ -1,5 +1,6 @@
 package com.rjproj.memberapp.dto;
 
+import com.rjproj.memberapp.model.MembershipTypeValidity;
 import jakarta.validation.constraints.NotNull;
 
 import java.sql.Timestamp;
@@ -11,9 +12,14 @@ public record MembershipTypeRequest(
         @NotNull(message = "Organization is required")
         UUID organizationId,
 
+        MembershipTypeValidity membershipTypeValidity,
+
         @NotNull(message = "Name is required")
         String name,
 
-        String description
-) {
+        String description,
+
+        Boolean isDefault
+
+        ) {
 }

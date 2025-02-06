@@ -83,24 +83,38 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
 
     private String getRequiredPermissionForRequest(ServerWebExchange exchange) {
         String path = exchange.getRequest().getURI().getPath();
-        if (path.startsWith("/api/v1/organization/findOrganizationsByIds")) {
-            return "com.rjproj.memberapp.permission.organization.viewOwn";
-        }
-        if (path.startsWith("/api/v1/organization/viewAllOrganization")) {
+        if (path.contains("/api/v1/organization/findOrganizationsByIds")) {
             return "com.rjproj.memberapp.permission.organization.viewAll";
         }
-        if (path.startsWith("/api/v1/organization/findMyOrganizationById")) {
+        if (path.contains("/api/v1/organization/completeCreateOrganization")) {
             return "com.rjproj.memberapp.permission.organization.viewOwn";
         }
-        if (path.startsWith("/api/v1/organization/viewMyOrganization")) {
-            return "com.rjproj.memberapp.permission.organization.viewOwn";
-        }
-        if (path.startsWith("/api/v1/organization/findOrganization")) {
+        if (path.contains("/api/v1/organization/viewAllOrganization")) {
             return "com.rjproj.memberapp.permission.organization.viewAll";
         }
-        if (path.startsWith("/api/v1/organization")) {
+        if (path.contains("/api/v1/organization/uploadOrganizationImage")) {
+            return "com.rjproj.memberapp.permission.organization.viewAll";
+        }
+        if (path.contains("/api/v1/organization/getOrganizationImages")) {
+            return "com.rjproj.memberapp.permission.organization.viewAll";
+        }
+        if (path.contains("/api/v1/organization/findMyOrganizationById")) {
+            return "com.rjproj.memberapp.permission.organization.viewOwn";
+        }
+        if (path.contains("/api/v1/organization/viewMyOrganization")) {
+            return "com.rjproj.memberapp.permission.organization.viewOwn";
+        }
+        if (path.contains("/api/v1/organization/findOrganizationById")) {
+            return "com.rjproj.memberapp.permission.organization.viewAll";
+        }
+        if (path.contains("/api/v1/organization/findOrganization")) {
+            return "com.rjproj.memberapp.permission.organization.viewAll";
+        }
+        if (path.contains("/api/v1/organization")) {
             return "com.rjproj.memberapp.permission.organization.editAll";
         }
+
+
         return null;  // Def
     }
 

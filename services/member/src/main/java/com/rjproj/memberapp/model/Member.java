@@ -40,6 +40,7 @@ public class Member {
     @JoinTable(name = "member_role", joinColumns = @JoinColumn(name = "member_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
 
+
     @CreationTimestamp
     private Timestamp createdAt;
 

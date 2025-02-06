@@ -30,6 +30,12 @@ public class MembershipTypeController {
         return ResponseEntity.ok(membershipTypeService.createMembershipType(membershipTypeRequest));
     }
 
+
+    @PostMapping("/createMembershipTypes")
+    public ResponseEntity<List<MembershipTypeResponse>> createMembershipTypes(@RequestBody @Valid List<MembershipTypeRequest> membershipTypeRequests) {
+        return ResponseEntity.ok(membershipTypeService.createMembershipTypes(membershipTypeRequests));
+    }
+
     @PutMapping(path = "/{membershipType-id}")
     public ResponseEntity<MembershipTypeResponse> updateMembershipType(@PathVariable("membershipType-id") UUID membershipTypeId, @RequestBody @Valid MembershipTypeRequest membershipTypeRequest){
         //return ResponseEntity.ok(membershipTypeService.updateMembershipType(membershipTypeRequest));

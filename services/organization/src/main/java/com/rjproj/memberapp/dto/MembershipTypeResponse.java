@@ -1,7 +1,5 @@
 package com.rjproj.memberapp.dto;
 
-import com.rjproj.memberapp.model.MembershipTypeValidity;
-
 import java.sql.Timestamp;
 import java.util.UUID;
 
@@ -11,6 +9,8 @@ public record MembershipTypeResponse (
         MembershipTypeValidity membershipTypeValidity,
         String name,
         String description,
-        Boolean isDefault
+        Boolean isDefault,
+        Timestamp createdAt,
+        Timestamp updatedAt
 ) {
 }

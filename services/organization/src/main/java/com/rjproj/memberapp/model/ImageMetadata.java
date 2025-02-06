@@ -4,40 +4,30 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.UUID;
-
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Getter
 @Setter
-@Validated
-public class OrganizationAddress {
+@Document
+public class ImageMetadata {
 
     @Id
-    private String organizationAddressId;
+    private String id;
+    private String filename;
+    private String filetype;
+    private String filepath;
+    private String imageType;
+    // Store path instead of file data
 
-    private String street;
-
-    private String city;
-
-    private String provinceState;
-
-    private String region;
-
-    private String postCode;
-
-    private String country;
-
+//    private byte[] imageData;
     @CreatedDate
     private Instant createdAt;
 
     @LastModifiedDate
     private Instant updatedAt;
-
 }

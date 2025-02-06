@@ -7,13 +7,10 @@ import com.rjproj.memberapp.mapper.MemberMapper;
 import com.rjproj.memberapp.mapper.MembershipMapper;
 import com.rjproj.memberapp.mapper.OrganizationMapper;
 import com.rjproj.memberapp.mapper.RoleMapper;
-import com.rjproj.memberapp.model.Member;
-import com.rjproj.memberapp.model.Role;
+import com.rjproj.memberapp.model.*;
 import com.rjproj.memberapp.organization.OrganizationClient;
 import com.rjproj.memberapp.organization.OrganizationResponse;
-import com.rjproj.memberapp.repository.MemberRepository;
-import com.rjproj.memberapp.repository.MemberRoleRepository;
-import com.rjproj.memberapp.repository.PermissionRepository;
+import com.rjproj.memberapp.repository.*;
 import com.rjproj.memberapp.security.JWTUtil;
 import com.rjproj.memberapp.security.MemberDetails;
 import jakarta.persistence.EntityNotFoundException;
@@ -45,6 +42,11 @@ public class MemberService {
 
     @Autowired
     private MemberRepository memberRepository;
+
+
+    @Autowired
+    private MembershipRepository membershipRepository;
+
 
     @Autowired
     private PermissionRepository permissionRepository;
@@ -82,6 +84,8 @@ public class MemberService {
 
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    private RoleRepository roleRepository;
 
     public MemberResponse createMember(@Valid MemberRequest memberRequest) {
         return addMember(memberRequest);
@@ -191,7 +195,7 @@ public class MemberService {
                 activeOrganization = this.organizationClient.findMyOrganizationById(activeOrganizationId);
 
             } else {
-                preLogInPermissions.add("com.rjproj.memberapp.permission.organization.viewOwn");
+                preLogInPermissions.add("com.rjproj.memberapp.permission.organization.viewAll");
             }
 
 
@@ -350,5 +354,50 @@ public class MemberService {
     }
 
 
+    public String createDefaultAdminOrganizationRoleForOwner(@Valid UUID organizationId) {
 
+        UUID memberId = jwtUtil.extractMemberIdInternally();
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new NotFoundException(
+                        String.format("Cannot update member with id %s", memberId)
+                ));
+
+        Role role = roleRepository.findByName("Admin").get();
+        Optional<MemberRole> existingMemberRole = memberRoleRepository.findByMemberIdOrganizationIdAndRoleId(member.getMemberId(), organizationId, role.getRoleId());
+
+        if (existingMemberRole.isPresent()) {
+            throw new MemberException("Role already exists", MEMBER_EXISTS.getMessage(), HttpStatus.BAD_REQUEST);
+        } else {
+
+            MemberRole memberRole = new MemberRole();
+
+            MemberRoleId memberRoleId = new MemberRoleId();
+            memberRoleId.setMemberId(member.getMemberId());
+            memberRoleId.setOrganizationId(organizationId);
+            memberRoleId.setRoleId(role.getRoleId());
+
+            memberRole.setId(memberRoleId);
+            memberRole.setMember(member);
+            memberRole.setRole(role);
+
+            memberRoleRepository.save(memberRole);
+            return member.getMemberId().toString();
+        }
+
+    }
+
+    public List<MemberResponse> getMembersByOrganization(UUID organizationId) {
+        OrganizationResponse organization = organizationClient.findOrganizationById(organizationId);
+        if (organization == null) {
+            throw new RuntimeException("Organization not found");
+        }
+
+        List<Membership> memberships = membershipRepository.findByOrganizationId(organizationId);
+        List<Member> members = memberships.stream().map(Membership::getMember).collect(Collectors.toList());
+        return members
+                .stream()
+                .map(memberMapper::fromMember)
+                .collect(Collectors.toList());
+    }
 }
