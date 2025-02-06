@@ -10,12 +10,3 @@ spring:
       server:
         native:
           search-locations: classpath:/configurations
-
-aws:
-  s3:
-    access:
-      key: AKIAT4GVRMTPCE7WS4MA
-    secret:
-      key: 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
-    region: eu-north-1
-    bucket: arjay-fileupload
