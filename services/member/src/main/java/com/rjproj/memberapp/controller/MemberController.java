@@ -2,11 +2,13 @@ package com.rjproj.memberapp.controller;
 
 import com.rjproj.memberapp.dto.MemberRequest;
 import com.rjproj.memberapp.dto.MemberResponse;
+import com.rjproj.memberapp.dto.MembershipResponse;
 import com.rjproj.memberapp.organization.OrganizationResponse;
 import com.rjproj.memberapp.service.MemberService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -61,8 +63,39 @@ public class MemberController {
     }
 
     @GetMapping("/organization/{organizationId}")
-    public ResponseEntity<List<MemberResponse>> getMembersByOrganization(@PathVariable UUID organizationId) {
+    public ResponseEntity<List<MemberResponse>> getMembersByOrganization(
+            @PathVariable UUID organizationId) {
         return ResponseEntity.ok(memberService.getMembersByOrganization(organizationId));
+    }
+
+    @GetMapping("/organizationPage/{organizationId}")
+    public ResponseEntity<Page<MemberResponse>> getMembersByOrganizationPage(
+            @PathVariable UUID organizationId,
+            @RequestParam(value = "pageNo", defaultValue = "0", required = false) Integer pageNo,
+            @RequestParam(value = "pageSize", defaultValue = "10", required = false) Integer pageSize,
+            @RequestParam(value = "sortField", defaultValue = "memberId", required = false) String sortField,
+            @RequestParam(value = "sortOrder", defaultValue = "ASC", required = false) String sortOrder) {
+        return ResponseEntity.ok(memberService.getMembersByOrganizationPaginationAndSorting(organizationId, pageNo, pageSize, sortField, sortOrder));
+    }
+
+    @GetMapping("/organization/{organizationId}/memberships")
+    public ResponseEntity<Page<MembershipResponse>> getMembershipsByOrganization(
+            @PathVariable UUID organizationId,
+            @RequestParam(value = "pageNo", defaultValue = "0", required = false) Integer pageNo,
+            @RequestParam(value = "pageSize", defaultValue = "10", required = false) Integer pageSize,
+            @RequestParam(value = "sortField", defaultValue = "memberId", required = false) String sortField,
+            @RequestParam(value = "sortOrder", defaultValue = "ASC", required = false) String sortOrder) {
+        return ResponseEntity.ok(memberService.getMembershipsByOrganization(organizationId, pageNo, pageSize, sortField, sortOrder));
+    }
+
+    @GetMapping("/organization/{organizationId}/memberships/pending")
+    public ResponseEntity<Page<MembershipResponse>> getPendingMembershipsByOrganization(
+            @PathVariable UUID organizationId,
+            @RequestParam(value = "pageNo", defaultValue = "0", required = false) Integer pageNo,
+            @RequestParam(value = "pageSize", defaultValue = "10", required = false) Integer pageSize,
+            @RequestParam(value = "sortField", defaultValue = "memberId", required = false) String sortField,
+            @RequestParam(value = "sortOrder", defaultValue = "ASC", required = false) String sortOrder) {
+        return ResponseEntity.ok(memberService.getPendingMembershipsByOrganization(organizationId, pageNo, pageSize, sortField, sortOrder));
     }
 
 

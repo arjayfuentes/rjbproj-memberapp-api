@@ -74,6 +74,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/membership-type/findAllMembershipTypeValidity").permitAll()
                         .requestMatchers("/api/v1/member/createDefaultAdminOrganizationRoleForOwner").permitAll()
                         .requestMatchers("/api/v1/member/organization/**").hasAnyAuthority("com.rjproj.memberapp.permission.user.viewOrgAll", "com.rjproj.memberapp.permission.user.viewAll")
+                        .requestMatchers("/api/v1/member/organizationPage/**").hasAnyAuthority("com.rjproj.memberapp.permission.user.viewOrgAll", "com.rjproj.memberapp.permission.user.viewAll")
                         .requestMatchers("/api/v1/member/**").hasAuthority("com.rjproj.memberapp.permission.user.viewAll")
                         .requestMatchers("/api/v1/membership/getOrganizationByMemberId/**").hasAnyAuthority("com.rjproj.memberapp.permission.organization.viewOwn, com.rjproj.memberapp.permission.organization.viewAll, com.rjproj.memberapp.permission.organization.viewAll")
                         .requestMatchers("/api/v1/membership/**").hasAuthority("com.rjproj.memberapp.permission.user.viewAll")

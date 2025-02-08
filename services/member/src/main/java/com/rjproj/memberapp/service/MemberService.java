@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -392,7 +393,6 @@ public class MemberService {
         if (organization == null) {
             throw new RuntimeException("Organization not found");
         }
-
         List<Membership> memberships = membershipRepository.findByOrganizationId(organizationId);
         List<Member> members = memberships.stream().map(Membership::getMember).collect(Collectors.toList());
         return members
@@ -400,4 +400,112 @@ public class MemberService {
                 .map(memberMapper::fromMember)
                 .collect(Collectors.toList());
     }
+
+    public Page<MemberResponse> getMembersByOrganizationPage(UUID organizationId, Integer pageNo, Integer pageSize) {
+        OrganizationResponse organization = organizationClient.findOrganizationById(organizationId);
+        if (organization == null) {
+            throw new RuntimeException("Organization not found");
+        }
+
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+
+        Page<Membership> membershipPage = membershipRepository.findMembershipsByOrganizationId(organizationId, pageable);
+
+        // Convert Membership -> Member -> MemberResponse
+        List<MemberResponse> memberResponses = membershipPage.getContent().stream()
+                .map(Membership::getMember)
+                .map(memberMapper::fromMember)
+                .collect(Collectors.toList());
+        return new PageImpl<>(memberResponses, pageable, membershipPage.getTotalElements());
+    }
+
+
+    public Page<MemberResponse> getMembersByOrganizationPaginationAndSorting(
+            UUID organizationId, Integer pageNo, Integer pageSize, String sortField, String sortOrder) {
+        OrganizationResponse organization = organizationClient.findOrganizationById(organizationId);
+        if (organization == null) {
+            throw new RuntimeException("Organization not found");
+        }
+
+        Sort sort =  sortOrder.equals("ASC") ? Sort.by(sortField).ascending() : Sort.by(sortField).descending();
+
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+
+        Page<Membership> membershipPage = membershipRepository.findMembershipsByOrganizationId(organizationId, pageable);
+
+        // Convert Membership -> Member -> MemberResponse
+        List<MemberResponse> memberResponses = membershipPage.getContent().stream()
+                .map(Membership::getMember)
+                .map(memberMapper::fromMember)
+                .collect(Collectors.toList());
+        return new PageImpl<>(memberResponses, pageable, membershipPage.getTotalElements());
+    }
+
+
+    public Page<MembershipResponse> getMembershipsByOrganization(
+            UUID organizationId,
+            Integer pageNo,
+            Integer pageSize,
+            String sortField,
+            String sortOrder) {
+
+        OrganizationResponse organization = organizationClient.findOrganizationById(organizationId);
+        if (organization == null) {
+            throw new RuntimeException("Organization not found");
+        }
+
+        Sort firstSort = Sort.by(Sort.Order.by(sortField).with(Sort.Direction.fromString(sortOrder)));
+
+        // Fix for problem: There are items that shows on different pages. Because of same ex. name.
+        Sort secondSort = Sort.by(Sort.Order.by("membershipId").with(Sort.Direction.fromString(sortOrder)));
+
+        Sort combinedSort = firstSort.and(secondSort);
+
+
+        Pageable pageable = PageRequest.of(pageNo, pageSize, combinedSort);
+
+        Page<Membership> membershipPage = membershipRepository.findMembershipsByOrganizationId(organizationId, pageable);
+
+        List<MembershipResponse> membershipResponses = membershipPage.getContent().stream()
+                .map(membershipMapper::fromMembership)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(membershipResponses, pageable, membershipPage.getTotalElements());
+    }
+
+
+    public Page<MembershipResponse> getPendingMembershipsByOrganization(
+            UUID organizationId,
+            Integer pageNo,
+            Integer pageSize,
+            String sortField,
+            String sortOrder) {
+
+        OrganizationResponse organization = organizationClient.findOrganizationById(organizationId);
+        if (organization == null) {
+            throw new RuntimeException("Organization not found");
+        }
+
+        Sort firstSort = Sort.by(Sort.Order.by(sortField).with(Sort.Direction.fromString(sortOrder)));
+
+        // Fix for problem: There are items that shows on different pages. Because of same ex. name.
+        Sort secondSort = Sort.by(Sort.Order.by(sortField.equals("firstName") ? "lastName" : "membershipId").with(Sort.Direction.fromString(sortOrder)));
+
+        Sort combinedSort = firstSort.and(secondSort);
+
+
+        Pageable pageable = PageRequest.of(pageNo, pageSize, combinedSort);
+
+        Page<Membership> membershipPage = membershipRepository.findPendingMembershipsByOrganizationId(organizationId, pageable);
+
+        List<MembershipResponse> membershipResponses = membershipPage.getContent().stream()
+                .map(membershipMapper::fromMembership)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(membershipResponses, pageable, membershipPage.getTotalElements());
+    }
+
+
+
+
 }

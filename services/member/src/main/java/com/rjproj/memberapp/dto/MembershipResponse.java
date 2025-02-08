@@ -9,6 +9,7 @@ import java.util.UUID;
 public record MembershipResponse(
         UUID membershipId,
         UUID organizationId,
+        MemberResponse member,
         MembershipType membershipType,
         String status,
         Timestamp startDate,

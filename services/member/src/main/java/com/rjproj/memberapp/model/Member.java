@@ -32,6 +32,8 @@ public class Member {
 
     private String phoneNumber;
 
+    private String profilePicUrl;
+
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "member_address_id", referencedColumnName = "memberAddressId", nullable = true, unique = true)
     private MemberAddress memberAddress;

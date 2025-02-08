@@ -4,10 +4,14 @@ import com.rjproj.memberapp.dto.MembershipRequest;
 import com.rjproj.memberapp.dto.MembershipResponse;
 import com.rjproj.memberapp.model.Membership;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class MembershipMapper {
+
+    @Autowired
+    MemberMapper memberMapper;
 
     public Membership toMembership(@Valid MembershipRequest membershipRequest) {
         return Membership.builder()
@@ -25,6 +29,7 @@ public class MembershipMapper {
         return new MembershipResponse(
                 membership.getMembershipId(),
                 membership.getOrganizationId(),
+                memberMapper.fromMember(membership.getMember()),
                 membership.getMembershipType(),
                 membership.getStatus(),
                 membership.getStartDate(),

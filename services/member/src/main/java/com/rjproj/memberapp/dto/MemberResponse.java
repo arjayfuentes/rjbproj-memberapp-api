@@ -13,6 +13,7 @@ public record MemberResponse (
         String lastName,
         String email,
         String phoneNumber,
+        String profilePicUrl,
         MemberAddressResponse memberAddress,
         Timestamp createdAt
 ) {

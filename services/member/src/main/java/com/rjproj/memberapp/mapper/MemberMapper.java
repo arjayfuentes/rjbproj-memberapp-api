@@ -19,6 +19,7 @@ public class MemberMapper {
                 .email(memberRequest.email())
                 .password(memberRequest.password())
                 .phoneNumber(memberRequest.phoneNumber())
+                .profilePicUrl(memberRequest.profilePicUrl())
                 .memberAddress(memberRequest.memberAddress())
                 .build();
     }
@@ -30,6 +31,7 @@ public class MemberMapper {
                 member.getLastName(),
                 member.getEmail(),
                 member.getPhoneNumber(),
+                member.getProfilePicUrl(),
                 fromMemberAddress(member.getMemberAddress()),
                 member.getCreatedAt()
         );

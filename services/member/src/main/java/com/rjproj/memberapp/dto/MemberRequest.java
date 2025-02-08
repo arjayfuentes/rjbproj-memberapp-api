@@ -24,6 +24,8 @@ public record MemberRequest (
 
         String phoneNumber,
 
+        String profilePicUrl,
+
         MemberAddress memberAddress
 ) {
 

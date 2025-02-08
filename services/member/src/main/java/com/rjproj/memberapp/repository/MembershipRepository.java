@@ -3,6 +3,8 @@ package com.rjproj.memberapp.repository;
 import com.rjproj.memberapp.model.Member;
 import com.rjproj.memberapp.model.Membership;
 import com.rjproj.memberapp.model.MembershipType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,4 +27,15 @@ public interface MembershipRepository extends JpaRepository<Membership, UUID> {
     Membership findMembershipByMemberIdAndOrganizationId(@Param("memberId") UUID memberId, @Param("organizationId") UUID organizationId);
 
     List<Membership> findByOrganizationId(UUID organizationId);
+
+    // Paginated query with a filter to only include memberships where membershipType is not null
+    @Query("SELECT m FROM Membership m WHERE m.organizationId = :organizationId AND m.membershipType IS NOT NULL")
+    Page<Membership> findMembershipsByOrganizationId(UUID organizationId, Pageable pageable);
+
+
+    // Paginated query with a filter to only include memberships where membershipType is not null
+    @Query("SELECT m FROM Membership m WHERE m.organizationId = :organizationId AND m.membershipType IS NULL")
+    Page<Membership> findPendingMembershipsByOrganizationId(UUID organizationId, Pageable pageable);
+
+
 }
