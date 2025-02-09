@@ -1,6 +1,7 @@
 package com.rjproj.memberapp.dto;
 
 import com.rjproj.memberapp.model.MemberAddress;
+import com.rjproj.memberapp.model.Role;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -15,6 +16,7 @@ public record MemberResponse (
         String phoneNumber,
         String profilePicUrl,
         MemberAddressResponse memberAddress,
+//        Role activeRole,
         Timestamp createdAt
 ) {
 }

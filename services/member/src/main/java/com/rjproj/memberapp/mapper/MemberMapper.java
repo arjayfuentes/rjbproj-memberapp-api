@@ -33,6 +33,9 @@ public class MemberMapper {
                 member.getPhoneNumber(),
                 member.getProfilePicUrl(),
                 fromMemberAddress(member.getMemberAddress()),
+//                member.getRoles() != null && !member.getRoles().isEmpty()
+//                        ? member.getRoles().iterator().next()
+//                        : null,
                 member.getCreatedAt()
         );
     }

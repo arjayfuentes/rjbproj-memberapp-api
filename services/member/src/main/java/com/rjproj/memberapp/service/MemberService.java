@@ -433,11 +433,15 @@ public class MemberService {
 
         Page<Membership> membershipPage = membershipRepository.findMembershipsByOrganizationId(organizationId, pageable);
 
+
+
         // Convert Membership -> Member -> MemberResponse
         List<MemberResponse> memberResponses = membershipPage.getContent().stream()
                 .map(Membership::getMember)
                 .map(memberMapper::fromMember)
                 .collect(Collectors.toList());
+
+
         return new PageImpl<>(memberResponses, pageable, membershipPage.getTotalElements());
     }
 
@@ -457,7 +461,7 @@ public class MemberService {
         Sort firstSort = Sort.by(Sort.Order.by(sortField).with(Sort.Direction.fromString(sortOrder)));
 
         // Fix for problem: There are items that shows on different pages. Because of same ex. name.
-        Sort secondSort = Sort.by(Sort.Order.by("membershipId").with(Sort.Direction.fromString(sortOrder)));
+        Sort secondSort = Sort.by(Sort.Order.by(sortField.equals("member.firstName") ? "member.lastName" : "membershipId").with(Sort.Direction.fromString(sortOrder)));
 
         Sort combinedSort = firstSort.and(secondSort);
 
@@ -467,8 +471,12 @@ public class MemberService {
         Page<Membership> membershipPage = membershipRepository.findMembershipsByOrganizationId(organizationId, pageable);
 
         List<MembershipResponse> membershipResponses = membershipPage.getContent().stream()
-                .map(membershipMapper::fromMembership)
+                .map(membership -> {
+                    Role memberRole = memberRoleRepository.findRolesByMemberAndOrganization(membership.getMember().getMemberId(), organizationId);
+                    return  membershipMapper.fromMembershipWithRole(membership, memberRole);
+                })
                 .collect(Collectors.toList());
+
 
         return new PageImpl<>(membershipResponses, pageable, membershipPage.getTotalElements());
     }
@@ -489,7 +497,7 @@ public class MemberService {
         Sort firstSort = Sort.by(Sort.Order.by(sortField).with(Sort.Direction.fromString(sortOrder)));
 
         // Fix for problem: There are items that shows on different pages. Because of same ex. name.
-        Sort secondSort = Sort.by(Sort.Order.by(sortField.equals("firstName") ? "lastName" : "membershipId").with(Sort.Direction.fromString(sortOrder)));
+        Sort secondSort = Sort.by(Sort.Order.by(sortField.equals("member.firstName") ? "member.lastName" : "membershipId").with(Sort.Direction.fromString(sortOrder)));
 
         Sort combinedSort = firstSort.and(secondSort);
 
