@@ -146,6 +146,10 @@ public class MemberService {
         return addMember(memberRequest);
     }
 
+    public MemberResponse registerMemberWithGoogle(MemberRequest memberRequest) {
+        return addMember(memberRequest);
+    }
+
     public MemberResponse addMember(MemberRequest memberRequest) {
         Optional<Member> retrievedMember = memberRepository.findByEmail(memberRequest.email());
         Member member = memberMapper.toMember(memberRequest);
@@ -458,17 +462,29 @@ public class MemberService {
             throw new RuntimeException("Organization not found");
         }
 
-        Sort firstSort = Sort.by(Sort.Order.by(sortField).with(Sort.Direction.fromString(sortOrder)));
+        Sort sort = Sort.unsorted();
 
-        // Fix for problem: There are items that shows on different pages. Because of same ex. name.
-        Sort secondSort = Sort.by(Sort.Order.by(sortField.equals("member.firstName") ? "member.lastName" : "membershipId").with(Sort.Direction.fromString(sortOrder)));
+        // Check if the sortField is 'role.name' and set the appropriate sorting
+        if ("role.name".equals(sortField)) {
+            sort = Sort.by(Sort.Order.by("r.name").with(Sort.Direction.fromString(sortOrder)));
+        } else {
+            sort = Sort.by(Sort.Order.by(sortField).with(Sort.Direction.fromString(sortOrder)));
+        }
 
-        Sort combinedSort = firstSort.and(secondSort);
-
+        // Fix for problem: Sorting secondary criteria (to prevent duplicates on pages)
+        Sort secondarySort = Sort.by(Sort.Order.by(sortField.equals("member.firstName") ? "member.lastName" : "membershipId").with(Sort.Direction.fromString(sortOrder)));
+        Sort combinedSort = sort.and(secondarySort);
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, combinedSort);
 
-        Page<Membership> membershipPage = membershipRepository.findMembershipsByOrganizationId(organizationId, pageable);
+        // Handle paginated query based on sorting by 'role.name' or default
+        Page<Membership> membershipPage;
+        if ("role.name".equals(sortField)) {
+            membershipPage = membershipRepository.findMembershipsByOrganizationIdSortedByRoleName(organizationId, pageable);
+        } else {
+            membershipPage = membershipRepository.findMembershipsByOrganizationId(organizationId, pageable);
+        }
+
 
         List<MembershipResponse> membershipResponses = membershipPage.getContent().stream()
                 .map(membership -> {

@@ -32,15 +32,17 @@ public interface MembershipRepository extends JpaRepository<Membership, UUID> {
     @Query("SELECT m FROM Membership m WHERE m.organizationId = :organizationId AND m.membershipType IS NOT NULL")
     Page<Membership> findMembershipsByOrganizationId(UUID organizationId, Pageable pageable);
 
-//    @Query("SELECT m FROM Membership m " +
-//            "JOIN MemberRole mr ON m.member.memberId = mr.member.memberId " +
-//            "JOIN Role r ON mr.role.roleId = r.roleId " +
-//            "WHERE m.organizationId = :organizationId AND m.membershipType IS NOT NULL " +
-//            "ORDER BY " +
-//            "   CASE WHEN :isSortByRole = true THEN r.name ELSE '' END, " +  // Use an empty string for non-role sorting
-//            "   m.membershipId")
-//    Page<Membership> findMembershipsByOrganizationId(UUID organizationId, Pageable pageable, Boolean isSortByRole);
-//
+
+//    @Query("SELECT m FROM Membership m JOIN m.memberRoles r WHERE m.organizationId = :organizationId AND m.membershipType IS NOT NULL ORDER BY r.role.name")
+//    Page<Membership> findMembershipsByOrganizationIdSortedByRoleName(UUID organizationId, Pageable pageable);
+
+    @Query("SELECT m FROM Membership m " +
+            "JOIN MemberRole mr ON m.member.memberId = mr.member.memberId " +
+            "JOIN Role r ON mr.role.roleId = r.roleId " +
+            "WHERE m.organizationId = :organizationId AND m.membershipType IS NOT NULL " +
+            "ORDER BY r.name ASC") // Default sorting ASC for role.name
+    Page<Membership> findMembershipsByOrganizationIdSortedByRoleName(UUID organizationId, Pageable pageable);
+
 
 
 
