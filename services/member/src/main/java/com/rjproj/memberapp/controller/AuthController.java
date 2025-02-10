@@ -21,14 +21,29 @@ public class AuthController {
         return ResponseEntity.ok(memberService.login(loginRequest));
     }
 
+    @PostMapping("/login/withGoogle")
+    public ResponseEntity<Session> loginMemberWithGoogle(@RequestBody @Valid GoogleLoginRequest googleLoginRequest){
+        return ResponseEntity.ok(memberService.loginMemberWithGoogle(googleLoginRequest.googleToken()));
+    }
+
     @PostMapping("/getLoginSession")
     public ResponseEntity<Session> getLoginSession(@RequestBody @Valid String token){
         return ResponseEntity.ok(memberService.getLoginSession(token));
     }
 
+//    @PostMapping("/getLoginSession/withGoogle")
+//    public ResponseEntity<Session> getLoginSessionWithGoogle(@RequestBody @Valid String googletoken){
+//        return ResponseEntity.ok(memberService.getLoginSessionWithGoogle(googletoken));
+//    }
+
     @PostMapping("/register")
     public ResponseEntity<MemberResponse> registerMember(@RequestBody @Valid MemberRequest memberRequest) {
         return ResponseEntity.ok(memberService.registerMember(memberRequest));
+    }
+
+    @PostMapping("/register/withGoogle")
+    public ResponseEntity<MemberResponse> registerMemberWithGoole(@RequestBody @Valid String googleToken) {
+        return ResponseEntity.ok(memberService.registerMemberWithGoogle(googleToken));
     }
 
     @PostMapping("/selectLoginOrganization")

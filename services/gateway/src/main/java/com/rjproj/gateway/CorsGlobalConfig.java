@@ -14,7 +14,7 @@ public class CorsGlobalConfig {
     @Bean
     public CorsWebFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:4200")); // Allowed frontend origin
+        config.setAllowedOrigins(List.of("https://localhost:4200")); // Allowed frontend origin
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Allowed HTTP methods
         config.setAllowedHeaders(List.of("*")); // Allow all headers
         config.setAllowCredentials(true); // Allow credentials like cookies

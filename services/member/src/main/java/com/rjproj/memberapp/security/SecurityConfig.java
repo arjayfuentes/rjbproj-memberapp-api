@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -81,6 +82,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/membership-type/**").hasAuthority("com.rjproj.memberapp.permission.user.viewAll")
                         .anyRequest()
                         .authenticated())
+                .oauth2Client(Customizer.withDefaults())
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(unauthorizedHandler())  // Handle 401 Unauthorized
                         .accessDeniedHandler(customAccessDeniedHandler()) // Handle 403 Forbidden

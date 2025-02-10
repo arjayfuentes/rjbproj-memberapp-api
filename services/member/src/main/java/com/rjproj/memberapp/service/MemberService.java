@@ -22,6 +22,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -36,6 +37,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.rjproj.memberapp.exception.MemberErrorMessage.*;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 @RequiredArgsConstructor
@@ -85,8 +88,17 @@ public class MemberService {
 
     @Autowired
     private ModelMapper modelMapper;
+
     @Autowired
     private RoleRepository roleRepository;
+
+    @Value("${spring.security.oauth2.client.registration.google.client-id}")
+    private String googleClientId;  // Injecting google client-id from application.yml
+
+    @Value("${spring.security.oauth2.client.registration.google.client-secret}")
+    private String googleClientSecret;
+
+    private final RestTemplate restTemplate;
 
     public MemberResponse createMember(@Valid MemberRequest memberRequest) {
         return addMember(memberRequest);
@@ -146,9 +158,34 @@ public class MemberService {
         return addMember(memberRequest);
     }
 
-    public MemberResponse registerMemberWithGoogle(MemberRequest memberRequest) {
-        return addMember(memberRequest);
+    public MemberResponse registerMemberWithGoogle(String googleToken) {
+        GoogleTokenInfo tokenInfo = validateGoogleToken(googleToken);
+
+        Optional<Member> retrievedMember = memberRepository.findByEmail(tokenInfo.email());
+        if (retrievedMember.isPresent()){
+            throw new MemberException("Member with email address " + tokenInfo.email() + " already exists", MEMBER_EXISTS.getMessage(), HttpStatus.CONFLICT);
+        }
+
+        // Step 3: Register the new user if they don't exist
+        Member newMember = new Member();
+        newMember.setEmail(tokenInfo.email());
+        newMember.setFirstName(tokenInfo.name());
+        newMember = memberRepository.save(newMember);
+
+        return memberMapper.fromMember(memberRepository.save(newMember));
     }
+
+
+    private GoogleTokenInfo validateGoogleToken(String googleToken) {
+        // Step to validate the Google token with Google's API and get user details
+        String googleApiUrl = "https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=" + googleToken;
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<GoogleTokenInfo> response = restTemplate.getForEntity(googleApiUrl, GoogleTokenInfo.class);
+
+        return response.getBody();
+    }
+
+
 
     public MemberResponse addMember(MemberRequest memberRequest) {
         Optional<Member> retrievedMember = memberRepository.findByEmail(memberRequest.email());
@@ -529,7 +566,77 @@ public class MemberService {
         return new PageImpl<>(membershipResponses, pageable, membershipPage.getTotalElements());
     }
 
+    public Session getLoginSessionWithGoogle(String googleToken) {
+        return null;
+    }
+
+    public Session loginMemberWithGoogle(@Valid String googleToken) {
+        String googleApiUrl = "https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=" + googleToken;
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<GoogleTokenInfo> response = restTemplate.getForEntity(googleApiUrl, GoogleTokenInfo.class);
+
+        GoogleTokenInfo tokenInfo = response.getBody();
+
+        if (tokenInfo != null && tokenInfo.aud().equals(googleClientId)) {
+            Optional<Member> verifiedMember = memberRepository.findByEmail(tokenInfo.email());
+
+            if(!verifiedMember.isPresent()) {
+                throw new MemberException(
+                        "The google account you provided does not exists. Sign up first to contiue",
+                        MEMBER_NOT_EXISTS.getMessage(),
+                        HttpStatus.BAD_REQUEST);
+            }
+            Member member = verifiedMember.get();
+            member.setEmail(tokenInfo.email());
+            member.setFirstName(tokenInfo.name());
+
+            UsernamePasswordAuthenticationToken authenticationToken =
+                    new UsernamePasswordAuthenticationToken(member.getEmail(), null, new ArrayList<>());
+
+            UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(tokenInfo.email());
+
+            MemberResponse memberResponse = memberMapper.fromMember(member);
+            Role activeRole = null;
+            RoleResponse roleResponse = null;
+            List<String> preLogInPermissions = new ArrayList<>();
+            OrganizationResponse activeOrganization = null;
+            List<UUID> organizationIdsOfMember = membershipService.getActiveOrganizationIdsByMemberId(member.getMemberId());
+            MembershipResponse activeMembership = null;
+
+            UUID activeOrganizationId = null;
+
+            String jwt = null;
+
+            if(organizationIdsOfMember.size() == 1) {
+                activeOrganizationId = organizationIdsOfMember.getFirst();
+
+                activeRole = memberRoleRepository.findRolesByMemberAndOrganization(member.getMemberId(), activeOrganizationId);
+                roleResponse = roleMapper.fromRole(activeRole);
+                preLogInPermissions = activeRole.getPermissions().stream().map(p -> p.getName()).collect(Collectors.toList());
+                activeMembership =  membershipMapper.fromMembership(membershipService.getMembership(member.getMemberId(), activeOrganizationId));
+                jwt = jwtUtil.generateToken(userDetails.getUsername(), activeRole, preLogInPermissions, activeOrganizationId, member.getMemberId());
+
+                activeOrganization = this.organizationClient.findMyOrganizationById(activeOrganizationId);
+
+            } else {
+                preLogInPermissions.add("com.rjproj.memberapp.permission.organization.viewAll");
+            }
 
 
+            jwt = jwtUtil.generateToken(userDetails.getUsername(), activeRole, preLogInPermissions, activeOrganizationId, member.getMemberId());
 
+            return new Session(
+                    jwt,
+                    "Bearer",
+                    memberResponse,
+                    roleResponse,
+                    preLogInPermissions,
+                    activeOrganization,
+                    organizationIdsOfMember.size() == 0 ? null : organizationIdsOfMember,
+                    activeMembership
+            );
+        } else {
+            throw new RuntimeException("Invalid Google token.");
+        }
+    }
 }

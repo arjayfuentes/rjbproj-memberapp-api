@@ -3,3 +3,17 @@ spring:
     import: optional:configserver:http://localhost:8888
   application:
     name: member-service
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: "654581949282-dmvkqbivaa8rmvem7ipjbas30p5akkrm.apps.googleusercontent.com"
+            client-secret: "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"
+            scope: openid, profile, email
+            redirect-uri: "https://localhost:4200/login/oauth2/code/google"
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
