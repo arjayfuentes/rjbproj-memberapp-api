@@ -21,8 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -38,6 +37,9 @@ import java.util.stream.Collectors;
 
 import static com.rjproj.memberapp.exception.MemberErrorMessage.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
@@ -578,6 +580,21 @@ public class MemberService {
         GoogleTokenInfo tokenInfo = response.getBody();
 
         if (tokenInfo != null && tokenInfo.aud().equals(googleClientId)) {
+//            List<GoogleTokenInfo.Address> addresses = getAddressFromGoogleAPI(googleToken);
+//            tokenInfo = new GoogleTokenInfo(
+//                    tokenInfo.sub(),
+//                    tokenInfo.aud(),
+//                    tokenInfo.email(),
+//                    tokenInfo.name(),
+//                    tokenInfo.given_name(),
+//                    tokenInfo.family_name(),
+//                    tokenInfo.picture(),
+//                    tokenInfo.locale(),
+//                    tokenInfo.hd(),
+//                    tokenInfo.iat(),
+//                    tokenInfo.exp(),
+//                    addresses // Include addresses
+//            );
             Optional<Member> verifiedMember = memberRepository.findByEmail(tokenInfo.email());
 
             if(!verifiedMember.isPresent()) {
@@ -639,4 +656,66 @@ public class MemberService {
             throw new RuntimeException("Invalid Google token.");
         }
     }
+
+
+    private List<GoogleTokenInfo.Address> getAddressFromGoogleAPI(String googleToken) {
+        String accessToken = getAccessTokenFromIdToken(googleToken);
+
+        String apiUrl = "https://people.googleapis.com/v1/people/me?personFields=addresses";
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken);  // Use the access token
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        try {
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    apiUrl,
+                    HttpMethod.GET,
+                    new HttpEntity<>(headers),
+                    Map.class
+            );
+
+            Map<String, Object> body = response.getBody();
+            List<Map<String, Object>> addressesData = (List<Map<String, Object>>) body.get("addresses");
+
+            List<GoogleTokenInfo.Address> addresses = new ArrayList<>();
+
+            for (Map<String, Object> addressData : addressesData) {
+                String streetAddress = (String) addressData.get("streetAddress");
+                String city = (String) addressData.get("city");
+                String region = (String) addressData.get("region");
+                String postalCode = (String) addressData.get("postalCode");
+                String country = (String) addressData.get("country");
+
+                GoogleTokenInfo.Address address = new GoogleTokenInfo.Address(streetAddress, city, region, postalCode, country);
+                addresses.add(address);
+            }
+
+            return addresses;
+
+        } catch (HttpClientErrorException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+
+
+    public String getAccessTokenFromIdToken(String googleToken) {
+        String googleTokenUrl = "https://oauth2.googleapis.com/token";
+
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        map.add("id_token", googleToken);
+        map.add("client_id", "654581949282-dmvkqbivaa8rmvem7ipjbas30p5akkrm.apps.googleusercontent.com");  // Your app's client ID
+        map.add("client_secret", "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");  // Your app's client secret
+        map.add("grant_type", "authorization_code");
+
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<Map> response = restTemplate.postForEntity(googleTokenUrl, map, Map.class);
+
+        // Extract the access token from the response
+        Map<String, String> responseBody = response.getBody();
+        return responseBody.get("access_token");
+    }
+
 }

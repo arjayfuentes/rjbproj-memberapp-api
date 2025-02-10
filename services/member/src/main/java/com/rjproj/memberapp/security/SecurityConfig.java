@@ -28,6 +28,9 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -38,6 +41,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Arrays;
 
 import static com.rjproj.memberapp.exception.MemberErrorMessage.ACCESS_DENIED;
 import static com.rjproj.memberapp.exception.MemberErrorMessage.UNAUTHORIZED;
@@ -67,6 +71,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/auth/logout").permitAll()
                         .requestMatchers("/api/v1/auth/getLoginSession").permitAll()
+                        .requestMatchers("/api/v1/auth/login/withGoogle").permitAll()
                         .requestMatchers("/api/v1/membership/requestMembership/**").permitAll()
                         .requestMatchers("/api/v1/membership/createMembershipForCurrentMember/**").permitAll()
                         .requestMatchers("/api/v1/membership/getMembershipByMemberIdAndOrganizationId/**").permitAll()
@@ -112,6 +117,19 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager (AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return  authenticationConfiguration.getAuthenticationManager();
     }
+
+
+//    @Bean
+//    public CorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.setAllowedOrigins(Arrays.asList("http://your-frontend-url.com"));
+//        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
+//        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+//
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", configuration);
+//        return source;
+//    }
 
     @Bean
     public AuthenticationEntryPoint unauthorizedHandler() {
