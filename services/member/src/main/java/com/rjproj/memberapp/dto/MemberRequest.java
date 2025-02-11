@@ -1,10 +1,12 @@
 package com.rjproj.memberapp.dto;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import com.rjproj.memberapp.model.MemberAddress;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
+import java.util.*;
 
 public record MemberRequest (
 
@@ -25,6 +27,10 @@ public record MemberRequest (
         String phoneNumber,
 
         String profilePicUrl,
+
+        LocalDate birthDate,
+
+        LoginType loginType,
 
         MemberAddress memberAddress
 ) {

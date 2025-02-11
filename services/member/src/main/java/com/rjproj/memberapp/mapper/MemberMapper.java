@@ -20,6 +20,8 @@ public class MemberMapper {
                 .password(memberRequest.password())
                 .phoneNumber(memberRequest.phoneNumber())
                 .profilePicUrl(memberRequest.profilePicUrl())
+                .birthDate(memberRequest.birthDate())
+                .loginType(memberRequest.loginType())
                 .memberAddress(memberRequest.memberAddress())
                 .build();
     }
@@ -32,10 +34,9 @@ public class MemberMapper {
                 member.getEmail(),
                 member.getPhoneNumber(),
                 member.getProfilePicUrl(),
-                fromMemberAddress(member.getMemberAddress()),
-//                member.getRoles() != null && !member.getRoles().isEmpty()
-//                        ? member.getRoles().iterator().next()
-//                        : null,
+                member.getBirthDate(),
+                member.getLoginType(),
+                member.getMemberAddress() == null ? null : fromMemberAddress(member.getMemberAddress()),
                 member.getCreatedAt()
         );
     }

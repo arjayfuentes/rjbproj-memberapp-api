@@ -1,6 +1,6 @@
 package com.rjproj.memberapp.dto;
 
-public record GoogleLoginRequest(
+public record GoogleRequest(
         String googleToken
 ) {
 }

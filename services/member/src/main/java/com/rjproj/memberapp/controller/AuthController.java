@@ -22,8 +22,8 @@ public class AuthController {
     }
 
     @PostMapping("/login/withGoogle")
-    public ResponseEntity<Session> loginMemberWithGoogle(@RequestBody @Valid GoogleLoginRequest googleLoginRequest){
-        return ResponseEntity.ok(memberService.loginMemberWithGoogle(googleLoginRequest.googleToken()));
+    public ResponseEntity<Session> loginMemberWithGoogle(@RequestBody @Valid GoogleRequest googleRequest){
+        return ResponseEntity.ok(memberService.loginMemberWithGoogle(googleRequest.googleToken()));
     }
 
     @PostMapping("/getLoginSession")
@@ -31,19 +31,19 @@ public class AuthController {
         return ResponseEntity.ok(memberService.getLoginSession(token));
     }
 
-//    @PostMapping("/getLoginSession/withGoogle")
-//    public ResponseEntity<Session> getLoginSessionWithGoogle(@RequestBody @Valid String googletoken){
-//        return ResponseEntity.ok(memberService.getLoginSessionWithGoogle(googletoken));
-//    }
-
     @PostMapping("/register")
     public ResponseEntity<MemberResponse> registerMember(@RequestBody @Valid MemberRequest memberRequest) {
         return ResponseEntity.ok(memberService.registerMember(memberRequest));
     }
 
     @PostMapping("/register/withGoogle")
-    public ResponseEntity<MemberResponse> registerMemberWithGoole(@RequestBody @Valid String googleToken) {
-        return ResponseEntity.ok(memberService.registerMemberWithGoogle(googleToken));
+    public ResponseEntity<MemberResponse> registerMemberWithGoole(@RequestBody @Valid GoogleRequest googleRequest) {
+        return ResponseEntity.ok(memberService.registerMemberWithGoogle(googleRequest.googleToken()));
+    }
+
+    @PostMapping("/register/updateMemberAfterRegistration")
+    public ResponseEntity<MemberResponse> updateMemberAfterRegistration(@RequestBody @Valid MemberRequest memberRequest) {
+        return ResponseEntity.ok(memberService.updateMemberAfterRegistration(memberRequest));
     }
 
     @PostMapping("/selectLoginOrganization")

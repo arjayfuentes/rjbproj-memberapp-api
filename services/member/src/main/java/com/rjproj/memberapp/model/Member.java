@@ -1,12 +1,15 @@
 package com.rjproj.memberapp.model;
 
+import com.rjproj.memberapp.dto.LoginType;
 import com.rjproj.memberapp.util.CollectionUtil;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,6 +36,12 @@ public class Member {
     private String phoneNumber;
 
     private String profilePicUrl;
+
+    private LocalDate birthDate;
+
+    @Enumerated(EnumType.STRING)  // Store as a String in DB
+    @NotNull  // Ensure this field cannot be null when saving the entity
+    private LoginType loginType; // N
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "member_address_id", referencedColumnName = "memberAddressId", nullable = true, unique = true)
