@@ -1,5 +1,6 @@
 package com.rjproj.memberapp.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.rjproj.memberapp.model.MemberAddress;
 import com.rjproj.memberapp.model.Role;
 import org.hibernate.annotations.CreationTimestamp;
@@ -17,6 +18,7 @@ public record MemberResponse (
         String email,
         String phoneNumber,
         String profilePicUrl,
+
         LocalDate birthDate,
         LoginType loginType,
         MemberAddressResponse memberAddress,

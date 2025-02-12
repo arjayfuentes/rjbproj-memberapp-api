@@ -1,12 +1,18 @@
 package com.rjproj.memberapp.controller;
 
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.rjproj.memberapp.dto.*;
+import com.rjproj.memberapp.model.Member;
 import com.rjproj.memberapp.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -15,6 +21,9 @@ public class AuthController {
 
     @Autowired
     private MemberService memberService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @PostMapping("/login")
     public ResponseEntity<Session> loginMember(@RequestBody @Valid LoginRequest loginRequest){
@@ -41,9 +50,20 @@ public class AuthController {
         return ResponseEntity.ok(memberService.registerMemberWithGoogle(googleRequest.googleToken()));
     }
 
-    @PostMapping("/register/updateMemberAfterRegistration")
-    public ResponseEntity<MemberResponse> updateMemberAfterRegistration(@RequestBody @Valid MemberRequest memberRequest) {
-        return ResponseEntity.ok(memberService.updateMemberAfterRegistration(memberRequest));
+    @PostMapping(path = "/register/updateMemberAfterRegistration", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<MemberResponse> updateMemberAfterRegistration(
+            @RequestPart(value = "profilePicImage", required = false) MultipartFile profilePicImage,
+            @RequestPart(value = "additionalInfoRequest") String additionalInfoRequest
+    ) {
+
+        AdditionalInfoRequest request;
+        try {
+            request = objectMapper.readValue(additionalInfoRequest, AdditionalInfoRequest.class);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        return ResponseEntity.ok(memberService.updateMemberAfterRegistration(profilePicImage, request));
     }
 
     @PostMapping("/selectLoginOrganization")

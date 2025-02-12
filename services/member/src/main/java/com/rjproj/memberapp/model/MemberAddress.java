@@ -27,7 +27,7 @@ public class MemberAddress {
 
     private String provinceState;
 
-    private String region;
+    private String postalCode;
 
     private String country;
 

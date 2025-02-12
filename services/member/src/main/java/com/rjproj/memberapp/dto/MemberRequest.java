@@ -7,6 +7,7 @@ import com.rjproj.memberapp.model.MemberAddress;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import java.util.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 public record MemberRequest (
 
@@ -28,6 +29,7 @@ public record MemberRequest (
 
         String profilePicUrl,
 
+        @JsonFormat(pattern = "yyyy-MM-dd")
         LocalDate birthDate,
 
         LoginType loginType,

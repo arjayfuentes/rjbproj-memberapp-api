@@ -29,17 +29,27 @@ spring:
             client-secret: "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"
             scope: openid, profile, email
             redirect-uri: "http://localhost:8222/login/oauth2/code/google"
-
-
-
-#            redirect-uri={baseUrl}/login/oauth2/code/google:
-        #            redirectUri={baseUrl}/oauth2/callback/{registrationId}:#
-#            redirect-uri: "https://localhost:8222/api/login/oauth2/code/google"
         provider:
           google:
             authorization-uri: https://accounts.google.com/o/oauth2/auth
             token-uri: https://oauth2.googleapis.com/token
             user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    datatype:
+      jsr310:
+        serializer: com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer
+        deserializer: com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer
+
+aws:
+  s3:
+    access:
+      key: AKIAT4GVRMTPCE7WS4MA
+    secret:
+      key: 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
+    region: eu-north-1
+    bucket: arjay-fileupload
 
 keyStore:
   path: keystore.jks
@@ -48,7 +58,6 @@ keyStore:
 #    user:
 #      name: arjay
 #      password: user1234
-
 
 application:
   config:

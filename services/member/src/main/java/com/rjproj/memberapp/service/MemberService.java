@@ -1,27 +1,7 @@
 package com.rjproj.memberapp.service;
 
-import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest;
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
-import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpRequestFactory;
-import com.google.api.client.http.HttpResponse;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.JsonObjectParser;
-import com.google.api.client.json.gson.GsonFactory;
-import com.google.api.services.people.v1.PeopleService;
-import com.google.api.services.people.v1.model.Address;
-import com.google.api.services.people.v1.model.Person;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.rjproj.memberapp.dto.*;
 import com.rjproj.memberapp.exception.MemberException;
-import com.rjproj.memberapp.exception.MemberExceptionHandler;
 import com.rjproj.memberapp.mapper.MemberMapper;
 import com.rjproj.memberapp.mapper.MembershipMapper;
 import com.rjproj.memberapp.mapper.OrganizationMapper;
@@ -51,17 +31,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.rjproj.memberapp.exception.MemberErrorMessage.*;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpClientErrorException;
+
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @Service
@@ -96,6 +73,9 @@ public class MemberService {
 
     @Autowired
     private GoogleService googleService;
+
+    @Autowired
+    private FileService fileService;
 
     @Autowired
     JWTUtil jwtUtil;
@@ -227,15 +207,49 @@ public class MemberService {
         return addMember(memberRequest);
     }
 
-    public MemberResponse updateMemberAfterRegistration(@Valid MemberRequest memberRequest) {
-        Optional<Member> member = memberRepository.findByEmail(memberRequest.email());
+    public MemberResponse updateMemberAfterRegistration(MultipartFile profilePicImage,
+                                                        @Valid AdditionalInfoRequest additionalInfoRequest) {
+        Optional<Member> member = memberRepository.findByEmail(additionalInfoRequest.memberRequest().email());
 
-        if(!member.isPresent()) {
-            throw new MemberException("The email address you provided does not exists.", MEMBER_NOT_EXISTS.getMessage(), HttpStatus.BAD_REQUEST);
+        if (member.isEmpty()) {
+            throw new MemberException("The email address you provided does not exist.",
+                    MEMBER_NOT_EXISTS.getMessage(),
+                    HttpStatus.BAD_REQUEST);
         }
 
-        return this.updateMember(member.get().getMemberId(), memberRequest);
+        Member existingMember = member.get();
+        String imageUrl = additionalInfoRequest.memberRequest().profilePicUrl(); // Default to existing URL
+
+        if (profilePicImage != null && !profilePicImage.isEmpty()) {
+            try {
+                imageUrl = fileService.uploadImage("member",
+                        existingMember.getMemberId(), // Unique identifier
+                        profilePicImage);
+            } catch (IOException e) {
+                throw new MemberException("Failed to upload profile image",
+                        e.getMessage(),
+                        HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        // ✅ Create a new MemberRequest with the updated profilePicUrl
+        MemberRequest updatedRequest = new MemberRequest(
+                additionalInfoRequest.memberRequest().memberId(),
+                additionalInfoRequest.memberRequest().firstName(),
+                additionalInfoRequest.memberRequest().lastName(),
+                additionalInfoRequest.memberRequest().email(),
+                additionalInfoRequest.memberRequest().password(),
+                additionalInfoRequest.memberRequest().phoneNumber(),
+                imageUrl, // ✅ Set updated profilePicUrl here
+                additionalInfoRequest.memberRequest().birthDate(),
+                additionalInfoRequest.memberRequest().loginType(),
+                additionalInfoRequest.memberRequest().memberAddress()
+        );
+
+        return this.updateMember(existingMember.getMemberId(), updatedRequest);
     }
+
+
 
     public Session login(LoginRequest loginRequest) {
 

@@ -1,8 +1,10 @@
 package com.rjproj.memberapp.mapper;
 
+import com.rjproj.memberapp.dto.OrganizationAddressResponse;
 import com.rjproj.memberapp.dto.OrganizationRequest;
 import com.rjproj.memberapp.dto.OrganizationResponse;
 import com.rjproj.memberapp.model.Organization;
+import com.rjproj.memberapp.model.OrganizationAddress;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -46,9 +48,20 @@ public class OrganizationMapper {
                 organization.getEmail(),
                 organization.getPhoneNumber(),
                 organization.getWebsiteUrl(),
-                organization.getOrganizationAddress(),
-                organization.getCreatedAt(),
-                organization.getUpdatedAt()
+                fromOrganizationAddress(organization.getOrganizationAddress())
+        );
+    }
+
+
+    public OrganizationAddressResponse fromOrganizationAddress(OrganizationAddress organizationAddress) {
+        return new OrganizationAddressResponse(
+                organizationAddress.getOrganizationAddressId(),
+                organizationAddress.getStreet(),
+                organizationAddress.getCity(),
+                organizationAddress.getProvinceState(),
+                organizationAddress.getRegion(),
+                organizationAddress.getPostCode(),
+                organizationAddress.getCountry()
         );
     }
 

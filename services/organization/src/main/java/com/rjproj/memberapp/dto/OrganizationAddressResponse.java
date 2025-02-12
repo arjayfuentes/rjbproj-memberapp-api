@@ -1,8 +1,6 @@
-package com.rjproj.memberapp.organization;
+package com.rjproj.memberapp.dto;
 
-import java.time.Instant;
-
-public record OrganizationAddress(
+public record OrganizationAddressResponse(
         String organizationAddressId,
         String street,
         String city,

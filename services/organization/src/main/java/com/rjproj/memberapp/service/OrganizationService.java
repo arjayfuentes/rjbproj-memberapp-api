@@ -149,10 +149,15 @@ public class OrganizationService {
     }
 
     public List<OrganizationResponse> findOrganizationsByIds(List<String> organizationIds) {
-        return organizationRepository.findByOrganizationIdIn(organizationIds)
-                .stream()
-                .map(organizationMapper::fromOrganization)
-                .collect(Collectors.toList());
+        try {
+            return organizationRepository.findByOrganizationIdIn(organizationIds)
+                    .stream()
+                    .map(organizationMapper::fromOrganization)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     public OrganizationResponse completeCreateOrganization(MultipartFile logoImage, MultipartFile backgroundImage, @Valid CreateOrganizationRequest createOrganizationRequest) {

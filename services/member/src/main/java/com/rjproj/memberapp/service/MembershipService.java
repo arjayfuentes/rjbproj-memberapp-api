@@ -125,8 +125,16 @@ public class MembershipService {
     public List<OrganizationResponse> getOrganizationByMemberId(UUID memberId) {
         List<UUID> organizationIdsAsStrings = getActiveOrganizationIdsByMemberId(memberId);
 
-        return this.organizationClient.findOrganizationsByIds(organizationIdsAsStrings)
-                .orElseThrow(() -> new NotFoundException("Organization not found"));
+        try {
+            List<OrganizationResponse> response = this.organizationClient.findOrganizationsByIds(organizationIdsAsStrings)
+                    .orElseThrow(() -> new NotFoundException("Organization not found"));
+            System.out.println("Received Response: " + response);  // Debugging
+            return response;
+        } catch (Exception e) {
+            e.printStackTrace();  // Log full stack trace
+            throw new RuntimeException(e);
+        }
+
     }
 
     public List<UUID> getOrganizationIdsByMemberId(UUID memberId) {

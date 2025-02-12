@@ -15,8 +15,6 @@ public record OrganizationResponse (
         String email,
         String phoneNumber,
         String websiteUrl,
-        OrganizationAddress organizationAddress,
-        Instant createdAt,
-        Instant updatedAt
+        OrganizationAddressResponse organizationAddress
 ) {
 }

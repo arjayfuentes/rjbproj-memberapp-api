@@ -1,5 +1,6 @@
 package com.rjproj.memberapp.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.rjproj.memberapp.dto.LoginType;
 import com.rjproj.memberapp.util.CollectionUtil;
 import jakarta.persistence.*;

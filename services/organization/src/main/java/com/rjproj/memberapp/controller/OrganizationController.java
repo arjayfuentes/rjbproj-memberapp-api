@@ -110,11 +110,6 @@ public class OrganizationController {
             @RequestPart(value = "backgroundImage", required = false) MultipartFile backgroundImage,
             @RequestPart(value = "createOrganizationRequest") String rawRequest) {
 
-        // Debug logs
-        System.out.println("Received logoImage: " + (logoImage != null ? logoImage.getOriginalFilename() : "No file"));
-        System.out.println("Received backgroundImage: " + (backgroundImage != null ? backgroundImage.getOriginalFilename() : "No file"));
-        System.out.println("Parsed Organization Request: " + rawRequest);
-
         ObjectMapper objectMapper = new ObjectMapper();
         CreateOrganizationRequest createOrganizationRequest;
 

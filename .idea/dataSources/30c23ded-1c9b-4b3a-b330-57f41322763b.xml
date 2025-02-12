@@ -3,9 +3,9 @@
   <database-model serializer="dbm" dbms="POSTGRES" family-id="POSTGRES" format-version="4.53">
     <root id="1">
       <DateStyle>mdy</DateStyle>
-      <IntrospectionStateNumber>1640</IntrospectionStateNumber>
+      <IntrospectionStateNumber>1647</IntrospectionStateNumber>
       <ServerVersion>17.2</ServerVersion>
-      <StartupTime>1739261593</StartupTime>
+      <StartupTime>1739350063</StartupTime>
       <TimeZones>true ACDT
 true ACSST
 false ACST
@@ -1424,7 +1424,7 @@ false posixrules
 13219||10|C|G
 13219||-9223372036854775808|U|G
 13219||10|U|G</Grants>
-      <IntrospectionStateNumber>1640</IntrospectionStateNumber>
+      <IntrospectionStateNumber>1647</IntrospectionStateNumber>
       <ObjectId>24581</ObjectId>
       <OwnerName>arjay</OwnerName>
     </database>
@@ -8235,8 +8235,8 @@ false posixrules
     <schema id="512" parent="4" name="public">
       <Comment>standard public schema</Comment>
       <Current>1</Current>
-      <IntrospectionStateNumber>1640</IntrospectionStateNumber>
-      <LastIntrospectionLocalTimestamp>2025-02-11.13:46:40</LastIntrospectionLocalTimestamp>
+      <IntrospectionStateNumber>1647</IntrospectionStateNumber>
+      <LastIntrospectionLocalTimestamp>2025-02-12.11:06:36</LastIntrospectionLocalTimestamp>
       <ObjectId>2200</ObjectId>
       <StateNumber>532</StateNumber>
       <OwnerName>pg_database_owner</OwnerName>
@@ -8380,7 +8380,7 @@ false posixrules
     </table>
     <table id="528" parent="512" name="member_address">
       <ObjectId>41240</ObjectId>
-      <StateNumber>1394</StateNumber>
+      <StateNumber>1646</StateNumber>
       <AccessMethodId>2</AccessMethodId>
       <OwnerName>arjay</OwnerName>
     </table>
@@ -8954,10 +8954,10 @@ false posixrules
       <StoredType>varchar(255)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
-    <column id="620" parent="528" name="region">
+    <column id="620" parent="528" name="postal_code">
       <Position>5</Position>
-      <StateNumber>1394</StateNumber>
-      <StoredType>varchar(255)|0s</StoredType>
+      <StateNumber>1646</StateNumber>
+      <StoredType>varchar(20)|0s</StoredType>
       <TypeId>1043</TypeId>
     </column>
     <column id="621" parent="528" name="country">
@@ -8985,7 +8985,7 @@ false posixrules
       <ColNames>member_address_id</ColNames>
       <ObjectId>41246</ObjectId>
       <Primary>1</Primary>
-      <StateNumber>1394</StateNumber>
+      <StateNumber>1646</StateNumber>
       <Unique>1</Unique>
       <AccessMethodId>403</AccessMethodId>
     </index>

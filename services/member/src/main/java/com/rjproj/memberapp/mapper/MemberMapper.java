@@ -73,7 +73,7 @@ public class MemberMapper {
                 memberAddress.getStreet(),
                 memberAddress.getCity(),
                 memberAddress.getProvinceState(),
-                memberAddress.getRegion(),
+                memberAddress.getPostalCode(),
                 memberAddress.getCountry()
         );
     }

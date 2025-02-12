@@ -4,7 +4,7 @@ public record MemberAddressResponse(
         String street,
         String city,
         String provinceState,
-        String region,
+        String postalCode,
         String country
 ) {
 }
