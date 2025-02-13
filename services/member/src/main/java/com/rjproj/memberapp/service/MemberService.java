@@ -208,6 +208,11 @@ public class MemberService {
     }
 
     public MemberResponse updateMemberAfterRegistration(MultipartFile profilePicImage,
+                                              @Valid AdditionalInfoRequest additionalInfoRequest) {
+        return updateMemberDetails(profilePicImage, additionalInfoRequest);
+    }
+
+    public MemberResponse updateMemberDetails(MultipartFile profilePicImage,
                                                         @Valid AdditionalInfoRequest additionalInfoRequest) {
         Optional<Member> member = memberRepository.findByEmail(additionalInfoRequest.memberRequest().email());
 
@@ -223,7 +228,7 @@ public class MemberService {
         if (profilePicImage != null && !profilePicImage.isEmpty()) {
             try {
                 imageUrl = fileService.uploadImage("member",
-                        existingMember.getMemberId(), // Unique identifier
+                        existingMember.getMemberId(),
                         profilePicImage);
             } catch (IOException e) {
                 throw new MemberException("Failed to upload profile image",
@@ -232,7 +237,6 @@ public class MemberService {
             }
         }
 
-        // ✅ Create a new MemberRequest with the updated profilePicUrl
         MemberRequest updatedRequest = new MemberRequest(
                 additionalInfoRequest.memberRequest().memberId(),
                 additionalInfoRequest.memberRequest().firstName(),
@@ -240,7 +244,7 @@ public class MemberService {
                 additionalInfoRequest.memberRequest().email(),
                 additionalInfoRequest.memberRequest().password(),
                 additionalInfoRequest.memberRequest().phoneNumber(),
-                imageUrl, // ✅ Set updated profilePicUrl here
+                imageUrl,
                 additionalInfoRequest.memberRequest().birthDate(),
                 additionalInfoRequest.memberRequest().loginType(),
                 additionalInfoRequest.memberRequest().memberAddress()
@@ -248,8 +252,6 @@ public class MemberService {
 
         return this.updateMember(existingMember.getMemberId(), updatedRequest);
     }
-
-
 
     public Session login(LoginRequest loginRequest) {
 
@@ -639,6 +641,7 @@ public class MemberService {
     public Session getLoginSessionWithGoogle(String googleToken) {
         return null;
     }
+
 
 
 }

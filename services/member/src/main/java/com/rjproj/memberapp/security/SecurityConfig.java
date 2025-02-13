@@ -73,6 +73,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/getLoginSession").permitAll()
                         .requestMatchers("/api/v1/auth/login/withGoogle").permitAll()
                         .requestMatchers("/api/v1/membership/requestMembership/**").permitAll()
+                        .requestMatchers("/api/v1/member/updateMemberDetails").permitAll()
                         .requestMatchers("/api/v1/membership/createMembershipForCurrentMember/**").permitAll()
                         .requestMatchers("/api/v1/membership/getMembershipByMemberIdAndOrganizationId/**").permitAll()
                         .requestMatchers("/api/v1/membership/getOrganizationByMemberId/**").permitAll()

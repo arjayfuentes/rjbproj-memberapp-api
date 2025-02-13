@@ -1,5 +1,7 @@
 package com.rjproj.memberapp.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rjproj.memberapp.dto.AdditionalInfoRequest;
 import com.rjproj.memberapp.dto.MemberRequest;
 import com.rjproj.memberapp.dto.MemberResponse;
 import com.rjproj.memberapp.dto.MembershipResponse;
@@ -8,10 +10,13 @@ import com.rjproj.memberapp.service.MemberService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,6 +27,9 @@ import java.util.UUID;
 public class MemberController {
 
     private final MemberService memberService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @PostMapping
     public ResponseEntity<MemberResponse> createMember(@RequestBody @Valid MemberRequest memberRequest) {
@@ -99,7 +107,21 @@ public class MemberController {
     }
 
 
+    @PostMapping(path = "/updateMemberDetails", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<MemberResponse> updateMemberDetails(
+            @RequestPart(value = "profilePicImage", required = false) MultipartFile profilePicImage,
+            @RequestPart(value = "additionalInfoRequest") String additionalInfoRequest
+    ) {
 
+        AdditionalInfoRequest request;
+        try {
+            request = objectMapper.readValue(additionalInfoRequest, AdditionalInfoRequest.class);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        return ResponseEntity.ok(memberService.updateMemberDetails(profilePicImage, request));
+    }
 
 
 }
