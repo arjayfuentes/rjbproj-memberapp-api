@@ -103,6 +103,7 @@ public class OrganizationController {
     }
 
 
+
     @GetMapping("/findMyOrganizationById/{organization-id}")
     public ResponseEntity<OrganizationResponse> findMyOrganizationById(
             @PathVariable("organization-id") String organizationId
