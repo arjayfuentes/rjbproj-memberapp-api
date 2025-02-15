@@ -86,6 +86,15 @@ public class OrganizationService {
         return organizationMapper.fromOrganization(updatedOrganization);
     }
 
+    public List<OrganizationResponse> saveOrganizations(List<OrganizationRequest> organizationRequests) {
+        List<Organization> organizations = new ArrayList<>();
+        organizationRequests.forEach(organizationRequest -> {
+            organizations.add(organizationRepository.save(organizationMapper.toOrganization(organizationRequest)));
+        });
+        List<Organization> savedOrganizations = organizationRepository.saveAll(organizations);
+        return savedOrganizations.stream().map(organizationMapper::fromOrganization).collect(Collectors.toList());
+    }
+
     private void mergeOrganization(Organization member, @Valid OrganizationRequest organizationRequest) {
         if(StringUtils.isNotBlank(organizationRequest.name())) {
             member.setName(organizationRequest.name());

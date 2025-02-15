@@ -48,6 +48,13 @@ public class OrganizationController {
         return ResponseEntity.ok(organizationService.findAllOrganization());
     }
 
+    @GetMapping("/saveOrganizations")
+    public ResponseEntity<List<OrganizationResponse>> saveOrganizations(
+            @RequestBody List<OrganizationRequest> organizationRequests
+    ){
+        return ResponseEntity.ok(organizationService.saveOrganizations(organizationRequests));
+    }
+
 //    @GetMapping("/viewMyOrganization/{member-id}")
 //    public ResponseEntity<List<OrganizationResponse>> getMyOrganizations(
 //            @RequestBody @Valid OrganizationRequest organizationRequest
