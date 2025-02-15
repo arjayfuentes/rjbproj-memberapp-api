@@ -10,6 +10,7 @@ import com.rjproj.memberapp.service.FileService;
 import com.rjproj.memberapp.service.OrganizationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -44,8 +45,16 @@ public class OrganizationController {
     }
 
     @GetMapping("/viewAllOrganization")
-    public ResponseEntity<List<OrganizationResponse>> getOrganizations(){
+    public ResponseEntity<List<OrganizationResponse>> viewAllOrganizations(){
         return ResponseEntity.ok(organizationService.findAllOrganization());
+    }
+
+    @GetMapping("/getAllOrganizations")
+    public Page<OrganizationResponse> getOrganizations(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return organizationService.getOrganizations(page, size);
     }
 
     @GetMapping("/saveOrganizations")

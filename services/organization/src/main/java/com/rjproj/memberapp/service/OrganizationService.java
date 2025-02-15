@@ -14,6 +14,8 @@ import com.rjproj.memberapp.repository.OrganizationRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 import org.apache.commons.lang.StringUtils;
@@ -167,6 +169,11 @@ public class OrganizationService {
             throw new RuntimeException(e);
         }
 
+    }
+
+    public Page<OrganizationResponse> getOrganizations(int page, int size) {
+        Page<Organization> organizations = organizationRepository.findAll(PageRequest.of(page, size));
+        return organizations.map(org -> organizationMapper.fromOrganization(org));
     }
 
     public OrganizationResponse completeCreateOrganization(MultipartFile logoImage, MultipartFile backgroundImage, @Valid CreateOrganizationRequest createOrganizationRequest) {

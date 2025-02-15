@@ -1,6 +1,8 @@
 package com.rjproj.memberapp.repository;
 
 import com.rjproj.memberapp.model.Organization;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
@@ -10,4 +12,6 @@ public interface OrganizationRepository extends MongoRepository<Organization, St
 
     List<Organization> findByOrganizationIdIn(List<String> ids);
 
+    // Fetch organizations with pagination
+    Page<Organization> findAll(Pageable pageable);
 }
