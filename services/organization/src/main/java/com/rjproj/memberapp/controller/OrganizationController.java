@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -52,9 +53,25 @@ public class OrganizationController {
     @GetMapping("/getAllOrganizations")
     public Page<OrganizationResponse> getOrganizations(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String countryName,
+            @RequestParam(required = false) String cityName
     ) {
-        return organizationService.getOrganizations(page, size);
+        return organizationService.getOrganizations(page, size, name, countryName, cityName);
+    }
+
+    // Endpoint to get unique countries
+    @GetMapping("/organizationCountries")
+    public List<String> getUniqueOrganizationCountries() {
+        return organizationService.getUniqueOrganizationCountries();
+    }
+
+    @GetMapping("/organizationCitiesByCountry")
+    public List<String> getUniqueOrganizationCitiesByCountry(
+            @RequestParam String country
+    ) {
+        return organizationService.getCitiesByCountry(country);
     }
 
     @GetMapping("/saveOrganizations")

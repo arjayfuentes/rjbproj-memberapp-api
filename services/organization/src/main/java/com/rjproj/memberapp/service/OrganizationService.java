@@ -15,6 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
@@ -23,10 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import java.io.File;
@@ -171,8 +169,12 @@ public class OrganizationService {
 
     }
 
-    public Page<OrganizationResponse> getOrganizations(int page, int size) {
-        Page<Organization> organizations = organizationRepository.findAll(PageRequest.of(page, size));
+    public Page<OrganizationResponse> getOrganizations(int page, int size, String name, String countryName, String cityName) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+
+        // Call the custom repository method
+        Page<Organization> organizations = organizationRepository.findByFilters(name, countryName, cityName, pageRequest);
+
         return organizations.map(org -> organizationMapper.fromOrganization(org));
     }
 
@@ -217,5 +219,18 @@ public class OrganizationService {
         String memberId = memberClient.createDefaultAdminOrganizationRoleForOwner(UUID.fromString(savedOrganization.getOrganizationId())).get();
         return organizationMapper.fromOrganization(savedOrganization);
 
+    }
+
+    public List<String> getUniqueOrganizationCountries() {
+        // Extracting the 'country' value from the returned map
+        return organizationRepository.findDistinctCountries()
+                .stream()
+                .map(map -> map.get("country"))
+                .collect(Collectors.toList());
+    }
+
+    public List<String> getCitiesByCountry(String country) {
+        List<String> cities = organizationRepository.findDistinctCitiesByCountry(country);
+        return cities;
     }
 }
