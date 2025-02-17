@@ -60,7 +60,7 @@ public class OrganizationMapper {
                 organizationAddress.getCity(),
                 organizationAddress.getProvinceState(),
                 organizationAddress.getRegion(),
-                organizationAddress.getPostCode(),
+                organizationAddress.getPostalCode(),
                 organizationAddress.getCountry()
         );
     }

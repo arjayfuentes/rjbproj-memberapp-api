@@ -30,7 +30,7 @@ public class OrganizationAddress {
 
     private String region;
 
-    private String postCode;
+    private String postalCode;
 
     private String country;
 

@@ -8,7 +8,7 @@ public record OrganizationAddress(
         String city,
         String provinceState,
         String region,
-        String postCode,
+        String postalCode,
         String country
 ) {
 }

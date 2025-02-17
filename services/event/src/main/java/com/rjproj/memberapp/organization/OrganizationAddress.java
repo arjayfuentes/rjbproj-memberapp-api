@@ -8,6 +8,7 @@ public record OrganizationAddress(
         String city,
         String provinceState,
         String region,
+        String poastalCode,
         String country,
         Instant createdAt,
         Instant updatedAt
