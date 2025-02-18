@@ -6,6 +6,7 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.rjproj.memberapp.model.ImageType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,7 +36,7 @@ public class FileService {
 
     }
 
-    public String uploadImage(String entity, UUID entityId, MultipartFile file) throws IOException {
+    public String uploadImage(String entity, UUID entityId, ImageType imageType, MultipartFile file) throws IOException {
 
         // Initialize AWS S3 Client
         BasicAWSCredentials awsCredentials = new BasicAWSCredentials(awsS3AccessKey, awsS3SecretKey);
@@ -44,19 +45,12 @@ public class FileService {
                 .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
                 .build();
 
-        // Extract file extension
         String fileExtension = getFileExtension(file.getOriginalFilename());
 
-        // Generate a unique random ID
-        String randomId = UUID.randomUUID().toString();
+        String fileKey = entity + "/" + entityId + "/" + entityId + "-" + imageType.getValue() + "."  + fileExtension;
 
-        // Corrected file key (no extra `/` before id)
-        String fileKey = entity + "-id-" + entityId + "-picId-" + randomId + "-" + fileExtension;
-
-        // Get input stream
         InputStream inputStream = file.getInputStream();
 
-        // Set metadata
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(file.getSize());
 
@@ -70,7 +64,7 @@ public class FileService {
 
     private String getFileExtension(String fileName) {
         if (fileName == null || !fileName.contains(".")) {
-            return "";
+            return "jpg";
         }
         return fileName.substring(fileName.lastIndexOf("."));
     }

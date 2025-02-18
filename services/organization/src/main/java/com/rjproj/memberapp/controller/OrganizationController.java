@@ -124,14 +124,14 @@ public class OrganizationController {
         return ResponseEntity.accepted().build();
     }
 
-    @PostMapping("/upload")
-    public ResponseEntity<Object> saveFIle(@RequestParam(required = false) MultipartFile file,
-                                           @RequestParam(required = false) String name){
-        if (file.isEmpty() || name.isEmpty()){
-            return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("File and Name are required");
-        }
-        return ResponseEntity.ok(fileService.saveFile(file, name));
-    }
+//    @PostMapping("/upload")
+//    public ResponseEntity<Object> saveFIle(@RequestParam(required = false) MultipartFile file,
+//                                           @RequestParam(required = false) String name){
+//        if (file.isEmpty() || name.isEmpty()){
+//            return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("File and Name are required");
+//        }
+//        return ResponseEntity.ok(fileService.saveFile(file, name));
+//    }
 
     @GetMapping("/get-all")
     public ResponseEntity<List<File>> getAllFiles(){

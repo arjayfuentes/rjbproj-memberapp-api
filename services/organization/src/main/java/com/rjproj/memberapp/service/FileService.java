@@ -8,6 +8,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.rjproj.memberapp.model.File;
+import com.rjproj.memberapp.model.ImageType;
 import com.rjproj.memberapp.repository.FileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.List;
-
+import java.util.UUID;
 
 
 @Service
@@ -36,13 +37,13 @@ public class FileService {
     @Value("${aws.s3.secret.key}")
     private String awsS3SecretKey;
 
-    public File saveFile(MultipartFile file, String name) {
+    public File saveFile(String entity, String entityId, ImageType imageType, String fileName, MultipartFile file) {
 
-        String saveFileURl = saveFileToAWSS3Bucket(file);
+        String saveFileURl = saveFileToAWSS3Bucket(entity, entityId, imageType, file);
 
         File fileToSave = File.builder()
                 .fileUrl(saveFileURl)
-                .name(name)
+                .name(fileName)
                 .build();
         return fileRepository.save(fileToSave);
     }
@@ -52,10 +53,8 @@ public class FileService {
     }
 
 
-    private String saveFileToAWSS3Bucket(MultipartFile file) {
+    private String saveFileToAWSS3Bucket(String entity, String entityId, ImageType imageType, MultipartFile file) {
         try {
-            String s3FileName = file.getOriginalFilename();
-
             BasicAWSCredentials awsCredentials = new BasicAWSCredentials(awsS3AccessKey, awsS3SecretKey);
 
             AmazonS3 amazonS3Client = AmazonS3ClientBuilder.standard()
@@ -63,18 +62,31 @@ public class FileService {
                     .withRegion(Regions.EU_NORTH_1)
                     .build();
 
+            // Extract file extension
+            String fileExtension = getFileExtension(file.getOriginalFilename());
+
+            // Corrected file key (no extra `/` before id)
+            String fileKey = entity + "/" + entityId + "/" + entityId + "-" + imageType.getValue() + "."  + fileExtension;
+
             InputStream inputStream = file.getInputStream();
             ObjectMetadata objectMetadata = new ObjectMetadata();
 
             objectMetadata.setContentType("image/jpeg");
             String bucketName = "arjay-fileupload";
-            PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, s3FileName, inputStream, objectMetadata);
+            PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, fileKey, inputStream, objectMetadata);
             amazonS3Client.putObject(putObjectRequest);
-            return "https://" + bucketName + ".s3.amazonaws.com/" + s3FileName;
+            return amazonS3Client.getUrl(bucketName, fileKey).toString();
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
+    }
+
+    private String getFileExtension(String fileName) {
+        if (fileName == null || !fileName.contains(".")) {
+            return "jpg";
+        }
+        return fileName.substring(fileName.lastIndexOf("."));
     }
 
 }

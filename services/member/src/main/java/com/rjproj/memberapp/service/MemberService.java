@@ -229,6 +229,7 @@ public class MemberService {
             try {
                 imageUrl = fileService.uploadImage("member",
                         existingMember.getMemberId(),
+                        ImageType.PROFILE_IMAGE,
                         profilePicImage);
             } catch (IOException e) {
                 throw new MemberException("Failed to upload profile image",

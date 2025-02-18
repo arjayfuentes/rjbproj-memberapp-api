@@ -8,6 +8,7 @@ import com.rjproj.memberapp.membershiptype.MemberClient;
 import com.rjproj.memberapp.membershiptype.MembershipClient;
 import com.rjproj.memberapp.membershiptype.MembershipTypeClient;
 import com.rjproj.memberapp.model.ImageMetadata;
+import com.rjproj.memberapp.model.ImageType;
 import com.rjproj.memberapp.model.Organization;
 import com.rjproj.memberapp.repository.ImageMetadataRepository;
 import com.rjproj.memberapp.repository.OrganizationRepository;
@@ -180,20 +181,26 @@ public class OrganizationService {
 
     public OrganizationResponse completeCreateOrganization(MultipartFile logoImage, MultipartFile backgroundImage, @Valid CreateOrganizationRequest createOrganizationRequest) {
 
-        com.rjproj.memberapp.model.File savedLogoImage = fileService.saveFile(logoImage, logoImage.getName());
-        com.rjproj.memberapp.model.File savedBackgroundImage = fileService.saveFile(backgroundImage, backgroundImage.getName());
 
         Organization organization = organizationMapper.toOrganization(createOrganizationRequest.organizationRequest());
-        organization.setLogoUrl(savedLogoImage.getFileUrl());
-        organization.setBackgroundImageUrl(savedBackgroundImage.getFileUrl());
-
         Organization savedOrganization = organizationRepository.save(organization);
+
+
+        com.rjproj.memberapp.model.File savedLogoImage = fileService.saveFile("organization", savedOrganization.getOrganizationId(), ImageType.PROFILE_IMAGE, logoImage.getName(), logoImage);
+        com.rjproj.memberapp.model.File savedBackgroundImage = fileService.saveFile("organization", savedOrganization.getOrganizationId(), ImageType.BACKGROUND_IMAGE, logoImage.getName(), backgroundImage);
+
+        savedOrganization.setLogoUrl(savedLogoImage.getFileUrl());
+        savedOrganization.setBackgroundImageUrl(savedBackgroundImage.getFileUrl());
+
+
+        Organization finalsavedOrganization = organizationRepository.save(savedOrganization);
+
 
         List<MembershipTypeRequest> updatedMembershipTypeRequests = createOrganizationRequest.membershipTypes().stream()
                 .map(membershipTypeRequest -> {
                     return new MembershipTypeRequest(
                             membershipTypeRequest.membershipTypeId(),
-                            savedOrganization.getOrganizationId().toString(),
+                            finalsavedOrganization.getOrganizationId().toString(),
                             membershipTypeRequest.membershipTypeValidity(),
                             membershipTypeRequest.name(),
                             membershipTypeRequest.description(),
