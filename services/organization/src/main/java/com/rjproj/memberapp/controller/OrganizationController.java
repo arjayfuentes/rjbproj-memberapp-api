@@ -39,7 +39,7 @@ public class OrganizationController {
         return ResponseEntity.ok(organizationService.addOrganization(organizationRequest));
     }
 
-    @PutMapping
+    @PutMapping("/updateOrganization")
     public ResponseEntity<OrganizationResponse> updateOrganization(@RequestBody @Valid OrganizationRequest organizationRequest){
         OrganizationResponse updatedOrganizationResponse = organizationService.updateOrganization(organizationRequest);
         return new ResponseEntity(updatedOrganizationResponse, HttpStatus.ACCEPTED);
