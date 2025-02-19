@@ -98,6 +98,9 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
         if (path.contains("/api/v1/organization/updateOrganization")) {
             return "com.rjproj.memberapp.permission.organization.viewAll";
         }
+        if (path.contains("/api/v1/organization/updateOrganizationPhoto")) {
+            return "com.rjproj.memberapp.permission.organization.viewAll";
+        }
         if (path.contains("/api/v1/organization/organizationCountries")) {
             return "com.rjproj.memberapp.permission.organization.viewAll";
         }

@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rjproj.memberapp.dto.CreateOrganizationRequest;
 import com.rjproj.memberapp.dto.OrganizationRequest;
 import com.rjproj.memberapp.dto.OrganizationResponse;
+import com.rjproj.memberapp.dto.UpdateOrganizationPhotoRequest;
 import com.rjproj.memberapp.model.File;
 import com.rjproj.memberapp.model.ImageMetadata;
+import com.rjproj.memberapp.model.ImageType;
 import com.rjproj.memberapp.service.FileService;
 import com.rjproj.memberapp.service.OrganizationService;
 import jakarta.validation.Valid;
@@ -154,6 +156,27 @@ public class OrganizationController {
         }
 
         return ResponseEntity.ok(organizationService.completeCreateOrganization(logoImage, backgroundImage, createOrganizationRequest));
+    }
+
+
+
+    @PostMapping(path="/updateOrganizationPhoto/{organization-id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<OrganizationResponse> updateOrganizationPhoto(
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            @RequestParam("imageType") String imageType,
+            @PathVariable("organization-id") String organizationId
+    ) {
+
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        UpdateOrganizationPhotoRequest updateOrganizationPhotoRequest;
+//
+//        try {
+//            updateOrganizationPhotoRequest = objectMapper.readValue(rawRequest, UpdateOrganizationPhotoRequest.class);
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body(null);
+//        }
+
+        return ResponseEntity.ok(organizationService.updateOrganizationPhoto(organizationId, image, imageType));
     }
 
 

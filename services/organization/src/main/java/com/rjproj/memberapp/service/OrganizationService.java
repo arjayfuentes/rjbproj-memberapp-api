@@ -240,4 +240,28 @@ public class OrganizationService {
         List<String> cities = organizationRepository.findDistinctCitiesByCountry(country);
         return cities;
     }
+
+    public OrganizationResponse updateOrganizationPhoto(String organizationId, MultipartFile image, String imageType) {
+        Optional<Organization> organization = organizationRepository.findById(organizationId);
+        if (organization.isEmpty()) {
+            throw new OrganizationNotFoundException("No organization found with the provided ID: " + organizationId);
+        }
+
+
+        ImageType type = imageType.equals(ImageType.BACKGROUND_IMAGE.getValue()) ? ImageType.BACKGROUND_IMAGE : ImageType.LOGO_IMAGE;
+        com.rjproj.memberapp.model.File savedImage = fileService.saveFile("organization", organization.get().getOrganizationId(), type, image.getName(), image);
+        if(savedImage.getFileUrl() != null) {
+            if(imageType.equals(ImageType.LOGO_IMAGE.getValue())) {
+                organization.get().setLogoUrl(savedImage.getFileUrl());
+            }
+            if(imageType.equals(ImageType.BACKGROUND_IMAGE.getValue())) {
+                organization.get().setBackgroundImageUrl(savedImage.getFileUrl());
+            }
+
+            return organizationMapper.fromOrganization(organizationRepository.save(organization.get()));
+        } else {
+            throw new OrganizationNotFoundException("Error saving file");
+        }
+
+    }
 }
