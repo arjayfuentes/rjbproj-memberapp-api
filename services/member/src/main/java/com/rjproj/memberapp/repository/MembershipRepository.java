@@ -44,6 +44,7 @@ public interface MembershipRepository extends JpaRepository<Membership, UUID> {
     Page<Membership> findMembershipsByOrganizationIdSortedByRoleName(UUID organizationId, Pageable pageable);
 
 
+    Optional<Membership> findByMembershipId(UUID membershipId);
 
 
 

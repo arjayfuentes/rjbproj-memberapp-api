@@ -36,11 +36,19 @@ public class MembershipController {
         return ResponseEntity.ok(membershipService.requestMembership(organizationRequest));
     }
 
-    @PutMapping(path = "/{membership-id}")
+    @PutMapping(path = "/updateMembership/{membership-id}")
     public ResponseEntity<MembershipResponse> updateMembership(@PathVariable("membership-id") UUID membershipId, @RequestBody @Valid MembershipRequest membershipRequest){
         //return ResponseEntity.ok(membershipService.updateMembership(membershipRequest));
         return new ResponseEntity<>(
                 membershipService.updateMembership(membershipId, membershipRequest),
+                HttpStatus.ACCEPTED);
+    }
+
+
+    @PutMapping(path = "/updateMembershipType/{membership-id}")
+    public ResponseEntity<MembershipResponse> updateMembershipType(@PathVariable("membership-id") UUID membershipId, @RequestBody @Valid MembershipRequest membershipRequest){
+        return new ResponseEntity<>(
+                membershipService.updateMembershipType(membershipId, membershipRequest),
                 HttpStatus.ACCEPTED);
     }
 

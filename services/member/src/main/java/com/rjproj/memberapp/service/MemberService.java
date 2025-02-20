@@ -115,13 +115,27 @@ public class MemberService {
     public MemberResponse addMember(MemberRequest memberRequest) {
         Optional<Member> retrievedMember = memberRepository.findByEmail(memberRequest.email());
         Member member = memberMapper.toMember(memberRequest);
+        Optional<Role> defaultRole = roleRepository.findByName("Non-Member");
+
+
         if (retrievedMember.isPresent()){
             throw new MemberException("Member with email address " + memberRequest.email() + " already exists. Sign in to continue", MEMBER_EXISTS.getMessage(), HttpStatus.CONFLICT);
         }
         if(memberRequest.loginType() == LoginType.NORMAL) {
             member.setPassword(passwordEncoder.encode(member.getPassword()));
         }
-        return memberMapper.fromMember(memberRepository.save(member));
+
+        UUID defaultOrganizationId = UUID.fromString("00000000-0000-0000-0000-000000000000");
+
+        Member savedMember = memberRepository.save(member);
+        MemberRoleId memberRoleId = new MemberRoleId();
+        memberRoleId.setMemberId(member.getMemberId());
+        memberRoleId.setRoleId(defaultRole.get().getRoleId());
+        memberRoleId.setOrganizationId(defaultOrganizationId);
+
+        MemberRole memberRole = MemberRole.builder().id(memberRoleId).member(savedMember).role(defaultRole.get()).build();
+        memberRoleRepository.save(memberRole);
+        return memberMapper.fromMember(savedMember);
     }
 
     public MemberResponse createMember(@Valid MemberRequest memberRequest) {

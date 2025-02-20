@@ -77,4 +77,9 @@ public class MembershipTypeService {
                 .map(membershipTypeMapper::fromMembershipType)
                 .collect(Collectors.toList());
     }
+
+    public List<MembershipTypeResponse> getMembershipTypesByOrganizationId(UUID organizationId) {
+        List<MembershipType> membershipTypes = membershipTypeRepository.findByOrganizationId(organizationId);
+        return membershipTypes.stream().map(membershipTypeMapper::fromMembershipType).collect(Collectors.toList());
+    }
 }

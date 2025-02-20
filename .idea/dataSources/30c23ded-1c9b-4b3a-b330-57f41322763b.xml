@@ -3,9 +3,9 @@
   <database-model serializer="dbm" dbms="POSTGRES" family-id="POSTGRES" format-version="4.53">
     <root id="1">
       <DateStyle>mdy</DateStyle>
-      <IntrospectionStateNumber>1647</IntrospectionStateNumber>
+      <IntrospectionStateNumber>1828</IntrospectionStateNumber>
       <ServerVersion>17.2</ServerVersion>
-      <StartupTime>1739350063</StartupTime>
+      <StartupTime>1740040671</StartupTime>
       <TimeZones>true ACDT
 true ACSST
 false ACST
@@ -1424,7 +1424,7 @@ false posixrules
 13219||10|C|G
 13219||-9223372036854775808|U|G
 13219||10|U|G</Grants>
-      <IntrospectionStateNumber>1647</IntrospectionStateNumber>
+      <IntrospectionStateNumber>1828</IntrospectionStateNumber>
       <ObjectId>24581</ObjectId>
       <OwnerName>arjay</OwnerName>
     </database>
@@ -8235,8 +8235,8 @@ false posixrules
     <schema id="512" parent="4" name="public">
       <Comment>standard public schema</Comment>
       <Current>1</Current>
-      <IntrospectionStateNumber>1647</IntrospectionStateNumber>
-      <LastIntrospectionLocalTimestamp>2025-02-12.11:06:36</LastIntrospectionLocalTimestamp>
+      <IntrospectionStateNumber>1828</IntrospectionStateNumber>
+      <LastIntrospectionLocalTimestamp>2025-02-20.20:21:13</LastIntrospectionLocalTimestamp>
       <ObjectId>2200</ObjectId>
       <StateNumber>532</StateNumber>
       <OwnerName>pg_database_owner</OwnerName>
@@ -9010,9 +9010,10 @@ false posixrules
       <TypeId>2950</TypeId>
     </column>
     <column id="628" parent="529" name="organization_id">
+      <DefaultExpression>&apos;00000000-0000-0000-0000-000000000000&apos;::uuid</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>3</Position>
-      <StateNumber>1394</StateNumber>
+      <StateNumber>1827</StateNumber>
       <StoredType>uuid|0s</StoredType>
       <TypeId>2950</TypeId>
     </column>

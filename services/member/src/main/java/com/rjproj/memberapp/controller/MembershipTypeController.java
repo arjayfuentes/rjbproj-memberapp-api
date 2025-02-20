@@ -56,6 +56,13 @@ public class MembershipTypeController {
         return ResponseEntity.ok(membershipTypeService.findAll());
     }
 
+    @GetMapping("/getMembershipTypesByOrganizationId/{organization-id}")
+    public ResponseEntity<List<MembershipTypeResponse>> getMembershipTypesByOrganizationId(
+            @PathVariable("organization-id") UUID organizationId
+    ) {
+        return ResponseEntity.ok(membershipTypeService.getMembershipTypesByOrganizationId(organizationId));
+    }
+
     @DeleteMapping("/{membershipType-id}")
     public ResponseEntity<Void> deleteMembershipType(
             @PathVariable("membershipType-id") UUID membershipTypeId
