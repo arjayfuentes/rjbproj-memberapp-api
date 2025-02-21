@@ -21,7 +21,9 @@ public record MembershipRequest (
 //        UUID membershipTypeId,
         MembershipType membershipType,
 
-        String status,
+        MembershipStatusRequest membershipStatus,
+
+        RoleRequest role,
 
         Timestamp startDate,
 

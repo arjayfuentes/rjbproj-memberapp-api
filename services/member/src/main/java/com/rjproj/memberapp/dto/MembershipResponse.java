@@ -1,6 +1,7 @@
 package com.rjproj.memberapp.dto;
 
 import com.rjproj.memberapp.model.Member;
+import com.rjproj.memberapp.model.MembershipStatus;
 import com.rjproj.memberapp.model.MembershipType;
 import com.rjproj.memberapp.model.Role;
 
@@ -12,8 +13,8 @@ public record MembershipResponse(
         UUID organizationId,
         MemberResponse member,
         MembershipType membershipType,
+        MembershipStatusResponse membershipStatus,
         RoleResponse role,
-        String status,
         Timestamp startDate,
         Timestamp endDate
 ) {

@@ -16,30 +16,15 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-public class Membership {
+public class MembershipStatus {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    UUID membershipId;
+    UUID membershipStatusId;
 
-    UUID organizationId;
+    String name;
 
-    @ManyToOne
-    @JoinColumn(name = "member_id", nullable = false)
-    @JsonIgnore
-    private Member member;
-
-    @ManyToOne
-    @JoinColumn(name = "membership_type_id", nullable = false)
-    MembershipType membershipType;
-
-    @ManyToOne
-    @JoinColumn(name = "membership_status_id", nullable = false)  // Reference to Membership_status
-    private MembershipStatus membershipStatus;
-
-    Timestamp startDate;
-
-    Timestamp endDate;
+    String description;
 
     @CreationTimestamp
     private Timestamp createdAt;

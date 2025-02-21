@@ -329,7 +329,7 @@ public class MemberService {
         if(organizationIdsOfMember.size() == 1) {
             activeOrganizationId = organizationIdsOfMember.getFirst();
 
-            activeRole = memberRoleRepository.findRolesByMemberAndOrganization(member.getMemberId(), activeOrganizationId);
+            activeRole = memberRoleRepository.findRoleByMemberAndOrganization(member.getMemberId(), activeOrganizationId);
             roleResponse = roleMapper.fromRole(activeRole);
             preLogInPermissions = activeRole.getPermissions().stream().map(p -> p.getName()).collect(Collectors.toList());
             activeMembership =  membershipMapper.fromMembership(membershipService.getMembership(member.getMemberId(), activeOrganizationId));
@@ -376,7 +376,7 @@ public class MemberService {
                     .collect(Collectors.toList());
 
             if(selectedOrganizationId != null) {
-                activeRole = memberRoleRepository.findRolesByMemberAndOrganization(memberId, selectedOrganizationId);
+                activeRole = memberRoleRepository.findRoleByMemberAndOrganization(memberId, selectedOrganizationId);
             }
 
             MemberDetails memberDetails = (MemberDetails) userDetailsServiceImpl.loadUserByUsername(member.getEmail());
@@ -427,7 +427,7 @@ public class MemberService {
     public Session selectLoginOrganization(@Valid SelectOrganizationLoginRequest selectOrganizationRequest) {
 
         try {
-            Role activeRole = memberRoleRepository.findRolesByMemberAndOrganization(selectOrganizationRequest.memberId(), selectOrganizationRequest.organizationId());
+            Role activeRole = memberRoleRepository.findRoleByMemberAndOrganization(selectOrganizationRequest.memberId(), selectOrganizationRequest.organizationId());
             Member member = memberRepository.findById(selectOrganizationRequest.memberId())
                     .orElseThrow(() -> new NotFoundException(
                             String.format("Cannot update member with id %s", selectOrganizationRequest.memberId())
@@ -612,7 +612,8 @@ public class MemberService {
 
         List<MembershipResponse> membershipResponses = membershipPage.getContent().stream()
                 .map(membership -> {
-                    Role memberRole = memberRoleRepository.findRolesByMemberAndOrganization(membership.getMember().getMemberId(), organizationId);
+                    System.out.println("Organization Id: " + organizationId + " Member Id: " + membership.getMember().getMemberId());
+                    Role memberRole = memberRoleRepository.findRoleByMemberAndOrganization(membership.getMember().getMemberId(), organizationId);
                     return  membershipMapper.fromMembershipWithRole(membership, memberRole);
                 })
                 .collect(Collectors.toList());

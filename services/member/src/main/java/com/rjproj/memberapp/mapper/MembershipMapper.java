@@ -17,13 +17,16 @@ public class MembershipMapper {
     @Autowired
     RoleMapper roleMapper;
 
+    @Autowired
+    MembershipStatusMapper membershipStatusMapper;
+
     public Membership toMembership(@Valid MembershipRequest membershipRequest) {
         return Membership.builder()
                 .membershipId(membershipRequest.membershipId())
                 .organizationId(membershipRequest.organizationId())
                 .member(membershipRequest.member())
                 .membershipType(membershipRequest.membershipType())
-                .status(membershipRequest.status())
+                .membershipStatus(membershipStatusMapper.toMembershipStatus(membershipRequest.membershipStatus()))
                 .startDate(membershipRequest.startDate())
                 .endDate(membershipRequest.startDate())
                 .build();
@@ -35,8 +38,8 @@ public class MembershipMapper {
                 membership.getOrganizationId(),
                 memberMapper.fromMember(membership.getMember()),
                 membership.getMembershipType(),
+                membershipStatusMapper.fromMembershipStatus(membership.getMembershipStatus()),
                 null,
-                membership.getStatus(),
                 membership.getStartDate(),
                 membership.getEndDate()
         );
@@ -48,8 +51,8 @@ public class MembershipMapper {
                 membership.getOrganizationId(),
                 memberMapper.fromMember(membership.getMember()),
                 membership.getMembershipType(),
+                membershipStatusMapper.fromMembershipStatus(membership.getMembershipStatus()),
                 roleMapper.fromRole(role),
-                membership.getStatus(),
                 membership.getStartDate(),
                 membership.getEndDate()
         );

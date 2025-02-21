@@ -14,16 +14,6 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
 
-
-aws:
-  s3:
-    access:
-      key: AKIAT4GVRMTPCE7WS4MA
-    secret:
-      key: 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
-    region: eu-north-1
-    bucket: arjay-fileupload
-
 server:
   port: 8090
 

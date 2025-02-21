@@ -38,7 +38,6 @@ public class MembershipController {
 
     @PutMapping(path = "/updateMembership/{membership-id}")
     public ResponseEntity<MembershipResponse> updateMembership(@PathVariable("membership-id") UUID membershipId, @RequestBody @Valid MembershipRequest membershipRequest){
-        //return ResponseEntity.ok(membershipService.updateMembership(membershipRequest));
         return new ResponseEntity<>(
                 membershipService.updateMembership(membershipId, membershipRequest),
                 HttpStatus.ACCEPTED);
