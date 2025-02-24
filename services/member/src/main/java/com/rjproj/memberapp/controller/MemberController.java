@@ -1,10 +1,7 @@
 package com.rjproj.memberapp.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rjproj.memberapp.dto.AdditionalInfoRequest;
-import com.rjproj.memberapp.dto.MemberRequest;
-import com.rjproj.memberapp.dto.MemberResponse;
-import com.rjproj.memberapp.dto.MembershipResponse;
+import com.rjproj.memberapp.dto.*;
 import com.rjproj.memberapp.organization.OrganizationResponse;
 import com.rjproj.memberapp.service.MemberService;
 
@@ -19,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -86,14 +84,16 @@ public class MemberController {
         return ResponseEntity.ok(memberService.getMembersByOrganizationPaginationAndSorting(organizationId, pageNo, pageSize, sortField, sortOrder));
     }
 
-    @GetMapping("/organization/{organizationId}/memberships")
+    @PostMapping("/organization/{organizationId}/memberships")
     public ResponseEntity<Page<MembershipResponse>> getMembershipsByOrganization(
             @PathVariable UUID organizationId,
             @RequestParam(value = "pageNo", defaultValue = "0", required = false) Integer pageNo,
             @RequestParam(value = "pageSize", defaultValue = "10", required = false) Integer pageSize,
             @RequestParam(value = "sortField", defaultValue = "memberId", required = false) String sortField,
-            @RequestParam(value = "sortOrder", defaultValue = "ASC", required = false) String sortOrder) {
-        return ResponseEntity.ok(memberService.getMembershipsByOrganization(organizationId, pageNo, pageSize, sortField, sortOrder));
+            @RequestParam(value = "sortOrder", defaultValue = "ASC", required = false) String sortOrder,
+
+            @RequestBody(required = false) MembershipFilters membershipFilters) {
+        return ResponseEntity.ok(memberService.getMembershipsByOrganization(organizationId, pageNo, pageSize, sortField, sortOrder, membershipFilters));
     }
 
     @GetMapping("/organization/{organizationId}/memberships/pending")

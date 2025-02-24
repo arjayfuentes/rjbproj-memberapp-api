@@ -32,6 +32,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -579,7 +581,8 @@ public class MemberService {
             Integer pageNo,
             Integer pageSize,
             String sortField,
-            String sortOrder) {
+            String sortOrder,
+            MembershipFilters membershipFilters) {
 
         OrganizationResponse organization = organizationClient.findOrganizationById(organizationId);
         if (organization == null) {
@@ -601,12 +604,32 @@ public class MemberService {
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, combinedSort);
 
-        // Handle paginated query based on sorting by 'role.name' or default
+        // Extract filters from the map and apply logic
+        String firstName = membershipFilters.memberFirstName();
+        String email = membershipFilters.memberEmail();
+        String city = membershipFilters.memberMemberAddressCity();
+        String country = membershipFilters.memberMemberAddressCountry();
+        List<String> membershipStatusNames = (membershipFilters.membershipStatusNames() == null || membershipFilters.membershipStatusNames().size() == 0) ? null : membershipFilters.membershipStatusNames();
+        List<String> membershipTypesNames = (membershipFilters.membershipTypeNames() == null || membershipFilters.membershipTypeNames().size() == 0) ? null : membershipFilters.membershipTypeNames();
+        Date startDateFrom = new Date(Timestamp.valueOf("1960-01-01 00:00:00").getTime());
+        Date startDateTo = new Date(Timestamp.valueOf("2999-03-31 23:59:59").getTime());
+        Date endDateFrom = new Date(Timestamp.valueOf("1960-01-01 00:00:00").getTime());
+        Date endDateTo = new Date(Timestamp.valueOf("2999-03-31 23:59:59").getTime());
+        if(membershipFilters.startDates() != null && !membershipFilters.startDates().isEmpty()) {
+            startDateFrom = membershipFilters.startDates().get(0);
+            startDateTo = membershipFilters.startDates().get(1);
+        }
+        if(membershipFilters.endDates() != null && !membershipFilters.endDates().isEmpty()) {
+            endDateFrom = membershipFilters.endDates().get(0);
+            endDateTo = membershipFilters.endDates().get(1);
+        }
+
+
         Page<Membership> membershipPage;
         if ("role.name".equals(sortField)) {
             membershipPage = membershipRepository.findMembershipsByOrganizationIdSortedByRoleName(organizationId, pageable);
         } else {
-            membershipPage = membershipRepository.findMembershipsByOrganizationId(organizationId, pageable);
+            membershipPage = membershipRepository.findMembershipsByOrganizationIdWithFilters(organizationId, firstName, email, city, country, membershipStatusNames, membershipTypesNames,startDateFrom, startDateTo, endDateFrom, endDateTo, pageable);
         }
 
 

@@ -13,6 +13,10 @@ spring:
     show-sql: true
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        format_sql: true
+        type: TRACE
   flyway:
     baseline-on-migrate: true
     enabled: true
@@ -58,3 +62,13 @@ keyStore:
 application:
   config:
     organization-url: http://localhost:8222/api/v1/organization
+
+
+aws:
+  s3:
+    access:
+      key: AKIAT4GVRMTPBTFGNH77
+    secret:
+      key: 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
+    region: eu-north-1
+    bucket: arjay-fileupload

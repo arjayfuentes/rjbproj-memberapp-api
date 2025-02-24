@@ -37,8 +37,10 @@ public class Membership {
     @JoinColumn(name = "membership_status_id", nullable = false)  // Reference to Membership_status
     private MembershipStatus membershipStatus;
 
+    @Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
     Timestamp startDate;
 
+    @Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
     Timestamp endDate;
 
     @CreationTimestamp
