@@ -20,6 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -589,48 +590,38 @@ public class MemberService {
             throw new RuntimeException("Organization not found");
         }
 
-        Sort sort = Sort.unsorted();
-
-        // Check if the sortField is 'role.name' and set the appropriate sorting
-        if ("role.name".equals(sortField)) {
-            sort = Sort.by(Sort.Order.by("r.name").with(Sort.Direction.fromString(sortOrder)));
-        } else {
-            sort = Sort.by(Sort.Order.by(sortField).with(Sort.Direction.fromString(sortOrder)));
-        }
-
-        // Fix for problem: Sorting secondary criteria (to prevent duplicates on pages)
-        Sort secondarySort = Sort.by(Sort.Order.by(sortField.equals("member.firstName") ? "member.lastName" : "membershipId").with(Sort.Direction.fromString(sortOrder)));
+        Sort sort = Sort.by(Sort.Order.by(sortField).with(Sort.Direction.fromString(sortOrder)));
+        Sort secondarySort = Sort.by(Sort.Order.by("membershipId").with(Sort.Direction.fromString(sortOrder)));
         Sort combinedSort = sort.and(secondarySort);
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, combinedSort);
 
-        // Extract filters from the map and apply logic
-        String firstName = membershipFilters.memberFirstName();
-        String email = membershipFilters.memberEmail();
-        String city = membershipFilters.memberMemberAddressCity();
-        String country = membershipFilters.memberMemberAddressCountry();
-        List<String> membershipStatusNames = (membershipFilters.membershipStatusNames() == null || membershipFilters.membershipStatusNames().size() == 0) ? null : membershipFilters.membershipStatusNames();
-        List<String> membershipTypesNames = (membershipFilters.membershipTypeNames() == null || membershipFilters.membershipTypeNames().size() == 0) ? null : membershipFilters.membershipTypeNames();
-        Date startDateFrom = new Date(Timestamp.valueOf("1960-01-01 00:00:00").getTime());
-        Date startDateTo = new Date(Timestamp.valueOf("2999-03-31 23:59:59").getTime());
-        Date endDateFrom = new Date(Timestamp.valueOf("1960-01-01 00:00:00").getTime());
-        Date endDateTo = new Date(Timestamp.valueOf("2999-03-31 23:59:59").getTime());
-        if(membershipFilters.startDates() != null && !membershipFilters.startDates().isEmpty()) {
-            startDateFrom = membershipFilters.startDates().get(0);
-            startDateTo = membershipFilters.startDates().get(1);
-        }
-        if(membershipFilters.endDates() != null && !membershipFilters.endDates().isEmpty()) {
-            endDateFrom = membershipFilters.endDates().get(0);
-            endDateTo = membershipFilters.endDates().get(1);
+        Specification<Membership> spec = Specification.where(MembershipSpecification.hasOrganizationIdAndMembershipTypeNotNull(organizationId));
+
+        spec = spec.and(MembershipSpecification.filterByFirstName(membershipFilters.memberFirstName()));
+        spec = spec.and(MembershipSpecification.filterByEmail(membershipFilters.memberEmail()));
+        spec = spec.and(MembershipSpecification.filterByCity(membershipFilters.memberMemberAddressCity()));
+        spec = spec.and(MembershipSpecification.filterByCountry(membershipFilters.memberMemberAddressCountry()));
+        spec = spec.and(MembershipSpecification.filterByMembershipStatus(membershipFilters.membershipStatusNames()));
+        spec = spec.and(MembershipSpecification.filterByMembershipTypes(membershipFilters.membershipTypeNames()));
+        spec = spec.and(MembershipSpecification.filterByRoleNames(membershipFilters.roleNames(), organizationId));
+
+        if (membershipFilters.startDates() != null && !membershipFilters.startDates().isEmpty()) {
+            Date startDateFrom = membershipFilters.startDates().get(0);
+            Date startDateTo = membershipFilters.startDates().get(1);
+            spec = spec.and(MembershipSpecification.filterByStartDateRange(startDateFrom, startDateTo));
         }
 
-
-        Page<Membership> membershipPage;
-        if ("role.name".equals(sortField)) {
-            membershipPage = membershipRepository.findMembershipsByOrganizationIdSortedByRoleName(organizationId, pageable);
-        } else {
-            membershipPage = membershipRepository.findMembershipsByOrganizationIdWithFilters(organizationId, firstName, email, city, country, membershipStatusNames, membershipTypesNames,startDateFrom, startDateTo, endDateFrom, endDateTo, pageable);
+        if (membershipFilters.endDates() != null && !membershipFilters.endDates().isEmpty()) {
+            Date endDateFrom = membershipFilters.endDates().get(0);
+            Date endDateTo = membershipFilters.endDates().get(1);
+            spec = spec.and(MembershipSpecification.filterByEndDateRange(endDateFrom, endDateTo));
         }
+
+        //spec = spec.and(MembershipSpecification.applySorting(combinedSort, organizationId)); // 'combinedSort' from your original code
+
+
+        Page<Membership> membershipPage = membershipRepository.findAll(spec, pageable);
 
 
         List<MembershipResponse> membershipResponses = membershipPage.getContent().stream()
@@ -644,6 +635,21 @@ public class MemberService {
 
         return new PageImpl<>(membershipResponses, pageable, membershipPage.getTotalElements());
     }
+
+
+    private boolean isMembershipFiltersEmpty(MembershipFilters filters) {
+        return (filters == null) ||
+                (filters.memberFirstName() == null || filters.memberFirstName().trim().isEmpty()) &&
+                        (filters.memberEmail() == null || filters.memberEmail().trim().isEmpty()) &&
+                        (filters.memberMemberAddressCity() == null || filters.memberMemberAddressCity().trim().isEmpty()) &&
+                        (filters.memberMemberAddressCountry() == null || filters.memberMemberAddressCountry().trim().isEmpty()) &&
+                        (filters.membershipStatusNames() == null || filters.membershipStatusNames().isEmpty()) &&
+                        (filters.membershipTypeNames() == null || filters.membershipTypeNames().isEmpty()) &&
+                        (filters.roleNames() == null || filters.roleNames().isEmpty()) &&
+                        (filters.startDates() == null || filters.startDates().isEmpty()) &&
+                        (filters.endDates() == null || filters.endDates().isEmpty());
+    }
+
 
 
     public Page<MembershipResponse> getPendingMembershipsByOrganization(

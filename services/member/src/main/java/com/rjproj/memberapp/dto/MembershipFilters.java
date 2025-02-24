@@ -11,7 +11,7 @@ public record MembershipFilters(
         String memberMemberAddressCountry,
         List<String> membershipStatusNames,
         List<String> membershipTypeNames,
-        String roleName,
+        List<String> roleNames,
         List<Date> startDates,
         List<Date> endDates
 ) {
