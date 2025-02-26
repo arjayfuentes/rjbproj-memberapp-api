@@ -88,7 +88,7 @@ public class MemberService {
     private PasswordEncoder passwordEncoder;
 
     private final OrganizationClient organizationClient;
-    
+
     public MemberResponse addMember(MemberRequest memberRequest) {
         Optional<Member> retrievedMember = memberRepository.findByEmail(memberRequest.email());
         Member member = memberMapper.toMember(memberRequest);
@@ -356,6 +356,13 @@ public class MemberService {
     public MemberResponse registerMemberWithGoogle(String googleCode) {
         GoogleInfo googleInfo = googleService.getGoogleInfo(googleCode);
         if(googleInfo == null) {
+            throw new MemberException(
+                    "Error signing up with google",
+                    SIGN_UP_WITH_GOOGLE.getMessage(),
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        if(googleInfo.email() == null) {
             throw new MemberException(
                     "Error signing up with google",
                     SIGN_UP_WITH_GOOGLE.getMessage(),

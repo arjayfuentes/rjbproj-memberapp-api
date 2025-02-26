@@ -173,7 +173,8 @@ public class MembershipService {
             Integer pageNo,
             Integer pageSize,
             String sortField,
-            String sortOrder) {
+            String sortOrder,
+            MembershipFilters membershipFilters) {
 
         OrganizationResponse organization = organizationClient.findOrganizationById(organizationId);
         if (organization == null) {
@@ -187,10 +188,16 @@ public class MembershipService {
 
         Sort combinedSort = firstSort.and(secondSort);
 
-
         Pageable pageable = PageRequest.of(pageNo, pageSize, combinedSort);
 
-        Page<Membership> membershipPage = membershipRepository.findPendingMembershipsByOrganizationId(organizationId, pageable);
+        Specification<Membership> spec = Specification.where(MembershipSpecification.hasOrganizationId(organizationId));
+        spec = spec.and(MembershipSpecification.hadMembershipTypePendingOrNull());
+        spec = spec.and(MembershipSpecification.filterByFirstName(membershipFilters.memberFirstName()));
+        spec = spec.and(MembershipSpecification.filterByEmail(membershipFilters.memberEmail()));
+        spec = spec.and(MembershipSpecification.filterByCity(membershipFilters.memberMemberAddressCity()));
+        spec = spec.and(MembershipSpecification.filterByCountry(membershipFilters.memberMemberAddressCountry()));
+
+        Page<Membership> membershipPage = membershipRepository.findAll(spec, pageable);
 
         List<MembershipResponse> membershipResponses = membershipPage.getContent().stream()
                 .map(membershipMapper::fromMembership)

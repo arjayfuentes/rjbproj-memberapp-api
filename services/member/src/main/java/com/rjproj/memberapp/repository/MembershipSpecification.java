@@ -31,6 +31,31 @@ public class MembershipSpecification {
         };
     }
 
+    public static Specification<Membership> hadMembershipTypePendingOrNull() {
+        return (root, query, criteriaBuilder) -> {
+
+            // Ensure membershipType is not null
+            Predicate membershipTypePredicate = criteriaBuilder.isNull(root.get("membershipType"));
+
+            Predicate membershipStatusPredicatePending = criteriaBuilder.equal(root.get("membershipStatus").get("name"), "Pending");
+
+            // Combine the two predicates
+            return criteriaBuilder.or(membershipTypePredicate, membershipStatusPredicatePending);
+        };
+    }
+
+
+    public static Specification<Membership> hasOrganizationId(UUID organizationId) {
+        return (root, query, criteriaBuilder) -> {
+            // Filter by organizationId
+            Predicate organizationPredicate = criteriaBuilder.equal(root.get("organizationId"), organizationId);
+
+
+            // Combine the two predicates
+            return criteriaBuilder.and(organizationPredicate);
+        };
+    }
+
     public static Specification<Membership> filterByFirstName(String firstName) {
         return (root, query, criteriaBuilder) -> {
             if (firstName != null && !firstName.isEmpty()) {
