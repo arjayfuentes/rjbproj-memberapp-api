@@ -15,8 +15,6 @@ import java.util.UUID;
 
 public interface MemberRoleRepository extends JpaRepository<MemberRole, MemberRoleId> {
 
-    @Query("SELECT mr.role FROM MemberRole mr WHERE mr.id.memberId = :memberId AND mr.id.organizationId = :organizationId")
-    Role findRoleByMemberAndOrganization(@Param("memberId") UUID memberId, @Param("organizationId") UUID organizationId);
 
     // Query to find MemberRole based on MemberId, OrganizationId, and RoleId
     @Query("SELECT mr FROM MemberRole mr WHERE mr.id.memberId = :memberId AND mr.id.organizationId = :organizationId AND mr.id.roleId = :roleId")
@@ -31,6 +29,9 @@ public interface MemberRoleRepository extends JpaRepository<MemberRole, MemberRo
             @Param("memberId") UUID memberId,
             @Param("organizationId") UUID organizationId
     );
+
+    @Query("SELECT mr.role FROM MemberRole mr WHERE mr.id.memberId = :memberId AND mr.id.organizationId = :organizationId")
+    Role findRoleByMemberAndOrganization(@Param("memberId") UUID memberId, @Param("organizationId") UUID organizationId);
 
     // manually update the member_role since Role is a part of the composite key of MemberRole. Java consider composite key as immutable
     @Modifying

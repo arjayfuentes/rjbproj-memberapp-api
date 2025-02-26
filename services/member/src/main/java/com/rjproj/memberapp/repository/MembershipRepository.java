@@ -1,8 +1,6 @@
 package com.rjproj.memberapp.repository;
 
-import com.rjproj.memberapp.model.Member;
 import com.rjproj.memberapp.model.Membership;
-import com.rjproj.memberapp.model.MembershipType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -12,8 +10,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
