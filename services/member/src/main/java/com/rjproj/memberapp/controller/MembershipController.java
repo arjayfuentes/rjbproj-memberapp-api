@@ -21,16 +21,32 @@ public class MembershipController {
     private final MembershipService membershipService;
 
     /* Call from other service */
+
+    @PutMapping(path = "/membership-request/{membership-id}/approve")
+    public ResponseEntity<MembershipResponse> approveMembershipRequest(@PathVariable("membership-id") UUID membershipId, @RequestBody @Valid MembershipRequest membershipRequest){
+        return new ResponseEntity<>(
+                membershipService.approveMembershipRequest(membershipId, membershipRequest),
+                HttpStatus.ACCEPTED);
+    }
+
+    @PutMapping(path = "/membership-request/{membership-id}/deny")
+    public ResponseEntity<MembershipResponse> denyMembershipRequest(@PathVariable("membership-id") UUID membershipId, @RequestBody @Valid MembershipRequest membershipRequest){
+        return new ResponseEntity<>(
+                membershipService.denyMembershipRequest(membershipId, membershipRequest),
+                HttpStatus.ACCEPTED);
+    }
+
     @PostMapping("/createMembershipForCurrentMember")
     public ResponseEntity<MembershipResponse> createMembershipForCurrentMember(@RequestBody @Valid CreateMembershipRequest createMembershipRequest) {
         return ResponseEntity.ok(membershipService.createMembershipForCurrentMember(createMembershipRequest));
     }
 
-    @PostMapping("/getMembershipByMemberIdAndOrganizationId")
+    @GetMapping("/organization/{organization-id}/member/{member-id}")
     public ResponseEntity<MembershipResponse> getMembershipByMemberIdAndOrganizationId(
-            @RequestBody @Valid GetMembershipRequest getMembershipRequest
+            @PathVariable("organization-id") UUID organizationId,
+            @PathVariable("member-id") UUID memberId
     ) {
-        return ResponseEntity.ok(membershipService.getMembershipByMemberIdAndOrganizationId(getMembershipRequest.memberId(),getMembershipRequest.organizationId()));
+        return ResponseEntity.ok(membershipService.getMembershipByMemberIdAndOrganizationId(memberId,organizationId));
     }
 
     @PostMapping("/organization/{organizationId}/memberships")
@@ -55,29 +71,31 @@ public class MembershipController {
         return ResponseEntity.ok(membershipService.getPendingMembershipsByOrganization(organizationId, pageNo, pageSize, sortField, sortOrder, membershipFilters));
     }
 
-    @GetMapping("/getOrganizationByMemberId/{member-id}")
-    public ResponseEntity<List<OrganizationResponse>> getOrganizationByMemberId( @PathVariable("member-id") UUID memberId) {
+    @GetMapping("/getOrganizationByMemberId/{member-Id}")
+    public ResponseEntity<List<OrganizationResponse>> getOrganizationByMemberId( @PathVariable("member-Id") UUID memberId) {
         return ResponseEntity.ok(membershipService.getOrganizationByMemberId(memberId));
     }
 
-    @PostMapping(path = "/requestMembership")
+    @PostMapping(path = "/membership-request/request")
     public ResponseEntity<MembershipResponse> requestMembership(@RequestBody @Valid JoinOrganizationRequest organizationRequest) {
         return ResponseEntity.ok(membershipService.requestMembership(organizationRequest));
     }
 
-    @PutMapping(path = "/updateMembership/{membership-id}")
+    @PutMapping(path = "/update-membership/{membership-id}")
     public ResponseEntity<MembershipResponse> updateMembership(@PathVariable("membership-id") UUID membershipId, @RequestBody @Valid MembershipRequest membershipRequest){
         return new ResponseEntity<>(
                 membershipService.updateMembership(membershipId, membershipRequest),
                 HttpStatus.ACCEPTED);
     }
 
-    @PutMapping(path = "/updateMembershipType/{membership-id}")
+    @PutMapping(path = "/update-membership/{membership-id}/membership-type")
     public ResponseEntity<MembershipResponse> updateMembershipType(@PathVariable("membership-id") UUID membershipId, @RequestBody @Valid MembershipRequest membershipRequest){
         return new ResponseEntity<>(
                 membershipService.updateMembershipType(membershipId, membershipRequest),
                 HttpStatus.ACCEPTED);
     }
+
+
 
     /* Below unused methods */
 

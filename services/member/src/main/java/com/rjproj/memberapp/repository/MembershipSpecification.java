@@ -31,16 +31,24 @@ public class MembershipSpecification {
         };
     }
 
-    public static Specification<Membership> hadMembershipTypePendingOrNull() {
+    public static Specification<Membership> hadMembershipTypePending() {
+        return (root, query, criteriaBuilder) -> {
+
+            Predicate membershipStatusPredicatePending = criteriaBuilder.equal(root.get("membershipStatus").get("name"), "Pending");
+
+            // Combine the two predicates
+            return criteriaBuilder.or(membershipStatusPredicatePending);
+        };
+    }
+
+    public static Specification<Membership> hadMembershipTypeNull() {
         return (root, query, criteriaBuilder) -> {
 
             // Ensure membershipType is not null
             Predicate membershipTypePredicate = criteriaBuilder.isNull(root.get("membershipType"));
 
-            Predicate membershipStatusPredicatePending = criteriaBuilder.equal(root.get("membershipStatus").get("name"), "Pending");
-
             // Combine the two predicates
-            return criteriaBuilder.or(membershipTypePredicate, membershipStatusPredicatePending);
+            return criteriaBuilder.or(membershipTypePredicate);
         };
     }
 

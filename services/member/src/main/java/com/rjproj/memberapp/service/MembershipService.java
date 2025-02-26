@@ -70,7 +70,6 @@ public class MembershipService {
     public MembershipResponse createMembershipForCurrentMember(@RequestBody @Valid CreateMembershipRequest createMembershipRequest) {
         UUID memberId = jwtUtil.extractMemberIdInternally();
         return createMembershipByOrganizationIdAndMemberId(createMembershipRequest.organizationId(), memberId, createMembershipRequest.membershipTypeId());
-
     }
 
     public List<UUID> getActiveOrganizationIdsByMemberId(UUID memberId) {
@@ -191,7 +190,7 @@ public class MembershipService {
         Pageable pageable = PageRequest.of(pageNo, pageSize, combinedSort);
 
         Specification<Membership> spec = Specification.where(MembershipSpecification.hasOrganizationId(organizationId));
-        spec = spec.and(MembershipSpecification.hadMembershipTypePendingOrNull());
+        spec = spec.and(MembershipSpecification.hadMembershipTypePending());
         spec = spec.and(MembershipSpecification.filterByFirstName(membershipFilters.memberFirstName()));
         spec = spec.and(MembershipSpecification.filterByEmail(membershipFilters.memberEmail()));
         spec = spec.and(MembershipSpecification.filterByCity(membershipFilters.memberMemberAddressCity()));
@@ -269,43 +268,151 @@ public class MembershipService {
         return membershipMapper.fromMembershipWithRole(membership, updatedMemberRole.get().getRole());
     }
 
-    public MembershipResponse updateMembershipType(UUID membershipId, @Valid MembershipRequest membershipRequest) {
-        System.out.println("Received membershipId: " + membershipRequest.membershipId());
 
-        Optional<Membership> membershipOpt = membershipRepository.findByMembershipId(membershipRequest.membershipId());
-        System.out.println("Membership found: " + membershipOpt.isPresent()); // Check if membership is found
 
-        if(membershipOpt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Membership not found with ID: " + membershipRequest.membershipId());
+    private Member getMemberById(UUID memberId) {
+        if(memberId != null) {
+            Optional<Member> member = memberRepository.findById(memberId);
+            if(member.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Member not found with ID: " + memberId);
+            }
+            return member.get();
         }
-        membershipOpt.get().setMembershipType(membershipRequest.membershipType());
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Member Id cannot be null");
+    }
+
+    private Membership getMembershipById(UUID membershipId) {
+        if(membershipId != null) {
+            Optional<Membership> membershipOpt = membershipRepository.findByMembershipId(membershipId);
+
+            if(membershipOpt.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Membership not found with ID: " + membershipId);
+            }
+
+            return membershipOpt.get();
+        }
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Membership Id cannot be null");
+    }
+
+    private Role getRoleByName(String roleName) {
+        //set Member role as default
+        if(roleName != null) {
+            Optional<Role> role = roleRepository.findByName(roleName);
+
+            if(role.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Role not found");
+            }
+            return role.get();
+        }
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Role Id cannot be null");
+    }
+
+    private void setMembershipStatusByStatusName(Membership membership, MembershipType membershipType, String membershipStatusName) {
+
+        if(membershipStatusName != null) {
+            MembershipStatus membershipStatus = membershipStatusRepository.findByName(membershipStatusName);
+
+            membership.setMembershipStatus(membershipStatus);
+            if(!membershipStatusName.equals("Denied")) {
+                membership.setStartDate(Timestamp.from(Instant.now()));
+                membership.setEndDate(getEndDate(membershipType));
+            }
+        } else {
+            membership.setMembershipStatus(null);
+        }
+    }
+
+
+    public MembershipResponse approveMembershipRequest(UUID membershipId, @Valid MembershipRequest membershipRequest) {
+        Membership membership = getMembershipById(membershipId);
+
+        membership.setMembershipType(membershipRequest.membershipType());
+
+        setMembershipStatusByStatusName(membership, membershipRequest.membershipType(), "Active");
+
+        Role role = getRoleByName("Member");
+
+        Member member = getMemberById(membership.getMember().getMemberId());
+
+        Optional<MemberRole> existingMemberRoleOpt = memberRoleRepository.findByMemberIdAndOrganizationId(membership.getMember().getMemberId(), membershipRequest.organizationId());
+
+        if(existingMemberRoleOpt.isEmpty()) {
+
+            MemberRoleId memberRoleId = new MemberRoleId();
+            memberRoleId.setMemberId(member.getMemberId());
+            memberRoleId.setRoleId(role.getRoleId());
+            memberRoleId.setOrganizationId(membershipRequest.organizationId());
+
+            MemberRole newMemberRole = MemberRole.builder().id(memberRoleId).member(member).role(role).build();
+
+            memberRoleRepository.save(newMemberRole);
+        } else {
+
+            MemberRole existingMemberRole = existingMemberRoleOpt.get();
+
+            memberRoleRepository.updateMemberRole(
+                    existingMemberRole.getId().getMemberId(),
+                    existingMemberRole.getId().getOrganizationId(),
+                    role.getRoleId()
+            );
+        }
+
+        return membershipMapper.fromMembership(membershipRepository.save(membership));
+    }
+
+    public MembershipResponse denyMembershipRequest(UUID membershipId, @Valid MembershipRequest membershipRequest) {
+        Membership membership = getMembershipById(membershipId);
+
+        setMembershipStatusByStatusName(membership, membershipRequest.membershipType(), "Denied");
+
+        return membershipMapper.fromMembership(membershipRepository.save(membership));
+
+    }
+
+
+
+    public MembershipResponse updateMembershipType(UUID membershipId, @Valid MembershipRequest membershipRequest) {
+
+        Membership membership = getMembershipById(membershipId);
+        membership.setMembershipType(membershipRequest.membershipType());
 
         MembershipStatus membershipStatus = membershipStatusRepository.findByName("Active");
 
-        membershipOpt.get().setMembershipStatus(membershipStatus);
-        membershipOpt.get().setStartDate(Timestamp.from(Instant.now()));
-        membershipOpt.get().setEndDate(getEndDate(membershipRequest.membershipType()));
+        membership.setMembershipStatus(membershipStatus);
+        membership.setStartDate(Timestamp.from(Instant.now()));
+        membership.setEndDate(getEndDate(membershipRequest.membershipType()));
 
         //set Member role as default
         Optional<Role> role = roleRepository.findByName("Member");
         if(role.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Role not found");
         }
-        Optional<Member> member = memberRepository.findById(membershipOpt.get().getMember().getMemberId());
+
+        Optional<Member> member = memberRepository.findById(membership.getMember().getMemberId());
         if(member.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Member not found with ID: " + membershipOpt.get().getMembershipId());
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Member not found with ID: " + membership.getMembershipId());
         }
 
-        MemberRoleId memberRoleId = new MemberRoleId();
-        memberRoleId.setMemberId(member.get().getMemberId());
-        memberRoleId.setRoleId(role.get().getRoleId());
-        memberRoleId.setOrganizationId(membershipRequest.organizationId());
+        Optional<MemberRole> existingMemberRoleOpt = memberRoleRepository.findByMemberIdAndOrganizationId(membership.getMember().getMemberId(), membershipRequest.organizationId());
 
+        if(existingMemberRoleOpt.isEmpty()) {
+            MemberRoleId memberRoleId = new MemberRoleId();
+            memberRoleId.setMemberId(member.get().getMemberId());
+            memberRoleId.setRoleId(role.get().getRoleId());
+            memberRoleId.setOrganizationId(membershipRequest.organizationId());
+            MemberRole memberRole = MemberRole.builder().id(memberRoleId).member(member.get()).role(role.get()).build();
+            memberRoleRepository.save(memberRole);
+        } else {
+            MemberRole retrievedMemberRole = existingMemberRoleOpt.get();
 
-        MemberRole memberRole = MemberRole.builder().id(memberRoleId).member(member.get()).role(role.get()).build();
+            memberRoleRepository.updateMemberRole(
+                    retrievedMemberRole.getId().getMemberId(),
+                    retrievedMemberRole.getId().getOrganizationId(),
+                    role.get().getRoleId()
+            );
+        }
 
-        memberRoleRepository.save(memberRole);
-        return membershipMapper.fromMembership(membershipRepository.save(membershipOpt.get()));
+        return membershipMapper.fromMembership(membershipRepository.save(membership));
     }
 
     private MembershipResponse createMembershipByOrganizationIdAndMemberId(UUID organizationId, UUID memberId, UUID membershipTypeId) {
