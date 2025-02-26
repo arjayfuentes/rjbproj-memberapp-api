@@ -1,13 +1,9 @@
 package com.rjproj.memberapp.service;
 
 import com.rjproj.memberapp.dto.MembershipStatusResponse;
-import com.rjproj.memberapp.dto.MembershipTypeResponse;
 import com.rjproj.memberapp.mapper.MembershipStatusMapper;
-import com.rjproj.memberapp.mapper.MembershipTypeMapper;
 import com.rjproj.memberapp.model.MembershipStatus;
-import com.rjproj.memberapp.model.Role;
 import com.rjproj.memberapp.repository.MembershipStatusRepository;
-import com.rjproj.memberapp.repository.MembershipTypeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

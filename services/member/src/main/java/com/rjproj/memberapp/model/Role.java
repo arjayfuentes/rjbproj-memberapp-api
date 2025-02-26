@@ -28,6 +28,10 @@ public class Role {
     @JsonIgnore
     private Set<Member> members;
 
+    @OneToMany(mappedBy = "role", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private Set<MemberRole> memberRoles;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "role_permission", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
     @JsonIgnore

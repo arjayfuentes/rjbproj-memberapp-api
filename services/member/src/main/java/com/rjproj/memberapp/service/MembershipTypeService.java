@@ -20,13 +20,28 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MembershipTypeService {
 
+    private final MembershipTypeMapper membershipTypeMapper;
+
     private final MembershipTypeRepository membershipTypeRepository;
 
-    private final MembershipTypeMapper membershipTypeMapper;
+    public List<MembershipTypeResponse> getMembershipTypesByOrganizationId(UUID organizationId) {
+        List<MembershipType> membershipTypes = membershipTypeRepository.findByOrganizationId(organizationId);
+        return membershipTypes.stream().map(membershipTypeMapper::fromMembershipType).collect(Collectors.toList());
+    }
+
+    /* Below unused methods */
 
     public MembershipTypeResponse createMembershipType(@Valid MembershipTypeRequest membershipTypeRequest) {
         MembershipType membershipType = membershipTypeMapper.toMembershipType(membershipTypeRequest);
         return membershipTypeMapper.fromMembershipType(membershipTypeRepository.save(membershipType));
+    }
+
+    public List<MembershipTypeResponse> createMembershipTypes(@Valid List<MembershipTypeRequest> membershipTypeRequests) {
+        List<MembershipType> membershipTypes = membershipTypeRequests.stream().map(membershipTypeMapper::toMembershipType).collect(Collectors.toList());
+        return membershipTypeRepository.saveAll(membershipTypes)
+                .stream()
+                .map(membershipTypeMapper::fromMembershipType)
+                .collect(Collectors.toList());
     }
 
     public List<MembershipTypeResponse> findAll() {
@@ -42,6 +57,17 @@ public class MembershipTypeService {
                 .orElseThrow(() -> new EntityNotFoundException("MembershipType not found with ID:: " + membershipTypeId));
     }
 
+    private void mergeMembershipType(MembershipType membershipType, @Valid MembershipTypeRequest membershipTypeRequest) {
+        if(membershipTypeRequest.organizationId() != null) {
+            membershipType.setOrganizationId(membershipTypeRequest.organizationId());
+        }
+        if(StringUtils.isNotBlank(membershipTypeRequest.name())) {
+            membershipType.setName(membershipTypeRequest.name());
+        }
+        if(StringUtils.isNotBlank(membershipTypeRequest.description())) {
+            membershipType.setDescription(membershipTypeRequest.description());
+        }
+    }
 
     public MembershipTypeResponse updateMembershipType(UUID membershipTypeId, @Valid MembershipTypeRequest membershipTypeRequest) {
         MembershipType membershipType = membershipTypeRepository.findById(membershipTypeId)
@@ -58,28 +84,4 @@ public class MembershipTypeService {
     }
 
 
-    private void mergeMembershipType(MembershipType membershipType, @Valid MembershipTypeRequest membershipTypeRequest) {
-        if(membershipTypeRequest.organizationId() != null) {
-            membershipType.setOrganizationId(membershipTypeRequest.organizationId());
-        }
-        if(StringUtils.isNotBlank(membershipTypeRequest.name())) {
-            membershipType.setName(membershipTypeRequest.name());
-        }
-        if(StringUtils.isNotBlank(membershipTypeRequest.description())) {
-            membershipType.setDescription(membershipTypeRequest.description());
-        }
-    }
-
-    public List<MembershipTypeResponse> createMembershipTypes(@Valid List<MembershipTypeRequest> membershipTypeRequests) {
-        List<MembershipType> membershipTypes = membershipTypeRequests.stream().map(membershipTypeMapper::toMembershipType).collect(Collectors.toList());
-        return membershipTypeRepository.saveAll(membershipTypes)
-                .stream()
-                .map(membershipTypeMapper::fromMembershipType)
-                .collect(Collectors.toList());
-    }
-
-    public List<MembershipTypeResponse> getMembershipTypesByOrganizationId(UUID organizationId) {
-        List<MembershipType> membershipTypes = membershipTypeRepository.findByOrganizationId(organizationId);
-        return membershipTypes.stream().map(membershipTypeMapper::fromMembershipType).collect(Collectors.toList());
-    }
 }

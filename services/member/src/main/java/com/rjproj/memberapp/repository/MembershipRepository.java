@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -19,7 +20,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface MembershipRepository extends JpaRepository<Membership, UUID>, MembershipRepositoryCustom  {
+public interface MembershipRepository extends JpaRepository<Membership, UUID>, JpaSpecificationExecutor<Membership>, MembershipRepositoryCustom {
 
     @Query("SELECT m.organizationId FROM Membership m WHERE m.member.memberId = :memberId")
     List<UUID> findOrganizationIdsByMemberId(@Param("memberId") UUID memberId);
@@ -42,9 +43,20 @@ public interface MembershipRepository extends JpaRepository<Membership, UUID>, M
     @Query("SELECT m FROM Membership m " +
             "JOIN MemberRole mr ON m.member.memberId = mr.member.memberId " +
             "JOIN Role r ON mr.role.roleId = r.roleId " +
-            "WHERE m.organizationId = :organizationId AND m.membershipType IS NOT NULL " +
-            "ORDER BY r.name ASC") // Default sorting ASC for role.name
+            "WHERE m.organizationId = :organizationId AND mr.id.organizationId = :organizationId AND m.membershipType IS NOT NULL " +
+            "ORDER BY r.name ASC")
     Page<Membership> findMembershipsByOrganizationIdSortedByRoleName(UUID organizationId, Pageable pageable);
+
+
+    @Query("SELECT m FROM Membership m " +
+            "JOIN MemberRole mr ON m.member.memberId = mr.member.memberId " +
+            "JOIN Role r ON mr.role.roleId = r.roleId " +
+            "WHERE m.organizationId = :organizationId AND mr.id.organizationId = :organizationId AND m.membershipType IS NOT NULL AND m.membershipStatus.name != 'Pending' ")
+    Page<Membership> findMembershipsByOrganizationIdWithSpecification(
+            @Param("organizationId") UUID organizationId,
+            Specification<Membership> specification,
+            Pageable pageable);
+
 
     @Query("SELECT m FROM Membership m " +
             "JOIN MemberRole mr ON m.member.memberId = mr.member.memberId " +

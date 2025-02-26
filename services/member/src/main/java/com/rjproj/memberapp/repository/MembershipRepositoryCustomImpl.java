@@ -1,4 +1,6 @@
 package com.rjproj.memberapp.repository;
+import com.rjproj.memberapp.model.Member;
+import com.rjproj.memberapp.model.MemberRole;
 import com.rjproj.memberapp.model.Membership;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -7,6 +9,7 @@ import jakarta.persistence.criteria.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,58 +24,28 @@ public class MembershipRepositoryCustomImpl implements MembershipRepositoryCusto
     private EntityManager entityManager;
 
     @Override
-    public Page<Membership> findMembershipsByFilters(UUID organizationId, Map<String, Object> filters, Pageable pageable) {
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Membership> query = cb.createQuery(Membership.class);
-        Root<Membership> membership = query.from(Membership.class);
+    public Page<Membership> findMembershipsByOrganizationIdWithSpecification(UUID organizationId, Specification<Membership> spec, Pageable pageable) {
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Membership> query = criteriaBuilder.createQuery(Membership.class);
+        Root<Membership> root = query.from(Membership.class);
 
-        List<Predicate> predicates = new ArrayList<>();
+        // Apply the specification filters
+        Predicate predicate = spec.toPredicate(root, query, criteriaBuilder);
+        query.where(predicate);
 
-        // Filtering by organizationId
-        predicates.add(cb.equal(membership.get("organizationId"), organizationId));
+        // Apply sorting by role name
+        Join<Membership, Member> memberJoin = root.join("member", JoinType.LEFT);
+        Join<Member, MemberRole> roleJoin = memberJoin.join("roles", JoinType.LEFT);
+        query.orderBy(criteriaBuilder.asc(roleJoin.get("name"))); // Sort by role name
 
-        filters.forEach((key, value) -> {
-            if (value != null) {
-                switch (key) {
-                    case "member.firstName":
-                        Join<Object, Object> member = membership.join("member");
-                        predicates.add(cb.like(cb.lower(member.get("firstName")), "%" + value.toString().toLowerCase() + "%"));
-                        break;
-                    case "member.email":
-                        Join<Object, Object> memberEmail = membership.join("member");
-                        predicates.add(cb.like(cb.lower(memberEmail.get("email")), "%" + value.toString().toLowerCase() + "%"));
-                        break;
-                    case "membershipType.name":
-                        Join<Object, Object> membershipType = membership.join("membershipType");
-                        predicates.add(cb.like(cb.lower(membershipType.get("name")), "%" + value.toString().toLowerCase() + "%"));
-                        break;
-                    case "membershipStatus.name":
-                        Join<Object, Object> membershipStatus = membership.join("membershipStatus");
-                        predicates.add(cb.like(cb.lower(membershipStatus.get("name")), "%" + value.toString().toLowerCase() + "%"));
-                        break;
-                    case "member.memberAddress.city":
-                        Join<Object, Object> memberAddress = membership.join("member").join("memberAddress");
-                        predicates.add(cb.like(cb.lower(memberAddress.get("city")), "%" + value.toString().toLowerCase() + "%"));
-                        break;
-                    case "startDate":
-                        predicates.add(cb.greaterThanOrEqualTo(membership.get("startDate"), value.toString()));
-                        break;
-                    case "endDate":
-                        predicates.add(cb.lessThanOrEqualTo(membership.get("endDate"), value.toString()));
-                        break;
-                }
-            }
-        });
-
-        query.where(predicates.toArray(new Predicate[0]));
         TypedQuery<Membership> typedQuery = entityManager.createQuery(query);
 
-        // Pagination
-        int totalRecords = typedQuery.getResultList().size();
+        // Apply pagination
+        int totalRows = typedQuery.getResultList().size();
         typedQuery.setFirstResult((int) pageable.getOffset());
         typedQuery.setMaxResults(pageable.getPageSize());
 
         List<Membership> resultList = typedQuery.getResultList();
-        return new PageImpl<>(resultList, pageable, totalRecords);
+        return new PageImpl<>(resultList, pageable, totalRows);
     }
 }

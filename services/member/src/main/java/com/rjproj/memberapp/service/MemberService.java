@@ -49,41 +49,31 @@ import org.springframework.web.multipart.MultipartFile;
 public class MemberService {
 
     @Autowired
-    private MemberRepository memberRepository;
+    AuthenticationManager authenticationManager;
 
+    @Autowired
+    private MemberRepository memberRepository;
 
     @Autowired
     private MembershipRepository membershipRepository;
-
-
-    @Autowired
-    private PermissionRepository permissionRepository;
 
     @Autowired
     private MemberRoleRepository memberRoleRepository;
 
     @Autowired
-    AuthenticationManager authenticationManager;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private UserDetailsServiceImpl userDetailsServiceImpl;
-
-    @Autowired
-    private MembershipService membershipService;
-
-    @Autowired
-    private GoogleService googleService;
+    private RoleRepository roleRepository;
 
     @Autowired
     private FileService fileService;
 
     @Autowired
-    JWTUtil jwtUtil;
+    private GoogleService googleService;
 
-    private final OrganizationClient organizationClient;
+    @Autowired
+    private MembershipService membershipService;
+
+    @Autowired
+    private UserDetailsServiceImpl userDetailsServiceImpl;
 
     private final MemberMapper memberMapper;
 
@@ -91,30 +81,14 @@ public class MemberService {
 
     private final RoleMapper roleMapper;
 
-    private final OrganizationMapper organizationMapper;
+    @Autowired
+    JWTUtil jwtUtil;
 
     @Autowired
-    private ModelMapper modelMapper;
+    private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private RoleRepository roleRepository;
-
-    private final RestTemplate restTemplate;
-
-
-    public List<MemberResponse> findAll() {
-        return memberRepository.findAll()
-                .stream()
-                .map(memberMapper::fromMember)
-                .collect(Collectors.toList());
-    }
-
-    public MemberResponse findById(UUID memberId) {
-        return memberRepository.findById(memberId)
-                .map(memberMapper::fromMember)
-                .orElseThrow(() -> new EntityNotFoundException("Member not found with ID:: " + memberId));
-    }
-
+    private final OrganizationClient organizationClient;
+    
     public MemberResponse addMember(MemberRequest memberRequest) {
         Optional<Member> retrievedMember = memberRepository.findByEmail(memberRequest.email());
         Member member = memberMapper.toMember(memberRequest);
@@ -128,6 +102,7 @@ public class MemberService {
             member.setPassword(passwordEncoder.encode(member.getPassword()));
         }
 
+        //create a default role in a default organization
         UUID defaultOrganizationId = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
         Member savedMember = memberRepository.save(member);
@@ -138,183 +113,11 @@ public class MemberService {
 
         MemberRole memberRole = MemberRole.builder().id(memberRoleId).member(savedMember).role(defaultRole.get()).build();
         memberRoleRepository.save(memberRole);
+
         return memberMapper.fromMember(savedMember);
     }
 
-    public MemberResponse createMember(@Valid MemberRequest memberRequest) {
-        return addMember(memberRequest);
-    }
-
-    public MemberResponse updateMember(UUID memberId, @Valid MemberRequest memberRequest) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new NotFoundException(
-                        String.format("Cannot update member with id %s", memberId.toString())
-                ));
-        mergeMember(member, memberRequest);
-        return memberMapper.fromMember(memberRepository.save(member));
-    }
-
-    public void deleteMember(UUID memberId) {
-        memberRepository.deleteById(memberId);
-    }
-
-    private void mergeMember(Member member, @Valid MemberRequest memberRequest) {
-        if(StringUtils.isNotBlank(memberRequest.firstName())) {
-            member.setFirstName(memberRequest.firstName());
-        }
-        if(StringUtils.isNotBlank(memberRequest.lastName())) {
-            member.setLastName(memberRequest.lastName());
-        }
-        if(StringUtils.isNotBlank(memberRequest.email())) {
-            member.setEmail(memberRequest.email());
-        }
-        if(StringUtils.isNotBlank(memberRequest.phoneNumber())) {
-            member.setPhoneNumber(memberRequest.phoneNumber());
-        }
-        if(StringUtils.isNotBlank(memberRequest.profilePicUrl())) {
-            member.setProfilePicUrl(memberRequest.profilePicUrl());
-        }
-        if(memberRequest.birthDate() != null) {
-            member.setBirthDate(memberRequest.birthDate());
-        }
-        if(memberRequest.loginType() != null) {
-            member.setLoginType(memberRequest.loginType());
-        }
-        if(memberRequest.memberAddress() != null) {
-            member.setMemberAddress(memberRequest.memberAddress());
-        }
-    }
-
-    public MemberResponse registerMember(MemberRequest memberRequest) {
-        memberRequest = new MemberRequest(
-                memberRequest.memberId(),
-                memberRequest.firstName(),
-                memberRequest.lastName(),
-                memberRequest.email(),
-                memberRequest.password(),
-                memberRequest.phoneNumber(),
-                memberRequest.profilePicUrl(),
-                memberRequest.birthDate(),
-                LoginType.NORMAL,  // Default value for loginType
-                memberRequest.memberAddress()
-        );
-        return addMember(memberRequest);
-    }
-
-    public MemberResponse registerMemberWithGoogle(String googleCode) {
-        GoogleInfo googleInfo = googleService.getGoogleInfo(googleCode);
-        if(googleInfo == null) {
-            throw new MemberException(
-                    "Error signing up with google",
-                    SIGN_UP_WITH_GOOGLE.getMessage(),
-                    HttpStatus.BAD_REQUEST);
-        }
-        MemberRequest memberRequest = new MemberRequest(
-                null,
-                googleInfo.firstName(),
-                googleInfo.lastName(),
-                googleInfo.email(),
-                null,
-                null,
-                googleInfo.photoUrl(),
-                googleInfo.birthdate(),
-                LoginType.GOOGLE,
-                null
-        );
-        return addMember(memberRequest);
-    }
-
-    public MemberResponse updateMemberAfterRegistration(MultipartFile profilePicImage,
-                                              @Valid AdditionalInfoRequest additionalInfoRequest) {
-        return updateMemberDetails(profilePicImage, additionalInfoRequest);
-    }
-
-    public MemberResponse updateMemberDetails(MultipartFile profilePicImage,
-                                                        @Valid AdditionalInfoRequest additionalInfoRequest) {
-        Optional<Member> member = memberRepository.findByEmail(additionalInfoRequest.memberRequest().email());
-
-        if (member.isEmpty()) {
-            throw new MemberException("The email address you provided does not exist.",
-                    MEMBER_NOT_EXISTS.getMessage(),
-                    HttpStatus.BAD_REQUEST);
-        }
-
-        Member existingMember = member.get();
-        String imageUrl = additionalInfoRequest.memberRequest().profilePicUrl(); // Default to existing URL
-
-        if (profilePicImage != null && !profilePicImage.isEmpty()) {
-            try {
-                imageUrl = fileService.uploadImage("member",
-                        existingMember.getMemberId(),
-                        ImageType.PROFILE_IMAGE,
-                        profilePicImage);
-            } catch (IOException e) {
-                throw new MemberException("Failed to upload profile image",
-                        e.getMessage(),
-                        HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        MemberRequest updatedRequest = new MemberRequest(
-                additionalInfoRequest.memberRequest().memberId(),
-                additionalInfoRequest.memberRequest().firstName(),
-                additionalInfoRequest.memberRequest().lastName(),
-                additionalInfoRequest.memberRequest().email(),
-                additionalInfoRequest.memberRequest().password(),
-                additionalInfoRequest.memberRequest().phoneNumber(),
-                imageUrl,
-                additionalInfoRequest.memberRequest().birthDate(),
-                additionalInfoRequest.memberRequest().loginType(),
-                additionalInfoRequest.memberRequest().memberAddress()
-        );
-
-        return this.updateMember(existingMember.getMemberId(), updatedRequest);
-    }
-
-    public Session login(LoginRequest loginRequest) {
-
-        try {
-            Optional<Member> member = memberRepository.findByEmail(loginRequest.email());
-
-            if(!member.isPresent()) {
-                throw new MemberException("The email address you provided does not exists.", MEMBER_NOT_EXISTS.getMessage(), HttpStatus.BAD_REQUEST);
-            }
-
-            if(member.get().getLoginType().equals(LoginType.GOOGLE)) {
-                throw new MemberException("The email is associated with a google account. Sign in with your google account."
-                        , SIGN_IN_WITH_GOOGLE.getMessage(), HttpStatus.BAD_REQUEST);
-            }
-
-            Authentication authenticate = authenticationManager
-                    .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password()));
-            return getLoginMemberSession(member.get());
-        }
-        catch (BadCredentialsException e)
-        {
-            System.out.println(e);
-            throw new MemberException("Incorrect password", PASSWORD_INCORRECT.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-    }
-
-    public Session loginMemberWithGoogle(String googleCode) {
-        GoogleInfo googleInfo = googleService.getGoogleInfo(googleCode);
-        Optional<Member> member = memberRepository.findByEmail(googleInfo.email());
-        if(!member.isPresent()) {
-            throw new MemberException(
-                    "The google account you provided does not exists. Sign up first to contiue",
-                    MEMBER_NOT_EXISTS.getMessage(),
-                    HttpStatus.BAD_REQUEST);
-        }
-
-        Member verifiedMember = member.get();
-
-        UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(verifiedMember.getEmail(), null, new ArrayList<>());
-        return getLoginMemberSession(verifiedMember);
-
-    }
-
-    private Session getLoginMemberSession(Member member) {
+    private Session createLoginSession(Member member) {
         UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(member.getEmail());
 
         MemberResponse memberResponse = memberMapper.fromMember(member);
@@ -427,6 +230,152 @@ public class MemberService {
         }
     }
 
+    public List<MemberResponse> getMembersByOrganization(UUID organizationId) {
+        OrganizationResponse organization = organizationClient.findOrganizationById(organizationId);
+        if (organization == null) {
+            throw new RuntimeException("Organization not found");
+        }
+        List<Membership> memberships = membershipRepository.findByOrganizationId(organizationId);
+        List<Member> members = memberships.stream().map(Membership::getMember).collect(Collectors.toList());
+        return members
+                .stream()
+                .map(memberMapper::fromMember)
+                .collect(Collectors.toList());
+    }
+
+    public Page<MemberResponse> getMembersByOrganizationPaginationAndSorting(
+            UUID organizationId, Integer pageNo, Integer pageSize, String sortField, String sortOrder) {
+        OrganizationResponse organization = organizationClient.findOrganizationById(organizationId);
+        if (organization == null) {
+            throw new RuntimeException("Organization not found");
+        }
+
+        Sort sort =  sortOrder.equals("ASC") ? Sort.by(sortField).ascending() : Sort.by(sortField).descending();
+
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+
+        Page<Membership> membershipPage = membershipRepository.findMembershipsByOrganizationId(organizationId, pageable);
+
+
+
+        // Convert Membership -> Member -> MemberResponse
+        List<MemberResponse> memberResponses = membershipPage.getContent().stream()
+                .map(Membership::getMember)
+                .map(memberMapper::fromMember)
+                .collect(Collectors.toList());
+
+
+        return new PageImpl<>(memberResponses, pageable, membershipPage.getTotalElements());
+    }
+
+    public Session loginMember(LoginRequest loginRequest) {
+        try {
+            Optional<Member> member = memberRepository.findByEmail(loginRequest.email());
+
+            if(!member.isPresent()) {
+                throw new MemberException("The email address you provided does not exists.", MEMBER_NOT_EXISTS.getMessage(), HttpStatus.BAD_REQUEST);
+            }
+
+            if(member.get().getLoginType().equals(LoginType.GOOGLE)) {
+                throw new MemberException("The email is associated with a google account. Sign in with your google account."
+                        , SIGN_IN_WITH_GOOGLE.getMessage(), HttpStatus.BAD_REQUEST);
+            }
+
+            Authentication authenticate = authenticationManager
+                    .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password()));
+            return createLoginSession(member.get());
+        }
+        catch (BadCredentialsException e)
+        {
+            System.out.println(e);
+            throw new MemberException("Incorrect password", PASSWORD_INCORRECT.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    public Session loginMemberWithGoogle(String googleCode) {
+        GoogleInfo googleInfo = googleService.getGoogleInfo(googleCode);
+        Optional<Member> member = memberRepository.findByEmail(googleInfo.email());
+        if(!member.isPresent()) {
+            throw new MemberException(
+                    "The google account you provided does not exists. Sign up first to contiue",
+                    MEMBER_NOT_EXISTS.getMessage(),
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        Member verifiedMember = member.get();
+
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(verifiedMember.getEmail(), null, new ArrayList<>());
+        return createLoginSession(verifiedMember);
+
+    }
+
+    private void mergeMember(Member member, @Valid MemberRequest memberRequest) {
+        if(StringUtils.isNotBlank(memberRequest.firstName())) {
+            member.setFirstName(memberRequest.firstName());
+        }
+        if(StringUtils.isNotBlank(memberRequest.lastName())) {
+            member.setLastName(memberRequest.lastName());
+        }
+        if(StringUtils.isNotBlank(memberRequest.email())) {
+            member.setEmail(memberRequest.email());
+        }
+        if(StringUtils.isNotBlank(memberRequest.phoneNumber())) {
+            member.setPhoneNumber(memberRequest.phoneNumber());
+        }
+        if(StringUtils.isNotBlank(memberRequest.profilePicUrl())) {
+            member.setProfilePicUrl(memberRequest.profilePicUrl());
+        }
+        if(memberRequest.birthDate() != null) {
+            member.setBirthDate(memberRequest.birthDate());
+        }
+        if(memberRequest.loginType() != null) {
+            member.setLoginType(memberRequest.loginType());
+        }
+        if(memberRequest.memberAddress() != null) {
+            member.setMemberAddress(memberRequest.memberAddress());
+        }
+    }
+
+    public MemberResponse registerMember(MemberRequest memberRequest) {
+        memberRequest = new MemberRequest(
+                memberRequest.memberId(),
+                memberRequest.firstName(),
+                memberRequest.lastName(),
+                memberRequest.email(),
+                memberRequest.password(),
+                memberRequest.phoneNumber(),
+                memberRequest.profilePicUrl(),
+                memberRequest.birthDate(),
+                LoginType.NORMAL,  // Default value for loginType
+                memberRequest.memberAddress()
+        );
+        return addMember(memberRequest);
+    }
+
+    public MemberResponse registerMemberWithGoogle(String googleCode) {
+        GoogleInfo googleInfo = googleService.getGoogleInfo(googleCode);
+        if(googleInfo == null) {
+            throw new MemberException(
+                    "Error signing up with google",
+                    SIGN_UP_WITH_GOOGLE.getMessage(),
+                    HttpStatus.BAD_REQUEST);
+        }
+        MemberRequest memberRequest = new MemberRequest(
+                null,
+                googleInfo.firstName(),
+                googleInfo.lastName(),
+                googleInfo.email(),
+                null,
+                null,
+                googleInfo.photoUrl(),
+                googleInfo.birthdate(),
+                LoginType.GOOGLE,
+                null
+        );
+        return addMember(memberRequest);
+    }
+
     public Session selectLoginOrganization(@Valid SelectOrganizationLoginRequest selectOrganizationRequest) {
 
         try {
@@ -488,6 +437,68 @@ public class MemberService {
 
     }
 
+    public MemberResponse updateMember(UUID memberId, @Valid MemberRequest memberRequest) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new NotFoundException(
+                        String.format("Cannot update member with id %s", memberId.toString())
+                ));
+        mergeMember(member, memberRequest);
+        return memberMapper.fromMember(memberRepository.save(member));
+    }
+
+    public MemberResponse updateMemberAfterRegistration(
+            MultipartFile profilePicImage,
+            @Valid AdditionalInfoRequest additionalInfoRequest) {
+        return updateMemberDetails(profilePicImage, additionalInfoRequest);
+    }
+
+    public MemberResponse updateMemberDetails(
+            MultipartFile profilePicImage,
+            @Valid AdditionalInfoRequest additionalInfoRequest
+    ) {
+        Optional<Member> member = memberRepository.findByEmail(additionalInfoRequest.memberRequest().email());
+
+        if (member.isEmpty()) {
+            throw new MemberException("The email address you provided does not exist.",
+                    MEMBER_NOT_EXISTS.getMessage(),
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        Member existingMember = member.get();
+        String imageUrl = additionalInfoRequest.memberRequest().profilePicUrl(); // Default to existing URL
+
+        if (profilePicImage != null && !profilePicImage.isEmpty()) {
+            try {
+                imageUrl = fileService.uploadImage("member",
+                        existingMember.getMemberId(),
+                        ImageType.PROFILE_IMAGE,
+                        profilePicImage);
+            } catch (IOException e) {
+                throw new MemberException("Failed to upload profile image",
+                        e.getMessage(),
+                        HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        MemberRequest updatedRequest = new MemberRequest(
+                additionalInfoRequest.memberRequest().memberId(),
+                additionalInfoRequest.memberRequest().firstName(),
+                additionalInfoRequest.memberRequest().lastName(),
+                additionalInfoRequest.memberRequest().email(),
+                additionalInfoRequest.memberRequest().password(),
+                additionalInfoRequest.memberRequest().phoneNumber(),
+                imageUrl,
+                additionalInfoRequest.memberRequest().birthDate(),
+                additionalInfoRequest.memberRequest().loginType(),
+                additionalInfoRequest.memberRequest().memberAddress()
+        );
+
+        return this.updateMember(existingMember.getMemberId(), updatedRequest);
+    }
+
+
+    /* Call from other service */
+
     public String createDefaultAdminOrganizationRoleForOwner(@Valid UUID organizationId) {
 
         UUID memberId = jwtUtil.extractMemberIdInternally();
@@ -521,17 +532,29 @@ public class MemberService {
 
     }
 
-    public List<MemberResponse> getMembersByOrganization(UUID organizationId) {
-        OrganizationResponse organization = organizationClient.findOrganizationById(organizationId);
-        if (organization == null) {
-            throw new RuntimeException("Organization not found");
-        }
-        List<Membership> memberships = membershipRepository.findByOrganizationId(organizationId);
-        List<Member> members = memberships.stream().map(Membership::getMember).collect(Collectors.toList());
-        return members
+
+    /* Below unused methods */
+
+    public MemberResponse createMember(@Valid MemberRequest memberRequest) {
+        return addMember(memberRequest);
+    }
+
+
+    public MemberResponse findById(UUID memberId) {
+        return memberRepository.findById(memberId)
+                .map(memberMapper::fromMember)
+                .orElseThrow(() -> new EntityNotFoundException("Member not found with ID:: " + memberId));
+    }
+
+    public List<MemberResponse> findAll() {
+        return memberRepository.findAll()
                 .stream()
                 .map(memberMapper::fromMember)
                 .collect(Collectors.toList());
+    }
+
+    public void deleteMember(UUID memberId) {
+        memberRepository.deleteById(memberId);
     }
 
     public Page<MemberResponse> getMembersByOrganizationPage(UUID organizationId, Integer pageNo, Integer pageSize) {
@@ -552,91 +575,6 @@ public class MemberService {
         return new PageImpl<>(memberResponses, pageable, membershipPage.getTotalElements());
     }
 
-    public Page<MemberResponse> getMembersByOrganizationPaginationAndSorting(
-            UUID organizationId, Integer pageNo, Integer pageSize, String sortField, String sortOrder) {
-        OrganizationResponse organization = organizationClient.findOrganizationById(organizationId);
-        if (organization == null) {
-            throw new RuntimeException("Organization not found");
-        }
-
-        Sort sort =  sortOrder.equals("ASC") ? Sort.by(sortField).ascending() : Sort.by(sortField).descending();
-
-        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
-
-        Page<Membership> membershipPage = membershipRepository.findMembershipsByOrganizationId(organizationId, pageable);
-
-
-
-        // Convert Membership -> Member -> MemberResponse
-        List<MemberResponse> memberResponses = membershipPage.getContent().stream()
-                .map(Membership::getMember)
-                .map(memberMapper::fromMember)
-                .collect(Collectors.toList());
-
-
-        return new PageImpl<>(memberResponses, pageable, membershipPage.getTotalElements());
-    }
-
-    public Page<MembershipResponse> getMembershipsByOrganization(
-            UUID organizationId,
-            Integer pageNo,
-            Integer pageSize,
-            String sortField,
-            String sortOrder,
-            MembershipFilters membershipFilters) {
-
-        OrganizationResponse organization = organizationClient.findOrganizationById(organizationId);
-        if (organization == null) {
-            throw new RuntimeException("Organization not found");
-        }
-
-        Sort sort = Sort.by(Sort.Order.by(sortField).with(Sort.Direction.fromString(sortOrder)));
-        Sort secondarySort = Sort.by(Sort.Order.by("membershipId").with(Sort.Direction.fromString(sortOrder)));
-        Sort combinedSort = sort.and(secondarySort);
-
-        Pageable pageable = PageRequest.of(pageNo, pageSize, combinedSort);
-
-        Specification<Membership> spec = Specification.where(MembershipSpecification.hasOrganizationIdAndMembershipTypeNotNull(organizationId));
-
-        spec = spec.and(MembershipSpecification.filterByFirstName(membershipFilters.memberFirstName()));
-        spec = spec.and(MembershipSpecification.filterByEmail(membershipFilters.memberEmail()));
-        spec = spec.and(MembershipSpecification.filterByCity(membershipFilters.memberMemberAddressCity()));
-        spec = spec.and(MembershipSpecification.filterByCountry(membershipFilters.memberMemberAddressCountry()));
-        spec = spec.and(MembershipSpecification.filterByMembershipStatus(membershipFilters.membershipStatusNames()));
-        spec = spec.and(MembershipSpecification.filterByMembershipTypes(membershipFilters.membershipTypeNames()));
-        spec = spec.and(MembershipSpecification.filterByRoleNames(membershipFilters.roleNames(), organizationId));
-
-        if (membershipFilters.startDates() != null && !membershipFilters.startDates().isEmpty()) {
-            Date startDateFrom = membershipFilters.startDates().get(0);
-            Date startDateTo = membershipFilters.startDates().get(1);
-            spec = spec.and(MembershipSpecification.filterByStartDateRange(startDateFrom, startDateTo));
-        }
-
-        if (membershipFilters.endDates() != null && !membershipFilters.endDates().isEmpty()) {
-            Date endDateFrom = membershipFilters.endDates().get(0);
-            Date endDateTo = membershipFilters.endDates().get(1);
-            spec = spec.and(MembershipSpecification.filterByEndDateRange(endDateFrom, endDateTo));
-        }
-
-        //spec = spec.and(MembershipSpecification.applySorting(combinedSort, organizationId)); // 'combinedSort' from your original code
-
-
-        Page<Membership> membershipPage = membershipRepository.findAll(spec, pageable);
-
-
-        List<MembershipResponse> membershipResponses = membershipPage.getContent().stream()
-                .map(membership -> {
-                    System.out.println("Organization Id: " + organizationId + " Member Id: " + membership.getMember().getMemberId());
-                    Role memberRole = memberRoleRepository.findRoleByMemberAndOrganization(membership.getMember().getMemberId(), organizationId);
-                    return  membershipMapper.fromMembershipWithRole(membership, memberRole);
-                })
-                .collect(Collectors.toList());
-
-
-        return new PageImpl<>(membershipResponses, pageable, membershipPage.getTotalElements());
-    }
-
-
     private boolean isMembershipFiltersEmpty(MembershipFilters filters) {
         return (filters == null) ||
                 (filters.memberFirstName() == null || filters.memberFirstName().trim().isEmpty()) &&
@@ -649,44 +587,5 @@ public class MemberService {
                         (filters.startDates() == null || filters.startDates().isEmpty()) &&
                         (filters.endDates() == null || filters.endDates().isEmpty());
     }
-
-
-
-    public Page<MembershipResponse> getPendingMembershipsByOrganization(
-            UUID organizationId,
-            Integer pageNo,
-            Integer pageSize,
-            String sortField,
-            String sortOrder) {
-
-        OrganizationResponse organization = organizationClient.findOrganizationById(organizationId);
-        if (organization == null) {
-            throw new RuntimeException("Organization not found");
-        }
-
-        Sort firstSort = Sort.by(Sort.Order.by(sortField).with(Sort.Direction.fromString(sortOrder)));
-
-        // Fix for problem: There are items that shows on different pages. Because of same ex. name.
-        Sort secondSort = Sort.by(Sort.Order.by(sortField.equals("member.firstName") ? "member.lastName" : "membershipId").with(Sort.Direction.fromString(sortOrder)));
-
-        Sort combinedSort = firstSort.and(secondSort);
-
-
-        Pageable pageable = PageRequest.of(pageNo, pageSize, combinedSort);
-
-        Page<Membership> membershipPage = membershipRepository.findPendingMembershipsByOrganizationId(organizationId, pageable);
-
-        List<MembershipResponse> membershipResponses = membershipPage.getContent().stream()
-                .map(membershipMapper::fromMembership)
-                .collect(Collectors.toList());
-
-        return new PageImpl<>(membershipResponses, pageable, membershipPage.getTotalElements());
-    }
-
-    public Session getLoginSessionWithGoogle(String googleToken) {
-        return null;
-    }
-
-
 
 }

@@ -1,9 +1,6 @@
 package com.rjproj.memberapp.repository;
 
-import com.rjproj.memberapp.model.Member;
-import com.rjproj.memberapp.model.MemberRole;
-import com.rjproj.memberapp.model.Membership;
-import com.rjproj.memberapp.model.Role;
+import com.rjproj.memberapp.model.*;
 import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
 import java.util.Date;
@@ -26,8 +23,11 @@ public class MembershipSpecification {
             // Ensure membershipType is not null
             Predicate membershipTypePredicate = criteriaBuilder.isNotNull(root.get("membershipType"));
 
+            Predicate membershipStatusPredicatePending = criteriaBuilder.notEqual(root.get("membershipStatus").get("name"), "Pending");
+
+
             // Combine the two predicates
-            return criteriaBuilder.and(organizationPredicate, membershipTypePredicate);
+            return criteriaBuilder.and(organizationPredicate, membershipTypePredicate, membershipStatusPredicatePending);
         };
     }
 
@@ -155,23 +155,49 @@ public class MembershipSpecification {
     }
 
 
+    public static Specification<Membership> sortByRoleName(String sortOrder, UUID organizationId) {
+        return (Root<Membership> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
+            // Join Membership -> Member
+            Join<Membership, Member> memberJoin = root.join("member");
+
+            // Join Member -> MemberRole (this is the junction table connecting Member and Role)
+            Join<Member, Role> memberRoleJoin = memberJoin.join("roles", JoinType.INNER); // Using memberRoles directly
+
+
+
+
+            Join<Role, MemberRole> roleJoin = memberRoleJoin.join("memberRoles", JoinType.INNER); // MemberRole -> Role
+
+            Predicate organizationPredicate = cb.equal(roleJoin.get("id").get("organizationId"), organizationId);
+            Predicate organizationMembershipPredicate = cb.equal(root.get("organizationId"), organizationId);
+
+            if ("asc".equalsIgnoreCase(sortOrder)) {
+                query.orderBy(cb.asc(memberRoleJoin.get("name")));
+            } else {
+                query.orderBy(cb.desc(memberRoleJoin.get("name")));
+            }
+
+            // Ensure DISTINCT to prevent duplicates due to the many-to-many join
+            query.distinct(true);
+
+            // Combine the organizationId filter with the role name sort
+            query.where(organizationPredicate, organizationMembershipPredicate);
+
+            return cb.conjunction();
+        };
+    }
+
+
+
+
+
+
+
     public static Specification<Membership> applySorting(Sort sort, UUID organizationId) {
         return (root, query, criteriaBuilder) -> {
-            // Check if sorting is not null or empty
             if (sort == null || sort.isEmpty()) {
                 return criteriaBuilder.conjunction(); // No sorting if not specified
             }
-
-            // Join Membership → Member
-            Join<Membership, Member> memberJoin = root.join("member", JoinType.LEFT);
-
-            // Join Member → Roles (Many-to-Many relationship)
-            SetJoin<Member, Role> roleJoin = memberJoin.joinSet("roles", JoinType.LEFT);
-
-            // Apply filtering by organizationId (on Membership)
-            Predicate organizationPredicate = criteriaBuilder.equal(root.get("organizationId"), organizationId);
-            // Combine the organizationPredicate with others if needed
-            query.where(organizationPredicate);
 
             // Order list for sorting
             List<Order> orders = new ArrayList<>();
@@ -181,20 +207,67 @@ public class MembershipSpecification {
                 String property = order.getProperty();
 
                 if ("role.name".equals(property)) {
-                    // Sorting by role.name
+                    Join<Membership, Member> memberJoin = root.join("member");
+
+                    // Join Member -> MemberRole (this is the junction table connecting Member and Role)
+                    Join<Member, Role> memberRoleJoin = memberJoin.join("roles", JoinType.INNER); // Using memberRoles directly
+
+                    Join<Role, MemberRole> roleJoin = memberRoleJoin.join("memberRoles", JoinType.INNER);
+
+                    query.distinct(true);
+
+
                     orders.add(order.isAscending() ?
-                            criteriaBuilder.asc(roleJoin.get("name")) :
-                            criteriaBuilder.desc(roleJoin.get("name")));
+                            criteriaBuilder.asc(memberRoleJoin.get("name")) :
+                            criteriaBuilder.desc(memberRoleJoin.get("name")));
                 } else if ("member.firstName".equals(property)) {
-                    // Sorting by member's first name
+                    // Sorting by member's first name, then by last name
+                    Join<Membership, Member> memberJoin = root.join("member", JoinType.LEFT);
+
                     orders.add(order.isAscending() ?
-                            criteriaBuilder.asc(memberJoin.get("firstName")) :
+                            criteriaBuilder.asc(memberJoin.get("firstName") ) :
                             criteriaBuilder.desc(memberJoin.get("firstName")));
+
                 } else if ("member.lastName".equals(property)) {
-                    // Sorting by member's last name
+                    // Sorting by member's first name, then by last name
+                    Join<Membership, Member> memberJoin = root.join("member", JoinType.LEFT);
+
                     orders.add(order.isAscending() ?
-                            criteriaBuilder.asc(memberJoin.get("lastName")) :
+                            criteriaBuilder.asc(memberJoin.get("lastName") ) :
                             criteriaBuilder.desc(memberJoin.get("lastName")));
+
+                } else if ("member.email".equals(property)) {
+                    // Sorting by member's first name
+                    Join<Membership, Member> memberJoin = root.join("member", JoinType.LEFT);
+                    orders.add(order.isAscending() ?
+                            criteriaBuilder.asc(memberJoin.get("email")) :
+                            criteriaBuilder.desc(memberJoin.get("email")));
+                }  else if ("member.phoneNumber".equals(property)) {
+                    // Sorting by member's first name
+                    Join<Membership, Member> memberJoin = root.join("member", JoinType.LEFT);
+                    orders.add(order.isAscending() ?
+                            criteriaBuilder.asc(memberJoin.get("phoneNumber")) :
+                            criteriaBuilder.desc(memberJoin.get("phoneNumber")));
+                } else if ("membershipStatus.name".equals(property)) {
+                    // Sorting by member's first name
+                    Join<Membership, MembershipStatus> membershipStatusJoin = root.join("membershipStatus", JoinType.LEFT);
+                    orders.add(order.isAscending() ?
+                            criteriaBuilder.asc(membershipStatusJoin.get("name")) :
+                            criteriaBuilder.desc(membershipStatusJoin.get("name")));
+                } else if ("membershipType.name".equals(property)) {
+                    // Sorting by member's first name
+                    Join<Membership, MembershipType> membershipTypeJoin = root.join("membershipType", JoinType.LEFT);
+                    orders.add(order.isAscending() ?
+                            criteriaBuilder.asc(membershipTypeJoin.get("name")) :
+                            criteriaBuilder.desc(membershipTypeJoin.get("name")));
+                } else if ("member.memberAddress.city".equals(property)) {
+                    // Sorting by member's address city
+                    Join<Membership, Member> memberJoin = root.join("member", JoinType.LEFT);
+                    Join<Member, MemberAddress> memberAddressJoin = memberJoin.join("memberAddress", JoinType.LEFT); // Fix: Use memberJoin
+
+                    orders.add(order.isAscending() ?
+                            criteriaBuilder.asc(memberAddressJoin.get("city")) :
+                            criteriaBuilder.desc(memberAddressJoin.get("city")));
                 } else {
                     // Sorting by other Membership attributes
                     orders.add(order.isAscending() ?
@@ -203,30 +276,13 @@ public class MembershipSpecification {
                 }
             }
 
-
-            // Select necessary columns in the result
-            query.multiselect(
-                    root.get("membershipId"),
-                    root.get("createdAt"),
-                    root.get("endDate"),
-                    root.get("member").get("memberId"),
-                    root.get("membershipStatus"),
-                    root.get("membershipType"),
-                    root.get("organizationId"),
-                    root.get("startDate"),
-                    root.get("updatedAt"),
-                    memberJoin.get("firstName"),  // Include sorted columns in SELECT
-                    memberJoin.get("lastName"),   // Include sorted columns in SELECT
-                    roleJoin.get("name")         // Include sorted columns in SELECT
-            );
-
             // Apply the sorting
             query.orderBy(orders);
 
-            return criteriaBuilder.conjunction(); // Return the final specification
+            // Return the final specification
+            return criteriaBuilder.conjunction();
         };
     }
-
 
 
 

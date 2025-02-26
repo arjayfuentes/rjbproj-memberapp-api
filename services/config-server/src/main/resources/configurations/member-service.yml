@@ -72,3 +72,9 @@ aws:
       key: WUulhkg1Pl5MNGAO5/4Jh5AWlkRoh2S5Kq6Ta/cM
     region: eu-north-1
     bucket: arjay-fileupload
+
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql: TRACE

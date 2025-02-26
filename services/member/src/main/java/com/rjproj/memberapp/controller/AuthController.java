@@ -2,9 +2,7 @@ package com.rjproj.memberapp.controller;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.rjproj.memberapp.dto.*;
-import com.rjproj.memberapp.model.Member;
 import com.rjproj.memberapp.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,19 +23,20 @@ public class AuthController {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @PostMapping("/login")
-    public ResponseEntity<Session> loginMember(@RequestBody @Valid LoginRequest loginRequest){
-        return ResponseEntity.ok(memberService.login(loginRequest));
-    }
-
-    @PostMapping("/login/withGoogle")
-    public ResponseEntity<Session> loginMemberWithGoogle(@RequestBody @Valid GoogleRequest googleRequest){
-        return ResponseEntity.ok(memberService.loginMemberWithGoogle(googleRequest.googleToken()));
-    }
 
     @PostMapping("/getLoginSession")
     public ResponseEntity<Session> getLoginSession(@RequestBody @Valid String token){
         return ResponseEntity.ok(memberService.getLoginSession(token));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<Session> loginMember(@RequestBody @Valid LoginRequest loginRequest){
+        return ResponseEntity.ok(memberService.loginMember(loginRequest));
+    }
+
+    @PostMapping("/login/withGoogle")
+    public ResponseEntity<Session> loginWithGoogle(@RequestBody @Valid GoogleRequest googleRequest){
+        return ResponseEntity.ok(memberService.loginMemberWithGoogle(googleRequest.googleToken()));
     }
 
     @PostMapping("/register")
@@ -48,6 +47,11 @@ public class AuthController {
     @PostMapping("/register/withGoogle")
     public ResponseEntity<MemberResponse> registerMemberWithGoole(@RequestBody @Valid GoogleRequest googleRequest) {
         return ResponseEntity.ok(memberService.registerMemberWithGoogle(googleRequest.googleToken()));
+    }
+
+    @PostMapping("/selectLoginOrganization")
+    public ResponseEntity<Session> selectLoginOrganization(@RequestBody @Valid SelectOrganizationLoginRequest selectOrganizationLoginRequest) {
+        return ResponseEntity.ok(memberService.selectLoginOrganization(selectOrganizationLoginRequest));
     }
 
     @PostMapping(path = "/register/updateMemberAfterRegistration", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -65,11 +69,5 @@ public class AuthController {
 
         return ResponseEntity.ok(memberService.updateMemberAfterRegistration(profilePicImage, request));
     }
-
-    @PostMapping("/selectLoginOrganization")
-    public ResponseEntity<Session> selectLoginOrganization(@RequestBody @Valid SelectOrganizationLoginRequest selectOrganizationLoginRequest) {
-        return ResponseEntity.ok(memberService.selectLoginOrganization(selectOrganizationLoginRequest));
-    }
-
 
 }

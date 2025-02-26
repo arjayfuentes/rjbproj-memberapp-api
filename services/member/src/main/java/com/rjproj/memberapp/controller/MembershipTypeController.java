@@ -3,7 +3,6 @@ package com.rjproj.memberapp.controller;
 import com.rjproj.memberapp.dto.MembershipTypeRequest;
 import com.rjproj.memberapp.dto.MembershipTypeResponse;
 import com.rjproj.memberapp.dto.MembershipTypeValidityResponse;
-import com.rjproj.memberapp.model.MembershipTypeValidity;
 import com.rjproj.memberapp.service.MembershipTypeService;
 import com.rjproj.memberapp.service.MembershipTypeValidityService;
 import jakarta.validation.Valid;
@@ -24,24 +23,29 @@ public class MembershipTypeController {
 
     private final MembershipTypeValidityService membershipTypeValidityService;
 
+    @GetMapping("/findAllMembershipTypeValidity")
+    public ResponseEntity<List<MembershipTypeValidityResponse>> findAllMembershipTypeValidity() {
+        return ResponseEntity.ok(membershipTypeValidityService.findAll());
+    }
+
+
+    @GetMapping("/getMembershipTypesByOrganizationId/{organization-id}")
+    public ResponseEntity<List<MembershipTypeResponse>> getMembershipTypesByOrganizationId(
+            @PathVariable("organization-id") UUID organizationId
+    ) {
+        return ResponseEntity.ok(membershipTypeService.getMembershipTypesByOrganizationId(organizationId));
+    }
+
+    /* Below unused methods */
 
     @PostMapping
     public ResponseEntity<MembershipTypeResponse> createMembershipType(@RequestBody @Valid MembershipTypeRequest membershipTypeRequest) {
         return ResponseEntity.ok(membershipTypeService.createMembershipType(membershipTypeRequest));
     }
 
-
     @PostMapping("/createMembershipTypes")
     public ResponseEntity<List<MembershipTypeResponse>> createMembershipTypes(@RequestBody @Valid List<MembershipTypeRequest> membershipTypeRequests) {
         return ResponseEntity.ok(membershipTypeService.createMembershipTypes(membershipTypeRequests));
-    }
-
-    @PutMapping(path = "/{membershipType-id}")
-    public ResponseEntity<MembershipTypeResponse> updateMembershipType(@PathVariable("membershipType-id") UUID membershipTypeId, @RequestBody @Valid MembershipTypeRequest membershipTypeRequest){
-        //return ResponseEntity.ok(membershipTypeService.updateMembershipType(membershipTypeRequest));
-        return new ResponseEntity<>(
-                membershipTypeService.updateMembershipType(membershipTypeId, membershipTypeRequest),
-                HttpStatus.ACCEPTED);
     }
 
     @GetMapping("/{membershipType-id}")
@@ -56,11 +60,12 @@ public class MembershipTypeController {
         return ResponseEntity.ok(membershipTypeService.findAll());
     }
 
-    @GetMapping("/getMembershipTypesByOrganizationId/{organization-id}")
-    public ResponseEntity<List<MembershipTypeResponse>> getMembershipTypesByOrganizationId(
-            @PathVariable("organization-id") UUID organizationId
-    ) {
-        return ResponseEntity.ok(membershipTypeService.getMembershipTypesByOrganizationId(organizationId));
+    @PutMapping(path = "/{membershipType-id}")
+    public ResponseEntity<MembershipTypeResponse> updateMembershipType(@PathVariable("membershipType-id") UUID membershipTypeId, @RequestBody @Valid MembershipTypeRequest membershipTypeRequest){
+        //return ResponseEntity.ok(membershipTypeService.updateMembershipType(membershipTypeRequest));
+        return new ResponseEntity<>(
+                membershipTypeService.updateMembershipType(membershipTypeId, membershipTypeRequest),
+                HttpStatus.ACCEPTED);
     }
 
     @DeleteMapping("/{membershipType-id}")
@@ -71,9 +76,5 @@ public class MembershipTypeController {
         return ResponseEntity.accepted().build();
     }
 
-    @GetMapping("/findAllMembershipTypeValidity")
-    public ResponseEntity<List<MembershipTypeValidityResponse>> findAllMembershipTypeValidity() {
-        return ResponseEntity.ok(membershipTypeValidityService.findAll());
-    }
 
 }

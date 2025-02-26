@@ -2,10 +2,7 @@ package com.rjproj.memberapp.controller;
 
 
 import com.rjproj.memberapp.dto.MembershipStatusResponse;
-import com.rjproj.memberapp.dto.RoleResponse;
-import com.rjproj.memberapp.model.MembershipStatus;
 import com.rjproj.memberapp.service.MembershipStatusService;
-import com.rjproj.memberapp.service.RoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

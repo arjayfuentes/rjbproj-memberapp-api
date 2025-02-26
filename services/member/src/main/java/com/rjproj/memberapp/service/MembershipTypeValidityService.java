@@ -14,12 +14,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MembershipTypeValidityService {
 
-    @Autowired
-    private MembershipTypeValidityRepository membershipTypeValidityRepository;
-
-
     private final MembershipTypeValidityMapper membershipTypeValidityMapper;
 
+    @Autowired
+    private MembershipTypeValidityRepository membershipTypeValidityRepository;
 
     public List<MembershipTypeValidityResponse> findAll() {
         return membershipTypeValidityRepository.findAll()
