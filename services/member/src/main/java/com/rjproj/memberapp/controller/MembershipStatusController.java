@@ -12,14 +12,14 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/membership-status")
+@RequestMapping("/api/v1/membership-statuses")
 @RequiredArgsConstructor
 public class MembershipStatusController {
 
     private final MembershipStatusService membershipStatusService;
 
-    @GetMapping("/getMemberMembershipStatuses")
-    public ResponseEntity<List<MembershipStatusResponse>> getMemberMembershipStatuses() {
-        return ResponseEntity.ok(membershipStatusService.getMemberMembershipStatuses());
+    @GetMapping("/approved")
+    public ResponseEntity<List<MembershipStatusResponse>> getApprovedMembershipStatuses() {
+        return ResponseEntity.ok(membershipStatusService.getApprovedMembershipStatuses());
     }
 }

@@ -19,11 +19,12 @@ public class MembershipStatusService {
 
     private final MembershipStatusMapper membershipStatusMapper;
 
-    public List<MembershipStatusResponse> getMemberMembershipStatuses() {
+    public List<MembershipStatusResponse> getApprovedMembershipStatuses() {
         List<String> memberMembershipStatuses = new ArrayList<>();
         memberMembershipStatuses.add("Active");
         memberMembershipStatuses.add("Expired");
         memberMembershipStatuses.add("Cancelled");
+        memberMembershipStatuses.add("Owner");
         List<MembershipStatus> membershipStatuses = membershipStatusRepository.findByNameIn(memberMembershipStatuses);
         return membershipStatuses.stream().map(membershipStatusMapper::fromMembershipStatus).collect(Collectors.toList()) ;
     }

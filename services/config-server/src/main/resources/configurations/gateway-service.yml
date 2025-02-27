@@ -39,7 +39,7 @@ spring:
         - id: membership-status-service
           uri: lb:http://MEMBER-SERVICE
           predicates:
-            - Path=/api/v1/membership-status/**
+            - Path=/api/v1/membership-statuses/**
         - id: authentication-service
           uri: lb:http://MEMBER-SERVICE
           predicates:

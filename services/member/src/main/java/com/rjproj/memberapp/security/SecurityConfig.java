@@ -116,20 +116,17 @@ public class SecurityConfig {
                                                 "com.rjproj.memberapp.permission.user.viewAll")
 
 
-                        .requestMatchers("/api/v1/membership-status/**").hasAuthority("com.rjproj.memberapp.permission.user.viewAll")
+                        //MEMBERSHIP-STATUS
+                        .requestMatchers(
+                                "/api/v1/membership-statuses/**")
+                                        .hasAnyAuthority(
+                                                "com.rjproj.memberapp.permission.user.viewOrgAll",
+                                                "com.rjproj.memberapp.permission.user.viewAll")
+
+
+
+
                         .requestMatchers("/api/v1/member/updateMemberDetails").permitAll()
-
-
-
-
-
-
-
-
-
-
-
-
                         .requestMatchers("/api/v1/member/createDefaultAdminOrganizationRoleForOwner").permitAll()
                         .requestMatchers("/api/v1/member/organization/**").hasAnyAuthority("com.rjproj.memberapp.permission.user.viewOrgAll", "com.rjproj.memberapp.permission.user.viewAll")
                         .requestMatchers("/api/v1/member/organizationPage/**").hasAnyAuthority("com.rjproj.memberapp.permission.user.viewOrgAll", "com.rjproj.memberapp.permission.user.viewAll")
