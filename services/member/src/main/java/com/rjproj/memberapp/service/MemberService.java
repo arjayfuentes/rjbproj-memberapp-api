@@ -147,17 +147,6 @@ public class MemberService {
         }
     }
 
-    public Member getMemberById(UUID memberId) {
-        if(memberId != null) {
-            Optional<Member> member = memberRepository.findById(memberId);
-            if(member.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Member not found with ID: " + memberId);
-            }
-            return member.get();
-        }
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Member Id cannot be null");
-    }
-
     public Session loginMember(LoginRequest loginRequest) {
         try {
             Optional<Member> member = memberRepository.findByEmail(loginRequest.email());
