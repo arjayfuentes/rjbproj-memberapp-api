@@ -40,9 +40,6 @@ public class MembershipService {
     private final MemberRepository memberRepository;
 
     @Autowired
-    private final MemberService memberService;
-
-    @Autowired
     private MemberRoleRepository memberRoleRepository;
 
     private final MembershipMapper membershipMapper;
@@ -72,7 +69,7 @@ public class MembershipService {
 
         Role role = roleService.getRoleByName("Member");
 
-        Member member = memberService.getMemberById(membership.getMember().getMemberId());
+        Member member = getMemberById(membership.getMember().getMemberId());
 
         Optional<MemberRole> existingMemberRoleOpt = memberRoleRepository.findByMemberIdAndOrganizationId(membership.getMember().getMemberId(), membershipRequest.organizationId());
 
@@ -360,6 +357,17 @@ public class MembershipService {
             endDate = null;
         }
         return endDate;
+    }
+
+    private Member getMemberById(UUID memberId) {
+        if(memberId != null) {
+            Optional<Member> member = memberRepository.findById(memberId);
+            if(member.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Member not found with ID: " + memberId);
+            }
+            return member.get();
+        }
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Member Id cannot be null");
     }
 
     private void mergeMembership(Membership membership, @Valid MembershipRequest membershipRequest) {
