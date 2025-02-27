@@ -264,4 +264,14 @@ public class OrganizationService {
         }
 
     }
+
+    public List<OrganizationResponse> getOrganizationsByMemberId(UUID memberId) {
+        Optional<List<MembershipResponse>> membershipResponsesOpt = this.membershipClient.getMembershipsByMemberId(memberId);
+        if(membershipResponsesOpt.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<String> organizationIds = membershipResponsesOpt.get().stream().map(membershipResponse -> membershipResponse.organizationId().toString()).collect(Collectors.toList());
+        List<Organization> organizations = organizationRepository.findAllById(organizationIds);
+        return organizations.stream().map(organizationMapper::fromOrganization).collect(Collectors.toList());
+    }
 }

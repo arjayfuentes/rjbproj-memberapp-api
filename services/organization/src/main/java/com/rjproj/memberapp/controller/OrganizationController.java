@@ -52,6 +52,11 @@ public class OrganizationController {
         return ResponseEntity.ok(organizationService.findAllOrganization());
     }
 
+    @GetMapping("getOrganizationsByMemberId/members/{memberId}")
+    public ResponseEntity<List<OrganizationResponse>> getOrganizationsByMemberId( @PathVariable("memberId") UUID memberId) {
+        return ResponseEntity.ok(organizationService.getOrganizationsByMemberId(memberId));
+    }
+
     @GetMapping("/getAllOrganizations")
     public Page<OrganizationResponse> getOrganizations(
             @RequestParam(defaultValue = "0") int page,

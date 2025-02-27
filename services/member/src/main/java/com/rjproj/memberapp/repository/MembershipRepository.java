@@ -21,6 +21,9 @@ public interface MembershipRepository extends JpaRepository<Membership, UUID>, J
     @Query("SELECT m.organizationId FROM Membership m WHERE m.member.memberId = :memberId")
     List<UUID> findOrganizationIdsByMemberId(@Param("memberId") UUID memberId);
 
+    @Query("SELECT m FROM Membership m WHERE m.member.memberId = :memberId")
+    List<Membership> findMembershipsByMemberId(@Param("memberId") UUID memberId);
+
     @Query("SELECT m.organizationId FROM Membership m WHERE m.member.memberId = :memberId AND m.membershipType IS NOT NULL")
     List<UUID> findActiveOrganizationIdsByMemberId(@Param("memberId") UUID memberId);
 

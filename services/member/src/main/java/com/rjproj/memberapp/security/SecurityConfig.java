@@ -31,6 +31,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.security.core.Authentication;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -73,20 +74,52 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/getLoginSession").permitAll()
                         .requestMatchers("/api/v1/auth/login/withGoogle").permitAll()
                         .requestMatchers("/api/v1/role/**").hasAuthority("com.rjproj.memberapp.permission.user.viewAll")
+
+
+                        // Specific permissions for approve, deny, and update membership requests
+                        .requestMatchers(
+                                "/api/v1/memberships/{membershipId}/approve",
+                                "/api/v1/memberships/{membershipId}/deny",
+                                "/api/v1/memberships/{membershipId}")
+                                    .hasAnyAuthority(
+                                            "com.rjproj.memberapp.permission.user.editOrgAll",
+                                            "com.rjproj.memberapp.permission.user.editAll")
+
+                        // Specific permissions for viewing and managing memberships within organizations
+                        .requestMatchers(
+                                "/api/v1/memberships/organizations/{organizationId}/members",
+                                "/api/v1/memberships/organizations/{organizationId}/members/pending")
+                                        .hasAnyAuthority(
+                                                "com.rjproj.memberapp.permission.user.viewOrgAll",
+                                                "com.rjproj.memberapp.permission.user.viewAll")
+
+                        // Permissions for creating membership for the current user and requesting membership
+                        .requestMatchers(
+                                "/api/v1/memberships/current",
+                                "/api/v1/memberships/request")
+                                        .hasAnyAuthority(
+                                                "com.rjproj.memberapp.permission.user.createOwn",
+                                                "com.rjproj.memberapp.permission.user.createOrg",
+                                                "com.rjproj.memberapp.permission.user.createAll")
+
+                        // Permissions for getting a membership by memberId and organizationId *CHECK
+                        .requestMatchers(
+                                "/api/v1/memberships/organizations/{organizationId}/members/{memberId}",
+                                "/api/v1/memberships/members/{memberId}")
+                                        .permitAll()
+
+
+
+
                         .requestMatchers("/api/v1/membership-status/**").hasAuthority("com.rjproj.memberapp.permission.user.viewAll")
-                        .requestMatchers("/api/v1/membership/membership-request/**").permitAll()
                         .requestMatchers("/api/v1/member/updateMemberDetails").permitAll()
-                        .requestMatchers("/api/v1/membership/createMembershipForCurrentMember/**").permitAll()
-                        .requestMatchers("/api/v1/membership/organization/**").permitAll()
-                        .requestMatchers("/api/v1/membership/getOrganizationByMemberId/**").permitAll()
+
                         .requestMatchers("/api/v1/membership-type/createMembershipTypes").permitAll()
                         .requestMatchers("/api/v1/membership-type/findAllMembershipTypeValidity").permitAll()
                         .requestMatchers("/api/v1/member/createDefaultAdminOrganizationRoleForOwner").permitAll()
                         .requestMatchers("/api/v1/member/organization/**").hasAnyAuthority("com.rjproj.memberapp.permission.user.viewOrgAll", "com.rjproj.memberapp.permission.user.viewAll")
                         .requestMatchers("/api/v1/member/organizationPage/**").hasAnyAuthority("com.rjproj.memberapp.permission.user.viewOrgAll", "com.rjproj.memberapp.permission.user.viewAll")
                         .requestMatchers("/api/v1/member/**").hasAuthority("com.rjproj.memberapp.permission.user.viewAll")
-                        .requestMatchers("/api/v1/membership/getOrganizationByMemberId/**").hasAnyAuthority("com.rjproj.memberapp.permission.organization.viewOwn, com.rjproj.memberapp.permission.organization.viewAll, com.rjproj.memberapp.permission.organization.viewAll")
-                        .requestMatchers("/api/v1/membership/**").hasAuthority("com.rjproj.memberapp.permission.user.viewAll")
                         .requestMatchers("/api/v1/membership-type/**").hasAuthority("com.rjproj.memberapp.permission.user.viewAll")
                         .anyRequest()
                         .authenticated())
@@ -151,6 +184,14 @@ public class SecurityConfig {
     @Bean
     public AccessDeniedHandler customAccessDeniedHandler() {
         return (HttpServletRequest request, HttpServletResponse response, org.springframework.security.access.AccessDeniedException accessDeniedException) -> {
+
+            // Log the authenticated user and authorities
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null) {
+                System.out.println("Authenticated User: " + authentication.getName());
+                System.out.println("User Authorities: " + authentication.getAuthorities());
+            }
+
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             PrintWriter writer = response.getWriter();

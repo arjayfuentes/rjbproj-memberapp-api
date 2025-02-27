@@ -31,7 +31,7 @@ spring:
         - id: membership-service
           uri: lb:http://MEMBER-SERVICE
           predicates:
-            - Path=/api/v1/membership/**
+            - Path=/api/v1/memberships/**
         - id: membership-type-service
           uri: lb:http://MEMBER-SERVICE
           predicates:

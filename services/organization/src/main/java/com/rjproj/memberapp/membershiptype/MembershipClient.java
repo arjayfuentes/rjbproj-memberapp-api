@@ -2,16 +2,16 @@ package com.rjproj.memberapp.membershiptype;
 
 import com.rjproj.memberapp.dto.CreateMembershipRequest;
 import com.rjproj.memberapp.dto.MembershipResponse;
-import com.rjproj.memberapp.dto.MembershipTypeRequest;
-import com.rjproj.memberapp.dto.MembershipTypeResponse;
 import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @FeignClient(
         name = "membership-service",
@@ -19,7 +19,11 @@ import java.util.Optional;
 )
 public interface MembershipClient {
 
-    @PostMapping("/createMembershipForCurrentMember")
+    @PostMapping("/current")
     Optional<MembershipResponse> createMembershipForCurrentMember(@RequestBody @Valid CreateMembershipRequest createMembershipRequest);
+
+    @GetMapping("/members/{memberId}")
+    Optional<List<MembershipResponse>> getMembershipsByMemberId(@PathVariable("memberId") UUID memberId);
+
 
 }

@@ -76,6 +76,11 @@ public class MembershipService {
         return membershipRepository.findActiveOrganizationIdsByMemberId(memberId);
     }
 
+    public List<MembershipResponse> getMembershipsByMemberId(UUID memberId) {
+        List<Membership> memberships = membershipRepository.findMembershipsByMemberId(memberId);
+        return memberships.stream().map(membershipMapper::fromMembership).collect(Collectors.toList());
+    }
+
     public Membership getMembership(UUID memberId, UUID organizationId) {
         return membershipRepository.findMembershipByMemberIdAndOrganizationId(memberId, organizationId);
     }

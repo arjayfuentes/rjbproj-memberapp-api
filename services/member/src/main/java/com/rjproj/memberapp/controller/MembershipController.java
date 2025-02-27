@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/membership")
+@RequestMapping("/api/v1/memberships")
 @RequiredArgsConstructor
 public class MembershipController {
 
@@ -22,36 +22,36 @@ public class MembershipController {
 
     /* Call from other service */
 
-    @PutMapping(path = "/membership-request/{membership-id}/approve")
-    public ResponseEntity<MembershipResponse> approveMembershipRequest(@PathVariable("membership-id") UUID membershipId, @RequestBody @Valid MembershipRequest membershipRequest){
+    @PutMapping(path = "/{membershipId}/approve")
+    public ResponseEntity<MembershipResponse> approveMembershipRequest(@PathVariable("membershipId") UUID membershipId, @RequestBody @Valid MembershipRequest membershipRequest){
         return new ResponseEntity<>(
                 membershipService.approveMembershipRequest(membershipId, membershipRequest),
                 HttpStatus.ACCEPTED);
     }
 
-    @PutMapping(path = "/membership-request/{membership-id}/deny")
-    public ResponseEntity<MembershipResponse> denyMembershipRequest(@PathVariable("membership-id") UUID membershipId, @RequestBody @Valid MembershipRequest membershipRequest){
+    @PutMapping(path = "/{membershipId}/deny")
+    public ResponseEntity<MembershipResponse> denyMembershipRequest(@PathVariable("membershipId") UUID membershipId, @RequestBody @Valid MembershipRequest membershipRequest){
         return new ResponseEntity<>(
                 membershipService.denyMembershipRequest(membershipId, membershipRequest),
                 HttpStatus.ACCEPTED);
     }
 
-    @PostMapping("/createMembershipForCurrentMember")
+    @PostMapping("/current")
     public ResponseEntity<MembershipResponse> createMembershipForCurrentMember(@RequestBody @Valid CreateMembershipRequest createMembershipRequest) {
         return ResponseEntity.ok(membershipService.createMembershipForCurrentMember(createMembershipRequest));
     }
 
-    @GetMapping("/organization/{organization-id}/member/{member-id}")
+    @GetMapping("/organizations/{organizationId}/members/{memberId}")
     public ResponseEntity<MembershipResponse> getMembershipByMemberIdAndOrganizationId(
-            @PathVariable("organization-id") UUID organizationId,
-            @PathVariable("member-id") UUID memberId
+            @PathVariable("organizationId") UUID organizationId,
+            @PathVariable("memberId") UUID memberId
     ) {
         return ResponseEntity.ok(membershipService.getMembershipByMemberIdAndOrganizationId(memberId,organizationId));
     }
 
-    @PostMapping("/organization/{organizationId}/memberships")
+    @PostMapping("/organizations/{organizationId}/members")
     public ResponseEntity<Page<MembershipResponse>> getMembershipsByOrganization(
-            @PathVariable UUID organizationId,
+            @PathVariable("organizationId") UUID organizationId,
             @RequestParam(value = "pageNo", defaultValue = "0", required = false) Integer pageNo,
             @RequestParam(value = "pageSize", defaultValue = "10", required = false) Integer pageSize,
             @RequestParam(value = "sortField", defaultValue = "memberId", required = false) String sortField,
@@ -60,9 +60,9 @@ public class MembershipController {
         return ResponseEntity.ok(membershipService.getMembershipsByOrganization(organizationId, pageNo, pageSize, sortField, sortOrder, membershipFilters));
     }
 
-    @PostMapping("/organization/{organizationId}/memberships/pending")
+    @PostMapping("/organizations/{organizationId}/members/pending")
     public ResponseEntity<Page<MembershipResponse>> getPendingMembershipsByOrganization(
-            @PathVariable UUID organizationId,
+            @PathVariable("organizationId") UUID organizationId,
             @RequestParam(value = "pageNo", defaultValue = "0", required = false) Integer pageNo,
             @RequestParam(value = "pageSize", defaultValue = "10", required = false) Integer pageSize,
             @RequestParam(value = "sortField", defaultValue = "memberId", required = false) String sortField,
@@ -71,30 +71,22 @@ public class MembershipController {
         return ResponseEntity.ok(membershipService.getPendingMembershipsByOrganization(organizationId, pageNo, pageSize, sortField, sortOrder, membershipFilters));
     }
 
-    @GetMapping("/getOrganizationByMemberId/{member-Id}")
-    public ResponseEntity<List<OrganizationResponse>> getOrganizationByMemberId( @PathVariable("member-Id") UUID memberId) {
-        return ResponseEntity.ok(membershipService.getOrganizationByMemberId(memberId));
+    @GetMapping("/members/{memberId}")
+    public ResponseEntity<List<MembershipResponse>> getMembershipsByMemberId( @PathVariable("memberId") UUID memberId) {
+        return ResponseEntity.ok(membershipService.getMembershipsByMemberId(memberId));
     }
 
-    @PostMapping(path = "/membership-request/request")
+    @PostMapping(path = "/request")
     public ResponseEntity<MembershipResponse> requestMembership(@RequestBody @Valid JoinOrganizationRequest organizationRequest) {
         return ResponseEntity.ok(membershipService.requestMembership(organizationRequest));
     }
 
-    @PutMapping(path = "/update-membership/{membership-id}")
-    public ResponseEntity<MembershipResponse> updateMembership(@PathVariable("membership-id") UUID membershipId, @RequestBody @Valid MembershipRequest membershipRequest){
+    @PutMapping(path = "/{membershipId}")
+    public ResponseEntity<MembershipResponse> updateMembership(@PathVariable("membershipId") UUID membershipId, @RequestBody @Valid MembershipRequest membershipRequest){
         return new ResponseEntity<>(
                 membershipService.updateMembership(membershipId, membershipRequest),
                 HttpStatus.ACCEPTED);
     }
-
-    @PutMapping(path = "/update-membership/{membership-id}/membership-type")
-    public ResponseEntity<MembershipResponse> updateMembershipType(@PathVariable("membership-id") UUID membershipId, @RequestBody @Valid MembershipRequest membershipRequest){
-        return new ResponseEntity<>(
-                membershipService.updateMembershipType(membershipId, membershipRequest),
-                HttpStatus.ACCEPTED);
-    }
-
 
 
     /* Below unused methods */
