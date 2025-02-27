@@ -88,36 +88,4 @@ public class MembershipController {
                 HttpStatus.ACCEPTED);
     }
 
-
-    /* Below unused methods */
-
-    @PostMapping
-    public ResponseEntity<MembershipResponse> createMembership(@RequestBody @Valid MembershipRequest membershipRequest) {
-        return ResponseEntity.ok(membershipService.createMembership(membershipRequest));
-    }
-
-
-    @GetMapping("/{membership-id}")
-    public ResponseEntity<MembershipResponse> findById(
-            @PathVariable("membership-id") UUID membershipId
-    ) {
-        return ResponseEntity.ok(membershipService.findById(membershipId));
-    }
-
-    @GetMapping
-    public ResponseEntity<List<MembershipResponse>> findAll() {
-        return ResponseEntity.ok(membershipService.findAll());
-    }
-
-    @DeleteMapping("/{membership-id}")
-    public ResponseEntity<Void> deleteMembership(
-            @PathVariable("membership-id") UUID membershipId
-    ) {
-        membershipService.deleteMembership(membershipId);
-        return ResponseEntity.accepted().build();
-    }
-
-
-
-
 }
