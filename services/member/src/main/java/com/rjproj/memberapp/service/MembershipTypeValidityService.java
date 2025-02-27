@@ -19,7 +19,7 @@ public class MembershipTypeValidityService {
     @Autowired
     private MembershipTypeValidityRepository membershipTypeValidityRepository;
 
-    public List<MembershipTypeValidityResponse> findAll() {
+    public List<MembershipTypeValidityResponse> getAllMembershipTypeValidities() {
         return membershipTypeValidityRepository.findAll()
                 .stream()
                 .map(membershipTypeValidityMapper::fromMembershipTypeValidity)

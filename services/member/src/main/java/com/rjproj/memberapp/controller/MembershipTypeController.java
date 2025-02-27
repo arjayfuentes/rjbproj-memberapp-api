@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/membership-type")
+@RequestMapping("/api/v1/membership-types")
 @RequiredArgsConstructor
 public class MembershipTypeController {
 
@@ -23,15 +23,15 @@ public class MembershipTypeController {
 
     private final MembershipTypeValidityService membershipTypeValidityService;
 
-    @GetMapping("/findAllMembershipTypeValidity")
-    public ResponseEntity<List<MembershipTypeValidityResponse>> findAllMembershipTypeValidity() {
-        return ResponseEntity.ok(membershipTypeValidityService.findAll());
+    @GetMapping("/validities")
+    public ResponseEntity<List<MembershipTypeValidityResponse>> getAllMembershipTypeValidities() {
+        return ResponseEntity.ok(membershipTypeValidityService.getAllMembershipTypeValidities());
     }
 
 
-    @GetMapping("/getMembershipTypesByOrganizationId/{organization-id}")
+    @GetMapping("/organizations/{organizationId}")
     public ResponseEntity<List<MembershipTypeResponse>> getMembershipTypesByOrganizationId(
-            @PathVariable("organization-id") UUID organizationId
+            @PathVariable("organizationId") UUID organizationId
     ) {
         return ResponseEntity.ok(membershipTypeService.getMembershipTypesByOrganizationId(organizationId));
     }

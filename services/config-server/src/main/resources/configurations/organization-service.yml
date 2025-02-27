@@ -20,7 +20,7 @@ server:
 
 application:
   config:
-    membership-type-url: http://localhost:8222/api/v1/membership-type
+    membership-type-url: http://localhost:8222/api/v1/membership-types
     membership-url: http://localhost:8222/api/v1/memberships
     member-url: http://localhost:8222/api/v1/member
 

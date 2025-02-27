@@ -75,7 +75,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/login/withGoogle").permitAll()
                         .requestMatchers("/api/v1/role/**").hasAuthority("com.rjproj.memberapp.permission.user.viewAll")
 
-
+                        //MEMBERSHIPS
                         // Specific permissions for approve, deny, and update membership requests
                         .requestMatchers(
                                 "/api/v1/memberships/{membershipId}/approve",
@@ -84,7 +84,6 @@ public class SecurityConfig {
                                     .hasAnyAuthority(
                                             "com.rjproj.memberapp.permission.user.editOrgAll",
                                             "com.rjproj.memberapp.permission.user.editAll")
-
                         // Specific permissions for viewing and managing memberships within organizations
                         .requestMatchers(
                                 "/api/v1/memberships/organizations/{organizationId}/members",
@@ -92,7 +91,6 @@ public class SecurityConfig {
                                         .hasAnyAuthority(
                                                 "com.rjproj.memberapp.permission.user.viewOrgAll",
                                                 "com.rjproj.memberapp.permission.user.viewAll")
-
                         // Permissions for creating membership for the current user and requesting membership
                         .requestMatchers(
                                 "/api/v1/memberships/current",
@@ -101,26 +99,41 @@ public class SecurityConfig {
                                                 "com.rjproj.memberapp.permission.user.createOwn",
                                                 "com.rjproj.memberapp.permission.user.createOrg",
                                                 "com.rjproj.memberapp.permission.user.createAll")
-
                         // Permissions for getting a membership by memberId and organizationId *CHECK
                         .requestMatchers(
                                 "/api/v1/memberships/organizations/{organizationId}/members/{memberId}",
                                 "/api/v1/memberships/members/{memberId}")
                                         .permitAll()
 
-
+                        //MEMBERSHIP-TYPES
+                        .requestMatchers(
+                                "/api/v1/membership-types/validities")
+                                        .permitAll()
+                        .requestMatchers(
+                                "/api/v1/membership-types/**")
+                                        .hasAnyAuthority(
+                                                "com.rjproj.memberapp.permission.user.viewOrgAll",
+                                                "com.rjproj.memberapp.permission.user.viewAll")
 
 
                         .requestMatchers("/api/v1/membership-status/**").hasAuthority("com.rjproj.memberapp.permission.user.viewAll")
                         .requestMatchers("/api/v1/member/updateMemberDetails").permitAll()
 
-                        .requestMatchers("/api/v1/membership-type/createMembershipTypes").permitAll()
-                        .requestMatchers("/api/v1/membership-type/findAllMembershipTypeValidity").permitAll()
+
+
+
+
+
+
+
+
+
+
+
                         .requestMatchers("/api/v1/member/createDefaultAdminOrganizationRoleForOwner").permitAll()
                         .requestMatchers("/api/v1/member/organization/**").hasAnyAuthority("com.rjproj.memberapp.permission.user.viewOrgAll", "com.rjproj.memberapp.permission.user.viewAll")
                         .requestMatchers("/api/v1/member/organizationPage/**").hasAnyAuthority("com.rjproj.memberapp.permission.user.viewOrgAll", "com.rjproj.memberapp.permission.user.viewAll")
                         .requestMatchers("/api/v1/member/**").hasAuthority("com.rjproj.memberapp.permission.user.viewAll")
-                        .requestMatchers("/api/v1/membership-type/**").hasAuthority("com.rjproj.memberapp.permission.user.viewAll")
                         .anyRequest()
                         .authenticated())
                 .oauth2Client(Customizer.withDefaults())
