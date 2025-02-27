@@ -1,13 +1,14 @@
 package com.rjproj.memberapp.controller;
 
 import com.rjproj.memberapp.dto.*;
-import com.rjproj.memberapp.organization.OrganizationResponse;
 import com.rjproj.memberapp.service.MembershipService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,13 +21,21 @@ public class MembershipController {
 
     private final MembershipService membershipService;
 
-    /* Call from other service */
-
     @PutMapping(path = "/{membershipId}/approve")
     public ResponseEntity<MembershipResponse> approveMembershipRequest(@PathVariable("membershipId") UUID membershipId, @RequestBody @Valid MembershipRequest membershipRequest){
         return new ResponseEntity<>(
                 membershipService.approveMembershipRequest(membershipId, membershipRequest),
                 HttpStatus.ACCEPTED);
+    }
+
+    /* Call from other service */
+    @PostMapping("/current")
+    public ResponseEntity<MembershipResponse> createMembershipForCurrentMember(@RequestBody @Valid CreateMembershipRequest createMembershipRequest) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("Authenticated User: " + auth.getName());
+        System.out.println("Authorities: " + auth.getAuthorities());
+
+        return ResponseEntity.ok(membershipService.createMembershipForCurrentMember(createMembershipRequest));
     }
 
     @PutMapping(path = "/{membershipId}/deny")
@@ -36,9 +45,9 @@ public class MembershipController {
                 HttpStatus.ACCEPTED);
     }
 
-    @PostMapping("/current")
-    public ResponseEntity<MembershipResponse> createMembershipForCurrentMember(@RequestBody @Valid CreateMembershipRequest createMembershipRequest) {
-        return ResponseEntity.ok(membershipService.createMembershipForCurrentMember(createMembershipRequest));
+    @GetMapping("/members/{memberId}")
+    public ResponseEntity<List<MembershipResponse>> getMembershipsByMemberId( @PathVariable("memberId") UUID memberId) {
+        return ResponseEntity.ok(membershipService.getMembershipsByMemberId(memberId));
     }
 
     @GetMapping("/organizations/{organizationId}/members/{memberId}")
@@ -69,11 +78,6 @@ public class MembershipController {
             @RequestParam(value = "sortOrder", defaultValue = "ASC", required = false) String sortOrder,
             @RequestBody(required = false) MembershipFilters membershipFilters) {
         return ResponseEntity.ok(membershipService.getPendingMembershipsByOrganization(organizationId, pageNo, pageSize, sortField, sortOrder, membershipFilters));
-    }
-
-    @GetMapping("/members/{memberId}")
-    public ResponseEntity<List<MembershipResponse>> getMembershipsByMemberId( @PathVariable("memberId") UUID memberId) {
-        return ResponseEntity.ok(membershipService.getMembershipsByMemberId(memberId));
     }
 
     @PostMapping(path = "/request")

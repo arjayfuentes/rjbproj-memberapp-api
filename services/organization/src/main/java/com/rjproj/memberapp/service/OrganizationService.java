@@ -7,6 +7,7 @@ import com.rjproj.memberapp.mapper.OrganizationMapper;
 import com.rjproj.memberapp.membershiptype.MemberClient;
 import com.rjproj.memberapp.membershiptype.MembershipClient;
 import com.rjproj.memberapp.membershiptype.MembershipTypeClient;
+import com.rjproj.memberapp.membershiptype.RoleClient;
 import com.rjproj.memberapp.model.ImageMetadata;
 import com.rjproj.memberapp.model.ImageType;
 import com.rjproj.memberapp.model.Organization;
@@ -62,6 +63,8 @@ public class OrganizationService {
     private final MongoTemplate mongoTemplate;
 
     private final MemberClient memberClient;
+
+    private final RoleClient roleClient;
 
     private final MembershipClient membershipClient;
 
@@ -181,51 +184,54 @@ public class OrganizationService {
 
     public OrganizationResponse completeCreateOrganization(MultipartFile logoImage, MultipartFile backgroundImage, @Valid CreateOrganizationRequest createOrganizationRequest) {
 
-
-        Organization organization = organizationMapper.toOrganization(createOrganizationRequest.organizationRequest());
-        Organization savedOrganization = organizationRepository.save(organization);
-
-
-        com.rjproj.memberapp.model.File savedLogoImage = fileService.saveFile("organization", savedOrganization.getOrganizationId(), ImageType.PROFILE_IMAGE, logoImage.getName(), logoImage);
-        com.rjproj.memberapp.model.File savedBackgroundImage = fileService.saveFile("organization", savedOrganization.getOrganizationId(), ImageType.BACKGROUND_IMAGE, logoImage.getName(), backgroundImage);
-
-        savedOrganization.setLogoUrl(savedLogoImage.getFileUrl());
-        savedOrganization.setBackgroundImageUrl(savedBackgroundImage.getFileUrl());
+        try {
+            Organization organization = organizationMapper.toOrganization(createOrganizationRequest.organizationRequest());
+            Organization savedOrganization = organizationRepository.save(organization);
 
 
-        Organization finalsavedOrganization = organizationRepository.save(savedOrganization);
+            com.rjproj.memberapp.model.File savedLogoImage = fileService.saveFile("organization", savedOrganization.getOrganizationId(), ImageType.PROFILE_IMAGE, logoImage.getName(), logoImage);
+            com.rjproj.memberapp.model.File savedBackgroundImage = fileService.saveFile("organization", savedOrganization.getOrganizationId(), ImageType.BACKGROUND_IMAGE, logoImage.getName(), backgroundImage);
+
+            savedOrganization.setLogoUrl(savedLogoImage.getFileUrl());
+            savedOrganization.setBackgroundImageUrl(savedBackgroundImage.getFileUrl());
 
 
-        List<MembershipTypeRequest> updatedMembershipTypeRequests = createOrganizationRequest.membershipTypes().stream()
-                .map(membershipTypeRequest -> {
-                    return new MembershipTypeRequest(
-                            membershipTypeRequest.membershipTypeId(),
-                            finalsavedOrganization.getOrganizationId().toString(),
-                            membershipTypeRequest.membershipTypeValidity(),
-                            membershipTypeRequest.name(),
-                            membershipTypeRequest.description(),
-                            membershipTypeRequest.isDefault()
-                    );
-                })
-                .collect(Collectors.toList());
+            Organization finalsavedOrganization = organizationRepository.save(savedOrganization);
 
-        List<MembershipTypeResponse> membershipTypeResponses = this.membershipTypeClient.createMembershipTypes(updatedMembershipTypeRequests).get();
 
-        Optional<MembershipTypeResponse> defaultMembershipType = membershipTypeResponses.stream()
-                .filter(MembershipTypeResponse::isDefault) // Filter by isDefault == true
-                .findFirst();
+            List<MembershipTypeRequest> updatedMembershipTypeRequests = createOrganizationRequest.membershipTypes().stream()
+                    .map(membershipTypeRequest -> {
+                        return new MembershipTypeRequest(
+                                membershipTypeRequest.membershipTypeId(),
+                                finalsavedOrganization.getOrganizationId().toString(),
+                                membershipTypeRequest.membershipTypeValidity(),
+                                membershipTypeRequest.name(),
+                                membershipTypeRequest.description(),
+                                membershipTypeRequest.isDefault()
+                        );
+                    })
+                    .collect(Collectors.toList());
 
-        CreateMembershipRequest createMembershipRequest = new CreateMembershipRequest(
-                null,
-                savedOrganization.getOrganizationId(),
-                defaultMembershipType.get().membershipTypeId()
-        );
+            List<MembershipTypeResponse> membershipTypeResponses = this.membershipTypeClient.createMembershipTypes(updatedMembershipTypeRequests).get();
 
-        Optional<MembershipResponse> membershipResponse = this.membershipClient.createMembershipForCurrentMember(createMembershipRequest);
+            Optional<MembershipTypeResponse> defaultMembershipType = membershipTypeResponses.stream()
+                    .filter(MembershipTypeResponse::isDefault) // Filter by isDefault == true
+                    .findFirst();
 
-        String memberId = memberClient.createDefaultAdminOrganizationRoleForOwner(UUID.fromString(savedOrganization.getOrganizationId())).get();
-        return organizationMapper.fromOrganization(savedOrganization);
+            CreateMembershipRequest createMembershipRequest = new CreateMembershipRequest(
+                    null,
+                    savedOrganization.getOrganizationId(),
+                    defaultMembershipType.get().membershipTypeId()
+            );
+            Optional<MembershipResponse> membershipResponse = this.membershipClient.createMembershipForCurrentMember(createMembershipRequest);
+            String memberId = roleClient.createAdminRoleForOrganizationOwner(UUID.fromString(savedOrganization.getOrganizationId())).get();
+            return organizationMapper.fromOrganization(savedOrganization);
 
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Failed to create membership: " + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
     public List<String> getUniqueOrganizationCountries() {

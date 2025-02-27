@@ -4,17 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rjproj.memberapp.dto.*;
 import com.rjproj.memberapp.service.MemberService;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -26,25 +22,10 @@ public class MemberController {
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @GetMapping("/organization/{organizationId}")
-    public ResponseEntity<List<MemberResponse>> getMembersByOrganization(
-            @PathVariable UUID organizationId) {
-        return ResponseEntity.ok(memberService.getMembersByOrganization(organizationId));
-    }
-
-    @GetMapping("/organizationPage/{organizationId}")
-    public ResponseEntity<Page<MemberResponse>> getMembersByOrganizationPage(
-            @PathVariable UUID organizationId,
-            @RequestParam(value = "pageNo", defaultValue = "0", required = false) Integer pageNo,
-            @RequestParam(value = "pageSize", defaultValue = "10", required = false) Integer pageSize,
-            @RequestParam(value = "sortField", defaultValue = "memberId", required = false) String sortField,
-            @RequestParam(value = "sortOrder", defaultValue = "ASC", required = false) String sortOrder) {
-        return ResponseEntity.ok(memberService.getMembersByOrganizationPaginationAndSorting(organizationId, pageNo, pageSize, sortField, sortOrder));
-    }
-
-    @PostMapping(path = "/updateMemberDetails", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<MemberResponse> updateMemberDetails(
+    
+    @PostMapping(path = "/{memberId}/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<MemberResponse> updateMemberAfterRegistration(
+            @PathVariable("memberId") UUID memberId,
             @RequestPart(value = "profilePicImage", required = false) MultipartFile profilePicImage,
             @RequestPart(value = "additionalInfoRequest") String additionalInfoRequest
     ) {
@@ -56,54 +37,24 @@ public class MemberController {
             return ResponseEntity.badRequest().body(null);
         }
 
-        return ResponseEntity.ok(memberService.updateMemberDetails(profilePicImage, request));
+        return ResponseEntity.ok(memberService.updateMemberAfterRegistration(memberId, profilePicImage, request));
     }
 
-    /* Call from other service */
-
-    @PostMapping("/createDefaultAdminOrganizationRoleForOwner")
-    public ResponseEntity<String> createDefaultAdminOrganizationRoleForOwner(@RequestBody @Valid UUID organizationId) {
-        return ResponseEntity.ok(memberService.createDefaultAdminOrganizationRoleForOwner(organizationId));
-    }
-
-
-    /* Below unused methods */
-
-    @PostMapping
-    public ResponseEntity<MemberResponse> createMember(@RequestBody @Valid MemberRequest memberRequest) {
-        return ResponseEntity.ok(memberService.createMember(memberRequest));
-    }
-
-    @GetMapping("/{member-id}")
-    public ResponseEntity<MemberResponse> findById(
-            @PathVariable("member-id") UUID memberId
+    @PutMapping(path = "/{memberId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<MemberResponse> updateMemberDetails(
+            @PathVariable("memberId") UUID memberId,
+            @RequestPart(value = "profilePicImage", required = false) MultipartFile profilePicImage,
+            @RequestPart(value = "additionalInfoRequest") String additionalInfoRequest
     ) {
-        return ResponseEntity.ok(memberService.findById(memberId));
+
+        AdditionalInfoRequest request;
+        try {
+            request = objectMapper.readValue(additionalInfoRequest, AdditionalInfoRequest.class);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        return ResponseEntity.ok(memberService.updateMemberDetails(memberId, profilePicImage, request));
     }
-
-    @GetMapping
-    public ResponseEntity<List<MemberResponse>> findAll() {
-        return ResponseEntity.ok(memberService.findAll());
-    }
-
-    @PutMapping(path = "/{member-id}")
-    public ResponseEntity<MemberResponse> updateMember(@PathVariable("member-id") UUID memberId, @RequestBody @Valid MemberRequest memberRequest){
-        return new ResponseEntity<>(
-                memberService.updateMember(memberId, memberRequest),
-                HttpStatus.ACCEPTED);
-    }
-
-    @DeleteMapping("/{member-id}")
-    public ResponseEntity<Void> deleteMember(
-            @PathVariable("member-id") UUID memberId
-    ) {
-        memberService.deleteMember(memberId);
-        return ResponseEntity.accepted().build();
-    }
-
-
-
-
-
 
 }

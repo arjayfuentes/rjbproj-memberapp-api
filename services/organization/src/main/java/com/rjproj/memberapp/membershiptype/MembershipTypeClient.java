@@ -1,5 +1,7 @@
 package com.rjproj.memberapp.membershiptype;
 
+import com.rjproj.memberapp.dto.CreateMembershipRequest;
+import com.rjproj.memberapp.dto.MembershipResponse;
 import com.rjproj.memberapp.dto.MembershipTypeRequest;
 import com.rjproj.memberapp.dto.MembershipTypeResponse;
 import jakarta.validation.Valid;
@@ -17,7 +19,7 @@ import java.util.UUID;
 )
 public interface MembershipTypeClient {
 
-    @PostMapping("/createMembershipTypes")
+    @PostMapping("/bulk")
     Optional<List<MembershipTypeResponse>> createMembershipTypes(@RequestBody @Valid List<MembershipTypeRequest> membershipTypeRequests);
 
 }

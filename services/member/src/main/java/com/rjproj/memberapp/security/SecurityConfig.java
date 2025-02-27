@@ -69,37 +69,33 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.authorizeHttpRequests(request -> request
+
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/auth/logout").permitAll()
-                        .requestMatchers("/api/v1/auth/getLoginSession").permitAll()
-                        .requestMatchers("/api/v1/auth/login/withGoogle").permitAll()
-                        .requestMatchers("/api/v1/role/**").hasAuthority("com.rjproj.memberapp.permission.user.viewAll")
 
                         //MEMBERSHIPS
-                        // Specific permissions for approve, deny, and update membership requests
                         .requestMatchers(
-                                "/api/v1/memberships/{membershipId}/approve",
-                                "/api/v1/memberships/{membershipId}/deny",
-                                "/api/v1/memberships/{membershipId}")
+                            "/api/v1/memberships/current")
+                                .permitAll()
+                        .requestMatchers(
+                            "/api/v1/memberships/request")
+                                .hasAnyAuthority(
+                                        "com.rjproj.memberapp.permission.user.createOwn",
+                                        "com.rjproj.memberapp.permission.user.createOrg",
+                                        "com.rjproj.memberapp.permission.user.createAll")
+                        .requestMatchers(
+                            "/api/v1/memberships/{membershipId}/approve",
+                            "/api/v1/memberships/{membershipId}/deny",
+                            "/api/v1/memberships/{membershipId}")
+                                .hasAnyAuthority(
+                                        "com.rjproj.memberapp.permission.user.editOrgAll",
+                                        "com.rjproj.memberapp.permission.user.editAll")
+                        .requestMatchers(
+                            "/api/v1/memberships/organizations/{organizationId}/members",
+                            "/api/v1/memberships/organizations/{organizationId}/members/pending")
                                     .hasAnyAuthority(
-                                            "com.rjproj.memberapp.permission.user.editOrgAll",
-                                            "com.rjproj.memberapp.permission.user.editAll")
-                        // Specific permissions for viewing and managing memberships within organizations
-                        .requestMatchers(
-                                "/api/v1/memberships/organizations/{organizationId}/members",
-                                "/api/v1/memberships/organizations/{organizationId}/members/pending")
-                                        .hasAnyAuthority(
-                                                "com.rjproj.memberapp.permission.user.viewOrgAll",
-                                                "com.rjproj.memberapp.permission.user.viewAll")
-                        // Permissions for creating membership for the current user and requesting membership
-                        .requestMatchers(
-                                "/api/v1/memberships/current",
-                                "/api/v1/memberships/request")
-                                        .hasAnyAuthority(
-                                                "com.rjproj.memberapp.permission.user.createOwn",
-                                                "com.rjproj.memberapp.permission.user.createOrg",
-                                                "com.rjproj.memberapp.permission.user.createAll")
-                        // Permissions for getting a membership by memberId and organizationId *CHECK
+                                            "com.rjproj.memberapp.permission.user.viewOrgAll",
+                                            "com.rjproj.memberapp.permission.user.viewAll")
                         .requestMatchers(
                                 "/api/v1/memberships/organizations/{organizationId}/members/{memberId}",
                                 "/api/v1/memberships/members/{memberId}")
@@ -107,14 +103,14 @@ public class SecurityConfig {
 
                         //MEMBERSHIP-TYPES
                         .requestMatchers(
-                                "/api/v1/membership-types/validities")
+                                "/api/v1/membership-types/validities",
+                                "/api/v1/membership-types/bulk")
                                         .permitAll()
                         .requestMatchers(
                                 "/api/v1/membership-types/**")
                                         .hasAnyAuthority(
                                                 "com.rjproj.memberapp.permission.user.viewOrgAll",
                                                 "com.rjproj.memberapp.permission.user.viewAll")
-
 
                         //MEMBERSHIP-STATUS
                         .requestMatchers(
@@ -123,16 +119,37 @@ public class SecurityConfig {
                                                 "com.rjproj.memberapp.permission.user.viewOrgAll",
                                                 "com.rjproj.memberapp.permission.user.viewAll")
 
+                        //MEMBER
+                        .requestMatchers(
+                                "/api/v1/member/{memberId}")
+                                        .hasAnyAuthority(
+                                                "com.rjproj.memberapp.permission.user.editOwn",
+                                                "com.rjproj.memberapp.permission.user.editOrgAll",
+                                                "com.rjproj.memberapp.permission.user.editAll")
+
+                        //ROLE
+                        .requestMatchers(
+                                "/api/v1/roles/visible")
+                                        .hasAnyAuthority(
+                                                "com.rjproj.memberapp.permission.user.viewOrgAll",
+                                                "com.rjproj.memberapp.permission.user.viewAll")
+                        .requestMatchers(
+                                "/api/v1/roles/organizations/{organizationId}/admin")
+                                        .permitAll()
 
 
 
-                        .requestMatchers("/api/v1/member/updateMemberDetails").permitAll()
+
                         .requestMatchers("/api/v1/member/createDefaultAdminOrganizationRoleForOwner").permitAll()
                         .requestMatchers("/api/v1/member/organization/**").hasAnyAuthority("com.rjproj.memberapp.permission.user.viewOrgAll", "com.rjproj.memberapp.permission.user.viewAll")
                         .requestMatchers("/api/v1/member/organizationPage/**").hasAnyAuthority("com.rjproj.memberapp.permission.user.viewOrgAll", "com.rjproj.memberapp.permission.user.viewAll")
-                        .requestMatchers("/api/v1/member/**").hasAuthority("com.rjproj.memberapp.permission.user.viewAll")
+
+
+
+
                         .anyRequest()
-                        .authenticated())
+                        .authenticated()
+                )
                 .oauth2Client(Customizer.withDefaults())
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(unauthorizedHandler())  // Handle 401 Unauthorized
@@ -150,6 +167,7 @@ public class SecurityConfig {
                         .deleteCookies("JSESSIONID"))
                 .csrf(AbstractHttpConfigurer::disable)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+
                 .build();
 
     }

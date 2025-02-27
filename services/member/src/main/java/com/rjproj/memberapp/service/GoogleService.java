@@ -14,19 +14,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.rjproj.memberapp.dto.GoogleInfo;
-import com.rjproj.memberapp.dto.GoogleTokenInfo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.Optional;
-import org.springframework.web.client.RestTemplate;
 
 @Service
 public class GoogleService {
@@ -38,9 +31,6 @@ public class GoogleService {
     private String googleClientSecret;
 
     private final String redirectUri = "https://localhost:4200";
-
-    @Autowired
-    private RestTemplate restTemplate;
 
     public GoogleInfo getGoogleInfo(String googleCode) {
         try {
@@ -98,6 +88,18 @@ public class GoogleService {
         }
     }
 
+    private String getAddressValue(JsonObject peopleInfoObject) {
+        JsonArray addressesArray = Optional.ofNullable(peopleInfoObject.getAsJsonArray("addresses")).orElse(new JsonArray());
+
+        if (addressesArray.size() > 0) {
+            JsonObject addressObject = addressesArray.get(0).getAsJsonObject();
+            return Optional.ofNullable(addressObject.get("formattedValue"))
+                    .map(JsonElement::getAsString)
+                    .orElse(null); // Return null if no address is available
+        }
+
+        return null;
+    }
 
     private String getInfoValue(JsonObject obj, String key) {
         return Optional.ofNullable(obj.get(key))
@@ -129,19 +131,6 @@ public class GoogleService {
             e.printStackTrace(); // Log or handle the exception as necessary
             return null; // Return null if parsing fails
         }
-    }
-
-    private String getAddressValue(JsonObject peopleInfoObject) {
-        JsonArray addressesArray = Optional.ofNullable(peopleInfoObject.getAsJsonArray("addresses")).orElse(new JsonArray());
-
-        if (addressesArray.size() > 0) {
-            JsonObject addressObject = addressesArray.get(0).getAsJsonObject();
-            return Optional.ofNullable(addressObject.get("formattedValue"))
-                    .map(JsonElement::getAsString)
-                    .orElse(null); // Return null if no address is available
-        }
-
-        return null;
     }
 
 }

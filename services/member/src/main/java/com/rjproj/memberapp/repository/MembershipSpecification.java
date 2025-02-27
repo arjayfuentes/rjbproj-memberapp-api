@@ -7,60 +7,25 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import java.util.ArrayList;
-import java.util.List;
-
 
 public class MembershipSpecification {
 
-
-    public static Specification<Membership> hasOrganizationIdAndMembershipTypeNotNull(UUID organizationId) {
+    public static Specification<Membership> filterByCity(String city) {
         return (root, query, criteriaBuilder) -> {
-            // Filter by organizationId
-            Predicate organizationPredicate = criteriaBuilder.equal(root.get("organizationId"), organizationId);
-
-            // Ensure membershipType is not null
-            Predicate membershipTypePredicate = criteriaBuilder.isNotNull(root.get("membershipType"));
-
-            Predicate membershipStatusPredicatePending = criteriaBuilder.notEqual(root.get("membershipStatus").get("name"), "Pending");
-
-
-            // Combine the two predicates
-            return criteriaBuilder.and(organizationPredicate, membershipTypePredicate, membershipStatusPredicatePending);
+            if (city != null && !city.isEmpty()) {
+                return criteriaBuilder.like(criteriaBuilder.lower(root.get("member").get("memberAddress").get("city")), "%" + city.toLowerCase() + "%");
+            }
+            return null;
         };
     }
 
-    public static Specification<Membership> hadMembershipTypePending() {
+    public static Specification<Membership> filterByCountry(String country) {
         return (root, query, criteriaBuilder) -> {
-
-            Predicate membershipStatusPredicatePending = criteriaBuilder.equal(root.get("membershipStatus").get("name"), "Pending");
-
-            // Combine the two predicates
-            return criteriaBuilder.or(membershipStatusPredicatePending);
-        };
-    }
-
-    public static Specification<Membership> hadMembershipTypeNull() {
-        return (root, query, criteriaBuilder) -> {
-
-            // Ensure membershipType is not null
-            Predicate membershipTypePredicate = criteriaBuilder.isNull(root.get("membershipType"));
-
-            // Combine the two predicates
-            return criteriaBuilder.or(membershipTypePredicate);
-        };
-    }
-
-
-    public static Specification<Membership> hasOrganizationId(UUID organizationId) {
-        return (root, query, criteriaBuilder) -> {
-            // Filter by organizationId
-            Predicate organizationPredicate = criteriaBuilder.equal(root.get("organizationId"), organizationId);
-
-
-            // Combine the two predicates
-            return criteriaBuilder.and(organizationPredicate);
+            if (country != null && !country.isEmpty()) {
+                return criteriaBuilder.like(criteriaBuilder.lower(root.get("member").get("memberAddress").get("country")), "%" + country.toLowerCase() + "%");
+            }
+            return null;
         };
     }
 
@@ -88,19 +53,10 @@ public class MembershipSpecification {
         };
     }
 
-    public static Specification<Membership> filterByCity(String city) {
+    public static Specification<Membership> filterByEndDateRange(Date endDateFrom, Date endDateTo) {
         return (root, query, criteriaBuilder) -> {
-            if (city != null && !city.isEmpty()) {
-                return criteriaBuilder.like(criteriaBuilder.lower(root.get("member").get("memberAddress").get("city")), "%" + city.toLowerCase() + "%");
-            }
-            return null;
-        };
-    }
-
-    public static Specification<Membership> filterByCountry(String country) {
-        return (root, query, criteriaBuilder) -> {
-            if (country != null && !country.isEmpty()) {
-                return criteriaBuilder.like(criteriaBuilder.lower(root.get("member").get("memberAddress").get("country")), "%" + country.toLowerCase() + "%");
+            if (endDateFrom != null && endDateTo != null) {
+                return criteriaBuilder.between(root.get("endDate"), endDateFrom, endDateTo);
             }
             return null;
         };
@@ -114,7 +70,6 @@ public class MembershipSpecification {
             return null;
         };
     }
-
 
     public static Specification<Membership> filterByMembershipTypes(List<String> membershipTypeNames) {
         return (root, query, criteriaBuilder) -> {
@@ -150,9 +105,6 @@ public class MembershipSpecification {
         };
     }
 
-
-
-
     public static Specification<Membership> filterByStartDateRange(Date startDateFrom, Date startDateTo) {
         return (root, query, criteriaBuilder) -> {
             if (startDateFrom != null && startDateTo != null) {
@@ -162,69 +114,42 @@ public class MembershipSpecification {
         };
     }
 
-    public static Specification<Membership> filterByEndDateRange(Date endDateFrom, Date endDateTo) {
+    public static Specification<Membership> hadMembershipTypePending() {
         return (root, query, criteriaBuilder) -> {
-            if (endDateFrom != null && endDateTo != null) {
-                return criteriaBuilder.between(root.get("endDate"), endDateFrom, endDateTo);
-            }
-            return null;
+
+            Predicate membershipStatusPredicatePending = criteriaBuilder.equal(root.get("membershipStatus").get("name"), "Pending");
+
+            // Combine the two predicates
+            return criteriaBuilder.or(membershipStatusPredicatePending);
         };
     }
 
-    public static Specification<Membership> combineFilters(Specification<Membership>... specs) {
-        Specification<Membership> combined = Specification.where(specs[0]);
-        for (int i = 1; i < specs.length; i++) {
-            combined = combined.and(specs[i]);
-        }
-        return combined;
-    }
-
-    public static Specification<Membership> combineFiltersWithOr(Specification<Membership>... specs) {
-        Specification<Membership> combined = Specification.where(specs[0]);
-        for (int i = 1; i < specs.length; i++) {
-            combined = combined.or(specs[i]);
-        }
-        return combined;
-    }
+    public static Specification<Membership> hasOrganizationId(UUID organizationId) {
+        return (root, query, criteriaBuilder) -> {
+            // Filter by organizationId
+            Predicate organizationPredicate = criteriaBuilder.equal(root.get("organizationId"), organizationId);
 
 
-    public static Specification<Membership> sortByRoleName(String sortOrder, UUID organizationId) {
-        return (Root<Membership> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
-            // Join Membership -> Member
-            Join<Membership, Member> memberJoin = root.join("member");
-
-            // Join Member -> MemberRole (this is the junction table connecting Member and Role)
-            Join<Member, Role> memberRoleJoin = memberJoin.join("roles", JoinType.INNER); // Using memberRoles directly
-
-
-
-
-            Join<Role, MemberRole> roleJoin = memberRoleJoin.join("memberRoles", JoinType.INNER); // MemberRole -> Role
-
-            Predicate organizationPredicate = cb.equal(roleJoin.get("id").get("organizationId"), organizationId);
-            Predicate organizationMembershipPredicate = cb.equal(root.get("organizationId"), organizationId);
-
-            if ("asc".equalsIgnoreCase(sortOrder)) {
-                query.orderBy(cb.asc(memberRoleJoin.get("name")));
-            } else {
-                query.orderBy(cb.desc(memberRoleJoin.get("name")));
-            }
-
-            // Ensure DISTINCT to prevent duplicates due to the many-to-many join
-            query.distinct(true);
-
-            // Combine the organizationId filter with the role name sort
-            query.where(organizationPredicate, organizationMembershipPredicate);
-
-            return cb.conjunction();
+            // Combine the two predicates
+            return criteriaBuilder.and(organizationPredicate);
         };
     }
 
+    public static Specification<Membership> hasOrganizationIdAndMembershipTypeNotNull(UUID organizationId) {
+        return (root, query, criteriaBuilder) -> {
+            // Filter by organizationId
+            Predicate organizationPredicate = criteriaBuilder.equal(root.get("organizationId"), organizationId);
+
+            // Ensure membershipType is not null
+            Predicate membershipTypePredicate = criteriaBuilder.isNotNull(root.get("membershipType"));
+
+            Predicate membershipStatusPredicatePending = criteriaBuilder.notEqual(root.get("membershipStatus").get("name"), "Pending");
 
 
-
-
-
+            // Combine the two predicates
+            return criteriaBuilder.and(organizationPredicate, membershipTypePredicate, membershipStatusPredicatePending);
+        };
+    }
 
     public static Specification<Membership> applySorting(Sort sort, UUID organizationId) {
         return (root, query, criteriaBuilder) -> {
@@ -317,10 +242,52 @@ public class MembershipSpecification {
         };
     }
 
-
-
-
-
-
+//    public static Specification<Membership> combineFilters(Specification<Membership>... specs) {
+//        Specification<Membership> combined = Specification.where(specs[0]);
+//        for (int i = 1; i < specs.length; i++) {
+//            combined = combined.and(specs[i]);
+//        }
+//        return combined;
+//    }
+//
+//    public static Specification<Membership> combineFiltersWithOr(Specification<Membership>... specs) {
+//        Specification<Membership> combined = Specification.where(specs[0]);
+//        for (int i = 1; i < specs.length; i++) {
+//            combined = combined.or(specs[i]);
+//        }
+//        return combined;
+//    }
+//
+//    public static Specification<Membership> sortByRoleName(String sortOrder, UUID organizationId) {
+//        return (Root<Membership> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
+//            // Join Membership -> Member
+//            Join<Membership, Member> memberJoin = root.join("member");
+//
+//            // Join Member -> MemberRole (this is the junction table connecting Member and Role)
+//            Join<Member, Role> memberRoleJoin = memberJoin.join("roles", JoinType.INNER); // Using memberRoles directly
+//
+//
+//
+//
+//            Join<Role, MemberRole> roleJoin = memberRoleJoin.join("memberRoles", JoinType.INNER); // MemberRole -> Role
+//
+//            Predicate organizationPredicate = cb.equal(roleJoin.get("id").get("organizationId"), organizationId);
+//            Predicate organizationMembershipPredicate = cb.equal(root.get("organizationId"), organizationId);
+//
+//            if ("asc".equalsIgnoreCase(sortOrder)) {
+//                query.orderBy(cb.asc(memberRoleJoin.get("name")));
+//            } else {
+//                query.orderBy(cb.desc(memberRoleJoin.get("name")));
+//            }
+//
+//            // Ensure DISTINCT to prevent duplicates due to the many-to-many join
+//            query.distinct(true);
+//
+//            // Combine the organizationId filter with the role name sort
+//            query.where(organizationPredicate, organizationMembershipPredicate);
+//
+//            return cb.conjunction();
+//        };
+//    }
 
 }

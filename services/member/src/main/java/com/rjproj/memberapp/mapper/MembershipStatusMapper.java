@@ -2,10 +2,7 @@ package com.rjproj.memberapp.mapper;
 
 import com.rjproj.memberapp.dto.MembershipStatusRequest;
 import com.rjproj.memberapp.dto.MembershipStatusResponse;
-import com.rjproj.memberapp.dto.MembershipTypeRequest;
-import com.rjproj.memberapp.dto.MembershipTypeResponse;
 import com.rjproj.memberapp.model.MembershipStatus;
-import com.rjproj.memberapp.model.MembershipType;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 

@@ -4,7 +4,6 @@ import com.rjproj.memberapp.dto.*;
 import com.rjproj.memberapp.exception.MemberException;
 import com.rjproj.memberapp.mapper.MemberMapper;
 import com.rjproj.memberapp.mapper.MembershipMapper;
-import com.rjproj.memberapp.mapper.OrganizationMapper;
 import com.rjproj.memberapp.mapper.RoleMapper;
 import com.rjproj.memberapp.model.*;
 import com.rjproj.memberapp.organization.OrganizationClient;
@@ -12,15 +11,11 @@ import com.rjproj.memberapp.organization.OrganizationResponse;
 import com.rjproj.memberapp.repository.*;
 import com.rjproj.memberapp.security.JWTUtil;
 import com.rjproj.memberapp.security.MemberDetails;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.*;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -33,15 +28,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.rjproj.memberapp.exception.MemberErrorMessage.*;
 
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 
 @Service
@@ -52,115 +45,39 @@ public class MemberService {
     AuthenticationManager authenticationManager;
 
     @Autowired
-    private MemberRepository memberRepository;
-
-    @Autowired
-    private MembershipRepository membershipRepository;
-
-    @Autowired
-    private MemberRoleRepository memberRoleRepository;
-
-    @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired
     private FileService fileService;
 
     @Autowired
     private GoogleService googleService;
 
     @Autowired
-    private MembershipService membershipService;
-
-    @Autowired
-    private UserDetailsServiceImpl userDetailsServiceImpl;
+    JWTUtil jwtUtil;
 
     private final MemberMapper memberMapper;
 
-    private final MembershipMapper membershipMapper;
-
-    private final RoleMapper roleMapper;
+    @Autowired
+    private MemberRepository memberRepository;
 
     @Autowired
-    JWTUtil jwtUtil;
+    private MemberRoleRepository memberRoleRepository;
+
+    private final MembershipMapper membershipMapper;
+
+    @Autowired
+    private MembershipService membershipService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    private final RoleMapper roleMapper;
+
+    @Autowired
+    private RoleRepository roleRepository;
+
+    @Autowired
+    private UserDetailsServiceImpl userDetailsServiceImpl;
+
     private final OrganizationClient organizationClient;
-
-    public MemberResponse addMember(MemberRequest memberRequest) {
-        Optional<Member> retrievedMember = memberRepository.findByEmail(memberRequest.email());
-        Member member = memberMapper.toMember(memberRequest);
-        Optional<Role> defaultRole = roleRepository.findByName("Non-Member");
-
-
-        if (retrievedMember.isPresent()){
-            throw new MemberException("Member with email address " + memberRequest.email() + " already exists. Sign in to continue", MEMBER_EXISTS.getMessage(), HttpStatus.CONFLICT);
-        }
-        if(memberRequest.loginType() == LoginType.NORMAL) {
-            member.setPassword(passwordEncoder.encode(member.getPassword()));
-        }
-
-        //create a default role in a default organization
-        UUID defaultOrganizationId = UUID.fromString("00000000-0000-0000-0000-000000000000");
-
-        Member savedMember = memberRepository.save(member);
-        MemberRoleId memberRoleId = new MemberRoleId();
-        memberRoleId.setMemberId(member.getMemberId());
-        memberRoleId.setRoleId(defaultRole.get().getRoleId());
-        memberRoleId.setOrganizationId(defaultOrganizationId);
-
-        MemberRole memberRole = MemberRole.builder().id(memberRoleId).member(savedMember).role(defaultRole.get()).build();
-        memberRoleRepository.save(memberRole);
-
-        return memberMapper.fromMember(savedMember);
-    }
-
-    private Session createLoginSession(Member member) {
-        UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(member.getEmail());
-
-        MemberResponse memberResponse = memberMapper.fromMember(member);
-        Role activeRole = null;
-        RoleResponse roleResponse = null;
-        List<String> preLogInPermissions = new ArrayList<>();
-        OrganizationResponse activeOrganization = null;
-        List<UUID> organizationIdsOfMember = membershipService.getActiveOrganizationIdsByMemberId(member.getMemberId());
-        MembershipResponse activeMembership = null;
-
-        UUID activeOrganizationId = null;
-
-        String jwt = null;
-
-        if(organizationIdsOfMember.size() == 1) {
-            activeOrganizationId = organizationIdsOfMember.getFirst();
-
-            activeRole = memberRoleRepository.findRoleByMemberAndOrganization(member.getMemberId(), activeOrganizationId);
-            roleResponse = roleMapper.fromRole(activeRole);
-            preLogInPermissions = activeRole.getPermissions().stream().map(p -> p.getName()).collect(Collectors.toList());
-            activeMembership =  membershipMapper.fromMembership(membershipService.getMembership(member.getMemberId(), activeOrganizationId));
-            jwt = jwtUtil.generateToken(userDetails.getUsername(), activeRole, preLogInPermissions, activeOrganizationId, member.getMemberId());
-
-            activeOrganization = this.organizationClient.findMyOrganizationById(activeOrganizationId);
-
-        } else {
-            preLogInPermissions.add("com.rjproj.memberapp.permission.organization.viewAll");
-        }
-
-
-        jwt = jwtUtil.generateToken(userDetails.getUsername(), activeRole, preLogInPermissions, activeOrganizationId, member.getMemberId());
-
-        return new Session(
-                jwt,
-                "Bearer",
-                memberResponse,
-                roleResponse,
-                preLogInPermissions,
-                activeOrganization,
-                organizationIdsOfMember.size() == 0 ? null : organizationIdsOfMember,
-                activeMembership
-        );
-    }
 
     public Session getLoginSession(String token) {
         if(jwtUtil.validateToken(token)) {
@@ -230,42 +147,15 @@ public class MemberService {
         }
     }
 
-    public List<MemberResponse> getMembersByOrganization(UUID organizationId) {
-        OrganizationResponse organization = organizationClient.findOrganizationById(organizationId);
-        if (organization == null) {
-            throw new RuntimeException("Organization not found");
+    public Member getMemberById(UUID memberId) {
+        if(memberId != null) {
+            Optional<Member> member = memberRepository.findById(memberId);
+            if(member.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Member not found with ID: " + memberId);
+            }
+            return member.get();
         }
-        List<Membership> memberships = membershipRepository.findByOrganizationId(organizationId);
-        List<Member> members = memberships.stream().map(Membership::getMember).collect(Collectors.toList());
-        return members
-                .stream()
-                .map(memberMapper::fromMember)
-                .collect(Collectors.toList());
-    }
-
-    public Page<MemberResponse> getMembersByOrganizationPaginationAndSorting(
-            UUID organizationId, Integer pageNo, Integer pageSize, String sortField, String sortOrder) {
-        OrganizationResponse organization = organizationClient.findOrganizationById(organizationId);
-        if (organization == null) {
-            throw new RuntimeException("Organization not found");
-        }
-
-        Sort sort =  sortOrder.equals("ASC") ? Sort.by(sortField).ascending() : Sort.by(sortField).descending();
-
-        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
-
-        Page<Membership> membershipPage = membershipRepository.findMembershipsByOrganizationId(organizationId, pageable);
-
-
-
-        // Convert Membership -> Member -> MemberResponse
-        List<MemberResponse> memberResponses = membershipPage.getContent().stream()
-                .map(Membership::getMember)
-                .map(memberMapper::fromMember)
-                .collect(Collectors.toList());
-
-
-        return new PageImpl<>(memberResponses, pageable, membershipPage.getTotalElements());
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Member Id cannot be null");
     }
 
     public Session loginMember(LoginRequest loginRequest) {
@@ -308,33 +198,6 @@ public class MemberService {
                 new UsernamePasswordAuthenticationToken(verifiedMember.getEmail(), null, new ArrayList<>());
         return createLoginSession(verifiedMember);
 
-    }
-
-    private void mergeMember(Member member, @Valid MemberRequest memberRequest) {
-        if(StringUtils.isNotBlank(memberRequest.firstName())) {
-            member.setFirstName(memberRequest.firstName());
-        }
-        if(StringUtils.isNotBlank(memberRequest.lastName())) {
-            member.setLastName(memberRequest.lastName());
-        }
-        if(StringUtils.isNotBlank(memberRequest.email())) {
-            member.setEmail(memberRequest.email());
-        }
-        if(StringUtils.isNotBlank(memberRequest.phoneNumber())) {
-            member.setPhoneNumber(memberRequest.phoneNumber());
-        }
-        if(StringUtils.isNotBlank(memberRequest.profilePicUrl())) {
-            member.setProfilePicUrl(memberRequest.profilePicUrl());
-        }
-        if(memberRequest.birthDate() != null) {
-            member.setBirthDate(memberRequest.birthDate());
-        }
-        if(memberRequest.loginType() != null) {
-            member.setLoginType(memberRequest.loginType());
-        }
-        if(memberRequest.memberAddress() != null) {
-            member.setMemberAddress(memberRequest.memberAddress());
-        }
     }
 
     public MemberResponse registerMember(MemberRequest memberRequest) {
@@ -444,26 +307,19 @@ public class MemberService {
 
     }
 
-    public MemberResponse updateMember(UUID memberId, @Valid MemberRequest memberRequest) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new NotFoundException(
-                        String.format("Cannot update member with id %s", memberId.toString())
-                ));
-        mergeMember(member, memberRequest);
-        return memberMapper.fromMember(memberRepository.save(member));
-    }
-
     public MemberResponse updateMemberAfterRegistration(
+            UUID memberId,
             MultipartFile profilePicImage,
             @Valid AdditionalInfoRequest additionalInfoRequest) {
-        return updateMemberDetails(profilePicImage, additionalInfoRequest);
+        return updateMemberDetails(memberId, profilePicImage, additionalInfoRequest);
     }
 
     public MemberResponse updateMemberDetails(
+            UUID memberId,
             MultipartFile profilePicImage,
             @Valid AdditionalInfoRequest additionalInfoRequest
     ) {
-        Optional<Member> member = memberRepository.findByEmail(additionalInfoRequest.memberRequest().email());
+        Optional<Member> member = memberRepository.findById(memberId);
 
         if (member.isEmpty()) {
             throw new MemberException("The email address you provided does not exist.",
@@ -503,96 +359,113 @@ public class MemberService {
         return this.updateMember(existingMember.getMemberId(), updatedRequest);
     }
 
+    private MemberResponse addMember(MemberRequest memberRequest) {
+        Optional<Member> retrievedMember = memberRepository.findByEmail(memberRequest.email());
+        Member member = memberMapper.toMember(memberRequest);
+        Optional<Role> defaultRole = roleRepository.findByName("Non-Member");
 
-    /* Call from other service */
 
-    public String createDefaultAdminOrganizationRoleForOwner(@Valid UUID organizationId) {
+        if (retrievedMember.isPresent()){
+            throw new MemberException("Member with email address " + memberRequest.email() + " already exists. Sign in to continue", MEMBER_EXISTS.getMessage(), HttpStatus.CONFLICT);
+        }
+        if(memberRequest.loginType() == LoginType.NORMAL) {
+            member.setPassword(passwordEncoder.encode(member.getPassword()));
+        }
 
-        UUID memberId = jwtUtil.extractMemberIdInternally();
+        //create a default role in a default organization
+        UUID defaultOrganizationId = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
+        Member savedMember = memberRepository.save(member);
+        MemberRoleId memberRoleId = new MemberRoleId();
+        memberRoleId.setMemberId(member.getMemberId());
+        memberRoleId.setRoleId(defaultRole.get().getRoleId());
+        memberRoleId.setOrganizationId(defaultOrganizationId);
+
+        MemberRole memberRole = MemberRole.builder().id(memberRoleId).member(savedMember).role(defaultRole.get()).build();
+        memberRoleRepository.save(memberRole);
+
+        return memberMapper.fromMember(savedMember);
+    }
+
+    private Session createLoginSession(Member member) {
+        UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(member.getEmail());
+
+        MemberResponse memberResponse = memberMapper.fromMember(member);
+        Role activeRole = null;
+        RoleResponse roleResponse = null;
+        List<String> preLogInPermissions = new ArrayList<>();
+        OrganizationResponse activeOrganization = null;
+        List<UUID> organizationIdsOfMember = membershipService.getActiveOrganizationIdsByMemberId(member.getMemberId());
+        MembershipResponse activeMembership = null;
+
+        UUID activeOrganizationId = null;
+
+        String jwt = null;
+
+        if(organizationIdsOfMember.size() == 1) {
+            activeOrganizationId = organizationIdsOfMember.getFirst();
+
+            activeRole = memberRoleRepository.findRoleByMemberAndOrganization(member.getMemberId(), activeOrganizationId);
+            roleResponse = roleMapper.fromRole(activeRole);
+            preLogInPermissions = activeRole.getPermissions().stream().map(p -> p.getName()).collect(Collectors.toList());
+            activeMembership =  membershipMapper.fromMembership(membershipService.getMembership(member.getMemberId(), activeOrganizationId));
+            jwt = jwtUtil.generateToken(userDetails.getUsername(), activeRole, preLogInPermissions, activeOrganizationId, member.getMemberId());
+
+            activeOrganization = this.organizationClient.findMyOrganizationById(activeOrganizationId);
+
+        } else {
+            preLogInPermissions.add("com.rjproj.memberapp.permission.organization.viewAll");
+        }
+
+
+        jwt = jwtUtil.generateToken(userDetails.getUsername(), activeRole, preLogInPermissions, activeOrganizationId, member.getMemberId());
+
+        return new Session(
+                jwt,
+                "Bearer",
+                memberResponse,
+                roleResponse,
+                preLogInPermissions,
+                activeOrganization,
+                organizationIdsOfMember.size() == 0 ? null : organizationIdsOfMember,
+                activeMembership
+        );
+    }
+
+    private void mergeMember(Member member, @Valid MemberRequest memberRequest) {
+        if(StringUtils.isNotBlank(memberRequest.firstName())) {
+            member.setFirstName(memberRequest.firstName());
+        }
+        if(StringUtils.isNotBlank(memberRequest.lastName())) {
+            member.setLastName(memberRequest.lastName());
+        }
+        if(StringUtils.isNotBlank(memberRequest.email())) {
+            member.setEmail(memberRequest.email());
+        }
+        if(StringUtils.isNotBlank(memberRequest.phoneNumber())) {
+            member.setPhoneNumber(memberRequest.phoneNumber());
+        }
+        if(StringUtils.isNotBlank(memberRequest.profilePicUrl())) {
+            member.setProfilePicUrl(memberRequest.profilePicUrl());
+        }
+        if(memberRequest.birthDate() != null) {
+            member.setBirthDate(memberRequest.birthDate());
+        }
+        if(memberRequest.loginType() != null) {
+            member.setLoginType(memberRequest.loginType());
+        }
+        if(memberRequest.memberAddress() != null) {
+            member.setMemberAddress(memberRequest.memberAddress());
+        }
+    }
+
+    private MemberResponse updateMember(UUID memberId, @Valid MemberRequest memberRequest) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new NotFoundException(
-                        String.format("Cannot update member with id %s", memberId)
+                        String.format("Cannot update member with id %s", memberId.toString())
                 ));
-
-        Role role = roleRepository.findByName("Admin").get();
-        Optional<MemberRole> existingMemberRole = memberRoleRepository.findByMemberIdOrganizationIdAndRoleId(member.getMemberId(), organizationId, role.getRoleId());
-
-        if (existingMemberRole.isPresent()) {
-            throw new MemberException("Role already exists", MEMBER_EXISTS.getMessage(), HttpStatus.BAD_REQUEST);
-        } else {
-
-            MemberRole memberRole = new MemberRole();
-
-            MemberRoleId memberRoleId = new MemberRoleId();
-            memberRoleId.setMemberId(member.getMemberId());
-            memberRoleId.setOrganizationId(organizationId);
-            memberRoleId.setRoleId(role.getRoleId());
-
-            memberRole.setId(memberRoleId);
-            memberRole.setMember(member);
-            memberRole.setRole(role);
-
-            memberRoleRepository.save(memberRole);
-            return member.getMemberId().toString();
-        }
-
-    }
-
-
-    /* Below unused methods */
-
-    public MemberResponse createMember(@Valid MemberRequest memberRequest) {
-        return addMember(memberRequest);
-    }
-
-
-    public MemberResponse findById(UUID memberId) {
-        return memberRepository.findById(memberId)
-                .map(memberMapper::fromMember)
-                .orElseThrow(() -> new EntityNotFoundException("Member not found with ID:: " + memberId));
-    }
-
-    public List<MemberResponse> findAll() {
-        return memberRepository.findAll()
-                .stream()
-                .map(memberMapper::fromMember)
-                .collect(Collectors.toList());
-    }
-
-    public void deleteMember(UUID memberId) {
-        memberRepository.deleteById(memberId);
-    }
-
-    public Page<MemberResponse> getMembersByOrganizationPage(UUID organizationId, Integer pageNo, Integer pageSize) {
-        OrganizationResponse organization = organizationClient.findOrganizationById(organizationId);
-        if (organization == null) {
-            throw new RuntimeException("Organization not found");
-        }
-
-        Pageable pageable = PageRequest.of(pageNo, pageSize);
-
-        Page<Membership> membershipPage = membershipRepository.findMembershipsByOrganizationId(organizationId, pageable);
-
-        // Convert Membership -> Member -> MemberResponse
-        List<MemberResponse> memberResponses = membershipPage.getContent().stream()
-                .map(Membership::getMember)
-                .map(memberMapper::fromMember)
-                .collect(Collectors.toList());
-        return new PageImpl<>(memberResponses, pageable, membershipPage.getTotalElements());
-    }
-
-    private boolean isMembershipFiltersEmpty(MembershipFilters filters) {
-        return (filters == null) ||
-                (filters.memberFirstName() == null || filters.memberFirstName().trim().isEmpty()) &&
-                        (filters.memberEmail() == null || filters.memberEmail().trim().isEmpty()) &&
-                        (filters.memberMemberAddressCity() == null || filters.memberMemberAddressCity().trim().isEmpty()) &&
-                        (filters.memberMemberAddressCountry() == null || filters.memberMemberAddressCountry().trim().isEmpty()) &&
-                        (filters.membershipStatusNames() == null || filters.membershipStatusNames().isEmpty()) &&
-                        (filters.membershipTypeNames() == null || filters.membershipTypeNames().isEmpty()) &&
-                        (filters.roleNames() == null || filters.roleNames().isEmpty()) &&
-                        (filters.startDates() == null || filters.startDates().isEmpty()) &&
-                        (filters.endDates() == null || filters.endDates().isEmpty());
+        mergeMember(member, memberRequest);
+        return memberMapper.fromMember(memberRepository.save(member));
     }
 
 }

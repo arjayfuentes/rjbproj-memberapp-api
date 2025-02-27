@@ -1,6 +1,5 @@
 package com.rjproj.memberapp.controller;
 
-
 import com.rjproj.memberapp.dto.MembershipStatusResponse;
 import com.rjproj.memberapp.service.MembershipStatusService;
 import lombok.RequiredArgsConstructor;

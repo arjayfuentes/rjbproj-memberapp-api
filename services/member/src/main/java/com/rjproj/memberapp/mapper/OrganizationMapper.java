@@ -1,7 +1,5 @@
 package com.rjproj.memberapp.mapper;
 
-import com.rjproj.memberapp.dto.MemberRequest;
-import com.rjproj.memberapp.model.Member;
 import com.rjproj.memberapp.organization.Organization;
 import com.rjproj.memberapp.organization.OrganizationResponse;
 import jakarta.validation.Valid;

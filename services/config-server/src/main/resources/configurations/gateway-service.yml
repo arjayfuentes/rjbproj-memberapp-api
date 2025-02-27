@@ -47,7 +47,7 @@ spring:
         - id: role-service
           uri: lb:http://MEMBER-SERVICE
           predicates:
-            - Path=/api/v1/role/**
+            - Path=/api/v1/roles/**
         - id: event-service
           uri: lb:http://EVENT-SERVICE
           predicates:

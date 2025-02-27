@@ -23,6 +23,8 @@ application:
     membership-type-url: http://localhost:8222/api/v1/membership-types
     membership-url: http://localhost:8222/api/v1/memberships
     member-url: http://localhost:8222/api/v1/member
+    role-url: http://localhost:8222/api/v1/roles
+
 
 
 #  feign.compression.response.enabled=true

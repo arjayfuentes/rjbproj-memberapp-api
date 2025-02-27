@@ -9,12 +9,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface MemberRoleRepository extends JpaRepository<MemberRole, MemberRoleId> {
 
+    @Query("SELECT mr FROM MemberRole mr WHERE mr.id.memberId = :memberId AND mr.id.organizationId = :organizationId")
+    Optional<MemberRole> findByMemberIdAndOrganizationId(
+            @Param("memberId") UUID memberId,
+            @Param("organizationId") UUID organizationId
+    );
 
     // Query to find MemberRole based on MemberId, OrganizationId, and RoleId
     @Query("SELECT mr FROM MemberRole mr WHERE mr.id.memberId = :memberId AND mr.id.organizationId = :organizationId AND mr.id.roleId = :roleId")
@@ -23,13 +27,7 @@ public interface MemberRoleRepository extends JpaRepository<MemberRole, MemberRo
             @Param("organizationId") UUID organizationId,
             @Param("roleId") UUID roleId
     );
-
-    @Query("SELECT mr FROM MemberRole mr WHERE mr.id.memberId = :memberId AND mr.id.organizationId = :organizationId")
-    Optional<MemberRole> findByMemberIdAndOrganizationId(
-            @Param("memberId") UUID memberId,
-            @Param("organizationId") UUID organizationId
-    );
-
+    
     @Query("SELECT mr.role FROM MemberRole mr WHERE mr.id.memberId = :memberId AND mr.id.organizationId = :organizationId")
     Role findRoleByMemberAndOrganization(@Param("memberId") UUID memberId, @Param("organizationId") UUID organizationId);
 
@@ -42,7 +40,5 @@ public interface MemberRoleRepository extends JpaRepository<MemberRole, MemberRo
             @Param("organizationId") UUID organizationId,
             @Param("newRoleId") UUID newRoleId
     );
-
-
 
 }

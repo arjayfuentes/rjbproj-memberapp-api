@@ -18,19 +18,19 @@ import java.util.UUID;
 @Service
 public class FileService {
 
+    private AmazonS3 amazonS3;
+
     @Value("${aws.s3.access.key}")
     private String awsS3AccessKey;
 
     @Value("${aws.s3.secret.key}")
     private String awsS3SecretKey;
 
-    @Value("${aws.s3.region}")
-    private String region;
-
     @Value("${aws.s3.bucket}")
     private String bucketName;
 
-    private AmazonS3 amazonS3;
+    @Value("${aws.s3.region}")
+    private String region;
 
     public FileService() {
 
@@ -60,8 +60,7 @@ public class FileService {
         // Return the correct S3 URL
         return amazonS3.getUrl(bucketName, fileKey).toString();
     }
-
-
+    
     private String getFileExtension(String fileName) {
         if (fileName == null || !fileName.contains(".")) {
             return "jpg";

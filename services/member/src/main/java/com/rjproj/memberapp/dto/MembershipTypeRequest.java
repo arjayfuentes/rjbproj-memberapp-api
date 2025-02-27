@@ -3,7 +3,6 @@ package com.rjproj.memberapp.dto;
 import com.rjproj.memberapp.model.MembershipTypeValidity;
 import jakarta.validation.constraints.NotNull;
 
-import java.sql.Timestamp;
 import java.util.UUID;
 
 public record MembershipTypeRequest(

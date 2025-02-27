@@ -1,8 +1,6 @@
 package com.rjproj.memberapp.repository;
 
 import com.rjproj.memberapp.model.MembershipStatus;
-import com.rjproj.memberapp.model.MembershipType;
-import com.rjproj.memberapp.model.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
