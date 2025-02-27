@@ -36,45 +36,4 @@ public class MembershipTypeController {
         return ResponseEntity.ok(membershipTypeService.getMembershipTypesByOrganizationId(organizationId));
     }
 
-    /* Below unused methods */
-
-    @PostMapping
-    public ResponseEntity<MembershipTypeResponse> createMembershipType(@RequestBody @Valid MembershipTypeRequest membershipTypeRequest) {
-        return ResponseEntity.ok(membershipTypeService.createMembershipType(membershipTypeRequest));
-    }
-
-    @PostMapping("/createMembershipTypes")
-    public ResponseEntity<List<MembershipTypeResponse>> createMembershipTypes(@RequestBody @Valid List<MembershipTypeRequest> membershipTypeRequests) {
-        return ResponseEntity.ok(membershipTypeService.createMembershipTypes(membershipTypeRequests));
-    }
-
-    @GetMapping("/{membershipType-id}")
-    public ResponseEntity<MembershipTypeResponse> findById(
-            @PathVariable("membershipType-id") UUID membershipTypeId
-    ) {
-        return ResponseEntity.ok(membershipTypeService.findById(membershipTypeId));
-    }
-
-    @GetMapping
-    public ResponseEntity<List<MembershipTypeResponse>> findAll() {
-        return ResponseEntity.ok(membershipTypeService.findAll());
-    }
-
-    @PutMapping(path = "/{membershipType-id}")
-    public ResponseEntity<MembershipTypeResponse> updateMembershipType(@PathVariable("membershipType-id") UUID membershipTypeId, @RequestBody @Valid MembershipTypeRequest membershipTypeRequest){
-        //return ResponseEntity.ok(membershipTypeService.updateMembershipType(membershipTypeRequest));
-        return new ResponseEntity<>(
-                membershipTypeService.updateMembershipType(membershipTypeId, membershipTypeRequest),
-                HttpStatus.ACCEPTED);
-    }
-
-    @DeleteMapping("/{membershipType-id}")
-    public ResponseEntity<Void> deleteMembershipType(
-            @PathVariable("membershipType-id") UUID membershipTypeId
-    ) {
-        membershipTypeService.deleteMembershipType(membershipTypeId);
-        return ResponseEntity.accepted().build();
-    }
-
-
 }
