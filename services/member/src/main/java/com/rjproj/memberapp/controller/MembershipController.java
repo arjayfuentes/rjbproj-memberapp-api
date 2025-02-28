@@ -38,6 +38,16 @@ public class MembershipController {
         return ResponseEntity.ok(membershipService.createMembershipForCurrentMember(createMembershipRequest));
     }
 
+    @DeleteMapping(path = "/organizations/{organizationId}/memberships/{membershipId}")
+    public ResponseEntity<UUID> deleteMembershipFromOrganization(
+            @PathVariable("organizationId") UUID organizationId,
+            @PathVariable("membershipId") UUID membershipId
+    ){
+        return new ResponseEntity<>(
+                membershipService.deleteMembershipFromOrganization(organizationId, membershipId),
+                HttpStatus.ACCEPTED);
+    }
+
     @PutMapping(path = "/{membershipId}/deny")
     public ResponseEntity<MembershipResponse> denyMembershipRequest(@PathVariable("membershipId") UUID membershipId, @RequestBody @Valid MembershipRequest membershipRequest){
         return new ResponseEntity<>(

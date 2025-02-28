@@ -403,7 +403,13 @@ public class MemberService {
             activeOrganization = this.organizationClient.getMyOrganizationById(activeOrganizationId);
 
         } else {
-            preLogInPermissions.add("com.rjproj.memberapp.permission.organization.viewAll");
+            Optional<MemberRole> memberRole = memberRoleRepository.findByMemberIdAndOrganizationId(member.getMemberId(), UUID.fromString("00000000-0000-0000-0000-000000000000"));
+
+            if(memberRole.isPresent()) {
+                memberRole.get().getRole().getPermissions().stream().map(Permission::getName).forEach(preLogInPermissions::add);
+            } else {
+                preLogInPermissions.add("com.rjproj.memberapp.permission.organization.viewAll");
+            }
         }
 
 

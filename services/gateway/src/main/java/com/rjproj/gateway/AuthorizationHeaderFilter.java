@@ -76,7 +76,7 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
 
         // 2. Get My Organization by ID (GET) - The '/current' endpoint
         if (path.matches("^/api/v1/organizations/[0-9a-fA-F-]{36}/current$") && method.equals("GET")) {
-            return "com.rjproj.memberapp.permission.organization.viewOwn";
+            return "com.rjproj.memberapp.permission.organization.viewAll";
         }
 
         // 3. Get Organization by ID (GET) - General Access to organization

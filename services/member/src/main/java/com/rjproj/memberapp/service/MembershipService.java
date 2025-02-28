@@ -102,6 +102,31 @@ public class MembershipService {
         return createMembershipByOrganizationIdAndMemberId(createMembershipRequest.organizationId(), memberId, createMembershipRequest.membershipTypeId());
     }
 
+    public UUID deleteMembershipFromOrganization(UUID organizationId, UUID membershipId) {
+
+        Optional<Membership> membershipOpt = membershipRepository.findById(membershipId);
+
+        if(membershipOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Membership not found");
+        }
+
+        Membership membership = membershipOpt.get();
+        Member member = membership.getMember();
+
+        membershipRepository.delete(membership);
+
+        //delete role of the member from organization
+        Optional<MemberRole> memberRole = memberRoleRepository.findByMemberIdAndOrganizationId(member.getMemberId(), organizationId);
+
+        if(memberRole.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Role for the member not found");
+        }
+
+        memberRoleRepository.delete(memberRole.get());
+
+        return member.getMemberId();
+    }
+
     public MembershipResponse denyMembershipRequest(UUID membershipId, @Valid MembershipRequest membershipRequest) {
         Membership membership = getMembershipById(membershipId);
 
@@ -407,5 +432,6 @@ public class MembershipService {
             membership.setMembershipStatus(null);
         }
     }
+
 
 }
