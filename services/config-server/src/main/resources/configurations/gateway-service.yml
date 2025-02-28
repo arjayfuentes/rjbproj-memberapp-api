@@ -20,7 +20,7 @@ spring:
         - id: organization-service
           uri: lb:http://ORGANIZATION-SERVICE
           predicates:
-            - Path=/api/v1/organization/**
+            - Path=/api/v1/organizations/**
           filters:
             - RemoveRequestHeader=Cookie
             - AuthorizationHeaderFilter

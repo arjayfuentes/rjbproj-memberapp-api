@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/organization")
+@RequestMapping("/api/v1/organizations")
 @RequiredArgsConstructor
 @Validated
 public class OrganizationController {

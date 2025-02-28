@@ -61,7 +61,7 @@ keyStore:
 
 application:
   config:
-    organization-url: http://localhost:8222/api/v1/organization
+    organization-url: http://localhost:8222/api/v1/organizations
 
 
 aws:
