@@ -13,6 +13,32 @@ import java.util.UUID;
 @Service
 public class OrganizationMapper {
 
+    public OrganizationResponse fromOrganization(Organization organization) {
+        return new OrganizationResponse(
+                organization.getOrganizationId(),
+                organization.getName(),
+                organization.getDescription(),
+                organization.getLogoUrl(),
+                organization.getBackgroundImageUrl(),
+                organization.getEmail(),
+                organization.getPhoneNumber(),
+                organization.getWebsiteUrl(),
+                fromOrganizationAddress(organization.getOrganizationAddress())
+        );
+    }
+
+    public OrganizationAddressResponse fromOrganizationAddress(OrganizationAddress organizationAddress) {
+        return new OrganizationAddressResponse(
+                organizationAddress.getOrganizationAddressId(),
+                organizationAddress.getStreet(),
+                organizationAddress.getCity(),
+                organizationAddress.getProvinceState(),
+                organizationAddress.getRegion(),
+                organizationAddress.getPostalCode(),
+                organizationAddress.getCountry()
+        );
+    }
+
     public Organization toOrganization(OrganizationRequest request) {
 
         //set organizationId, OgranizationAddressId and createdAt since UUID is not supported in mongodb and changing id manually return null for createdAt
@@ -35,34 +61,6 @@ public class OrganizationMapper {
         mappedOrganization.getOrganizationAddress().setOrganizationAddressId(organizationAddressId);
         mappedOrganization.getOrganizationAddress().setCreatedAt(organizationAddressCreatedAt);
         return mappedOrganization;
-    }
-
-
-    public OrganizationResponse fromOrganization(Organization organization) {
-        return new OrganizationResponse(
-                organization.getOrganizationId(),
-                organization.getName(),
-                organization.getDescription(),
-                organization.getLogoUrl(),
-                organization.getBackgroundImageUrl(),
-                organization.getEmail(),
-                organization.getPhoneNumber(),
-                organization.getWebsiteUrl(),
-                fromOrganizationAddress(organization.getOrganizationAddress())
-        );
-    }
-
-
-    public OrganizationAddressResponse fromOrganizationAddress(OrganizationAddress organizationAddress) {
-        return new OrganizationAddressResponse(
-                organizationAddress.getOrganizationAddressId(),
-                organizationAddress.getStreet(),
-                organizationAddress.getCity(),
-                organizationAddress.getProvinceState(),
-                organizationAddress.getRegion(),
-                organizationAddress.getPostalCode(),
-                organizationAddress.getCountry()
-        );
     }
 
 }

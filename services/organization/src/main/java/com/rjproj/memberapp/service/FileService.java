@@ -13,29 +13,25 @@ import com.rjproj.memberapp.repository.FileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
-import java.util.List;
-import java.util.UUID;
-
 
 @Service
 public class FileService {
-
-    @Autowired
-    private FileRepository fileRepository;
-
-    @Autowired
-    private Environment env;
 
     @Value("${aws.s3.access.key}")
     private String awsS3AccessKey;
 
     @Value("${aws.s3.secret.key}")
     private String awsS3SecretKey;
+
+    @Autowired
+    private Environment env;
+
+    @Autowired
+    private FileRepository fileRepository;
 
     public File saveFile(String entity, String entityId, ImageType imageType, String fileName, MultipartFile file) {
 
@@ -48,10 +44,12 @@ public class FileService {
         return fileRepository.save(fileToSave);
     }
 
-    public List<File> getAllFiles() {
-        return fileRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
+    private String getFileExtension(String fileName) {
+        if (fileName == null || !fileName.contains(".")) {
+            return "jpg";
+        }
+        return fileName.substring(fileName.lastIndexOf("."));
     }
-
 
     private String saveFileToAWSS3Bucket(String entity, String entityId, ImageType imageType, MultipartFile file) {
         try {
@@ -82,12 +80,7 @@ public class FileService {
         }
     }
 
-    private String getFileExtension(String fileName) {
-        if (fileName == null || !fileName.contains(".")) {
-            return "jpg";
-        }
-        return fileName.substring(fileName.lastIndexOf("."));
-    }
+
 
 }
 

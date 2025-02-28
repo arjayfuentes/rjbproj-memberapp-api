@@ -6,10 +6,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.validation.annotation.Validated;
 
-import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.UUID;
-
 
 @AllArgsConstructor
 @NoArgsConstructor

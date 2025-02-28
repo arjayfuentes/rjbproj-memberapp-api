@@ -9,17 +9,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class MembershipTypeMapper {
 
-    public MembershipType toMembershipType(@Valid MembershipTypeRequest membershipTypeRequest) {
-        return MembershipType.builder()
-                .membershipTypeId(membershipTypeRequest.membershipTypeId())
-                .organizationId(membershipTypeRequest.organizationId())
-                .membershipTypeValidity(membershipTypeRequest.membershipTypeValidity())
-                .name(membershipTypeRequest.name())
-                .description(membershipTypeRequest.description())
-                .isDefault(membershipTypeRequest.isDefault())
-                .build();
-    }
-
     public MembershipTypeResponse fromMembershipType(MembershipType membershipType) {
         return new MembershipTypeResponse(
                 membershipType.getMembershipTypeId(),
@@ -29,5 +18,16 @@ public class MembershipTypeMapper {
                 membershipType.getDescription(),
                 membershipType.getIsDefault()
         );
+    }
+
+    public MembershipType toMembershipType(@Valid MembershipTypeRequest membershipTypeRequest) {
+        return MembershipType.builder()
+                .membershipTypeId(membershipTypeRequest.membershipTypeId())
+                .organizationId(membershipTypeRequest.organizationId())
+                .membershipTypeValidity(membershipTypeRequest.membershipTypeValidity())
+                .name(membershipTypeRequest.name())
+                .description(membershipTypeRequest.description())
+                .isDefault(membershipTypeRequest.isDefault())
+                .build();
     }
 }

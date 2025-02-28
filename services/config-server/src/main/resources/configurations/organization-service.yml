@@ -22,7 +22,7 @@ application:
   config:
     membership-type-url: http://localhost:8222/api/v1/membership-types
     membership-url: http://localhost:8222/api/v1/memberships
-    member-url: http://localhost:8222/api/v1/member
+    member-url: http://localhost:8222/api/v1/members
     role-url: http://localhost:8222/api/v1/roles
 
 

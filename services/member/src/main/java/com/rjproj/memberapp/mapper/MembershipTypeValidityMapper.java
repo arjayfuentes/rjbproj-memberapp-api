@@ -9,6 +9,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class MembershipTypeValidityMapper {
 
+    public MembershipTypeValidityResponse fromMembershipTypeValidity(MembershipTypeValidity membershipTypeValidity) {
+        return new MembershipTypeValidityResponse(
+                membershipTypeValidity.getMembershipTypeValidityId(),
+                membershipTypeValidity.getName(),
+                membershipTypeValidity.getDuration(),
+                membershipTypeValidity.getDescription()
+        );
+    }
+
     public MembershipTypeValidity toMembershipTypeValidity(@Valid MembershipTypeValidityRequest membershipTypeValidityRequest) {
         return MembershipTypeValidity.builder()
                 .membershipTypeValidityId(membershipTypeValidityRequest.membershipTypeValidityId())
@@ -18,15 +27,6 @@ public class MembershipTypeValidityMapper {
                 .createdAt(membershipTypeValidityRequest.createdAt())
                 .updatedAt(membershipTypeValidityRequest.updatedAt())
                 .build();
-    }
-
-    public MembershipTypeValidityResponse fromMembershipTypeValidity(MembershipTypeValidity membershipTypeValidity) {
-        return new MembershipTypeValidityResponse(
-                membershipTypeValidity.getMembershipTypeValidityId(),
-                membershipTypeValidity.getName(),
-                membershipTypeValidity.getDuration(),
-                membershipTypeValidity.getDescription()
-        );
     }
 
 }
