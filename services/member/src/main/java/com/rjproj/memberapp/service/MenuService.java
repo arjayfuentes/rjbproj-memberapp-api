@@ -56,7 +56,7 @@ public class MenuService {
 
         if(role.getName().equals("Member")) {
             return menuItemResponses.stream().filter(menuItemResponse -> !menuItemResponse.labelKey().equals("members")).collect(Collectors.toList());
-        } else if (role.getName().equals("Admine") || role.getName().equals("Super Admin")) {
+        } else if (role.getName().equals("Admin") || role.getName().equals("Super Admin")) {
             return menuItemResponses;
         } else {
             return menuItemResponses.stream().filter(menuItemResponse -> menuItemResponse.labelKey().equals("explore")).collect(Collectors.toList());
