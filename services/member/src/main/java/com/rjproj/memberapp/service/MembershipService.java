@@ -150,7 +150,7 @@ public class MembershipService {
             String sortOrder,
             MembershipFilters membershipFilters) {
 
-        OrganizationResponse organization = organizationClient.findOrganizationById(organizationId);
+        OrganizationResponse organization = organizationClient.getOrganizationById(organizationId);
         if (organization == null) {
             throw new RuntimeException("Organization not found");
         }
@@ -217,7 +217,7 @@ public class MembershipService {
             String sortOrder,
             MembershipFilters membershipFilters) {
 
-        OrganizationResponse organization = organizationClient.findOrganizationById(organizationId);
+        OrganizationResponse organization = organizationClient.getOrganizationById(organizationId);
         if (organization == null) {
             throw new RuntimeException("Organization not found");
         }
@@ -250,7 +250,7 @@ public class MembershipService {
     public MembershipResponse requestMembership(@Valid JoinOrganizationRequest joinOrganizationRequest) {
         Member member = memberRepository.findById(joinOrganizationRequest.memberId())
                 .orElseThrow(() -> new EntityNotFoundException("Membership not found with ID:: " + joinOrganizationRequest.memberId()));
-        OrganizationResponse organizationResponse = this.organizationClient.findOrganizationById(joinOrganizationRequest.organizationId());
+        OrganizationResponse organizationResponse = this.organizationClient.getOrganizationById(joinOrganizationRequest.organizationId());
         if(organizationResponse == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Organization not found with ID:: " + joinOrganizationRequest.organizationId());
         }

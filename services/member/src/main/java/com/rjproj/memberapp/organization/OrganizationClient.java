@@ -17,12 +17,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 )
 public interface OrganizationClient {
 
-    @PostMapping({"/findOrganizationsByIds"})
-    Optional<List<OrganizationResponse>> findOrganizationsByIds(@RequestBody @Valid List<UUID> organizationIds);
+    @PostMapping({"/batch"})
+    Optional<List<OrganizationResponse>> getOrganizationByIds(@RequestBody @Valid List<UUID> organizationIds);
 
-    @GetMapping("/findOrganizationById/{organization-id}")
-    OrganizationResponse findOrganizationById(@PathVariable("organization-id") UUID organizationId);
+    @GetMapping("/{organizationId}")
+    OrganizationResponse getOrganizationById(@PathVariable("organizationId") UUID organizationId);
 
-    @GetMapping("/findMyOrganizationById/{organization-id}")
-    OrganizationResponse findMyOrganizationById(@PathVariable("organization-id") UUID organizationId);
+    @GetMapping("/{organizationId}/current")
+    OrganizationResponse getMyOrganizationById(@PathVariable("organizationId") UUID organizationId);
 }

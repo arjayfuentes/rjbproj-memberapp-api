@@ -26,7 +26,7 @@ public class OrganizationController {
 
     private final OrganizationService organizationService;
 
-    @PostMapping(path="/completeCreateOrganization", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(path="", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<OrganizationResponse> createOrganization(
             @RequestPart(value = "logoImage", required = false) MultipartFile logoImage,
             @RequestPart(value = "backgroundImage", required = false) MultipartFile backgroundImage,
@@ -44,30 +44,30 @@ public class OrganizationController {
         return ResponseEntity.ok(organizationService.createOrganization(logoImage, backgroundImage, createOrganizationRequest));
     }
 
-    @GetMapping("/findMyOrganizationById/{organizationId}")
-    public ResponseEntity<OrganizationResponse> findMyOrganizationById(
+    @GetMapping("/{organizationId}/current")
+    public ResponseEntity<OrganizationResponse> getMyOrganizationById(
             @PathVariable("organizationId") String organizationId
     ) {
-        return ResponseEntity.ok(organizationService.findById(organizationId));
+        return ResponseEntity.ok(organizationService.getOrganizationById(organizationId));
     }
 
     /*from other service*/
-    @GetMapping("/findOrganizationById/{organizationId}")
-    public ResponseEntity<OrganizationResponse> findOrganizationById(
+    @GetMapping("/{organizationId}")
+    public ResponseEntity<OrganizationResponse> getOrganizationById(
             @PathVariable("organizationId") String organizationId
     ) {
-        return ResponseEntity.ok(organizationService.findById(organizationId));
+        return ResponseEntity.ok(organizationService.getOrganizationById(organizationId));
     }
 
     /*from other service*/
-    @PostMapping("/findOrganizationsByIds")
-    public ResponseEntity<List<OrganizationResponse>> findOrganizationsByIds(
+    @PostMapping("/batch")
+    public ResponseEntity<List<OrganizationResponse>> getOrganizationByIds(
             @RequestBody @Valid List<String> organizationIds
     ){
-        return ResponseEntity.ok(organizationService.findOrganizationsByIds(organizationIds));
+        return ResponseEntity.ok(organizationService.getOrganizationByIds(organizationIds));
     }
 
-    @GetMapping("/getAllOrganizations")
+    @GetMapping
     public Page<OrganizationResponse> getOrganizations(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -78,28 +78,30 @@ public class OrganizationController {
         return organizationService.getOrganizations(page, size, name, countryName, cityName);
     }
 
-    @GetMapping("getOrganizationsByMemberId/members/{memberId}")
+    @GetMapping("/members/{memberId}")
     public ResponseEntity<List<OrganizationResponse>> getOrganizationsByMemberId( @PathVariable("memberId") UUID memberId) {
         return ResponseEntity.ok(organizationService.getOrganizationsByMemberId(memberId));
     }
 
     // Endpoint to get unique countries
-    @GetMapping("/organizationCountries")
+    @GetMapping("/countries")
     public List<String> getUniqueOrganizationCountries() {
         return organizationService.getUniqueOrganizationCountries();
     }
 
-    @PutMapping("/updateOrganization")
-    public ResponseEntity<OrganizationResponse> updateOrganization(@RequestBody @Valid OrganizationRequest organizationRequest){
-        OrganizationResponse updatedOrganizationResponse = organizationService.updateOrganization(organizationRequest);
+    @PutMapping("/{organizationId}")
+    public ResponseEntity<OrganizationResponse> updateOrganization(
+            @PathVariable("organizationId") String organizationId,
+            @RequestBody @Valid OrganizationRequest organizationRequest){
+        OrganizationResponse updatedOrganizationResponse = organizationService.updateOrganization(organizationId, organizationRequest);
         return new ResponseEntity(updatedOrganizationResponse, HttpStatus.ACCEPTED);
     }
 
-    @PostMapping(path="/updateOrganizationPhoto/{organizationId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(path="/{organizationId}/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<OrganizationResponse> updateOrganizationPhoto(
+            @PathVariable("organizationId") String organizationId,
             @RequestPart(value = "image", required = false) MultipartFile image,
-            @RequestParam("imageType") String imageType,
-            @PathVariable("organizationId") String organizationId
+            @RequestParam("imageType") String imageType
     ) {
         return ResponseEntity.ok(organizationService.updateOrganizationPhoto(organizationId, image, imageType));
     }

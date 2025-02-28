@@ -90,7 +90,7 @@ public class OrganizationService {
         }
     }
 
-    public OrganizationResponse findById(String organizationId) {
+    public OrganizationResponse getOrganizationById(String organizationId) {
         return organizationRepository.findById(organizationId)
                 .map(organizationMapper::fromOrganization)
                 .orElseThrow(() -> new OrganizationNotFoundException(
@@ -98,7 +98,7 @@ public class OrganizationService {
                 );
     }
 
-    public List<OrganizationResponse> findOrganizationsByIds(List<String> organizationIds) {
+    public List<OrganizationResponse> getOrganizationByIds(List<String> organizationIds) {
         try {
             return organizationRepository.findByOrganizationIdIn(organizationIds)
                     .stream()
@@ -137,10 +137,10 @@ public class OrganizationService {
                 .collect(Collectors.toList());
     }
 
-    public OrganizationResponse updateOrganization(@Valid OrganizationRequest organizationRequest) {
-        Organization organization = organizationRepository.findById(organizationRequest.organizationId())
+    public OrganizationResponse updateOrganization(String organizationId, @Valid OrganizationRequest organizationRequest) {
+        Organization organization = organizationRepository.findById(organizationId)
                 .orElseThrow(() -> new OrganizationNotFoundException(
-                        String.format("Cannot update member with id %s", organizationRequest.organizationId())
+                        String.format("Cannot update member with id %s", organizationId)
                 ));
         mergeOrganization(organization, organizationRequest);
         Organization updatedOrganization = organizationRepository.save(organization);

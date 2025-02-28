@@ -127,7 +127,7 @@ public class MemberService {
             MembershipResponse membershipResponse = null;
 
             if(selectedOrganizationId != null) {
-                organizationResponse = this.organizationClient.findMyOrganizationById(selectedOrganizationId);
+                organizationResponse = this.organizationClient.getMyOrganizationById(selectedOrganizationId);
                 membershipResponse = membershipMapper.fromMembership(membershipService.getMembership(member.getMemberId(), selectedOrganizationId));
             }
             List<UUID> organizationIdsOfMember = membershipService.getActiveOrganizationIdsByMemberId(member.getMemberId());
@@ -274,7 +274,7 @@ public class MemberService {
             if(activeRole != null) {
                 roleResponse = roleMapper.fromRole(activeRole);
             }
-            OrganizationResponse organizationResponse = this.organizationClient.findMyOrganizationById(selectOrganizationRequest.organizationId());
+            OrganizationResponse organizationResponse = this.organizationClient.getMyOrganizationById(selectOrganizationRequest.organizationId());
             List<UUID> organizationIdsOfMember = membershipService.getActiveOrganizationIdsByMemberId(member.getMemberId());
             MembershipResponse membershipResponse =  membershipMapper.fromMembership(membershipService.getMembership(member.getMemberId(), selectOrganizationRequest.organizationId()));
 
@@ -400,7 +400,7 @@ public class MemberService {
             activeMembership =  membershipMapper.fromMembership(membershipService.getMembership(member.getMemberId(), activeOrganizationId));
             jwt = jwtUtil.generateToken(userDetails.getUsername(), activeRole, preLogInPermissions, activeOrganizationId, member.getMemberId());
 
-            activeOrganization = this.organizationClient.findMyOrganizationById(activeOrganizationId);
+            activeOrganization = this.organizationClient.getMyOrganizationById(activeOrganizationId);
 
         } else {
             preLogInPermissions.add("com.rjproj.memberapp.permission.organization.viewAll");
