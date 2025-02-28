@@ -92,7 +92,7 @@ public class SecurityConfig {
                                         "com.rjproj.memberapp.permission.user.editAll")
                         .requestMatchers(
                             "/api/v1/memberships/organizations/{organizationId}/members",
-                            "/api/v1/memberships/organizations/{organizationId}/members/pending")
+                            "/api/v1/memberships/organizations/{organizationId}/members/requests")
                                     .hasAnyAuthority(
                                             "com.rjproj.memberapp.permission.user.viewOrgAll",
                                             "com.rjproj.memberapp.permission.user.viewAll")

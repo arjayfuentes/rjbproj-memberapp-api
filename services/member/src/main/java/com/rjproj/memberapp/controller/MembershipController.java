@@ -79,15 +79,15 @@ public class MembershipController {
         return ResponseEntity.ok(membershipService.getMembershipsByOrganization(organizationId, pageNo, pageSize, sortField, sortOrder, membershipFilters));
     }
 
-    @PostMapping("/organizations/{organizationId}/members/pending")
-    public ResponseEntity<Page<MembershipResponse>> getPendingMembershipsByOrganization(
+    @PostMapping("/organizations/{organizationId}/members/requests")
+    public ResponseEntity<Page<MembershipResponse>> getRequestsMembershipsByOrganization(
             @PathVariable("organizationId") UUID organizationId,
             @RequestParam(value = "pageNo", defaultValue = "0", required = false) Integer pageNo,
             @RequestParam(value = "pageSize", defaultValue = "10", required = false) Integer pageSize,
             @RequestParam(value = "sortField", defaultValue = "memberId", required = false) String sortField,
             @RequestParam(value = "sortOrder", defaultValue = "ASC", required = false) String sortOrder,
             @RequestBody(required = false) MembershipFilters membershipFilters) {
-        return ResponseEntity.ok(membershipService.getPendingMembershipsByOrganization(organizationId, pageNo, pageSize, sortField, sortOrder, membershipFilters));
+        return ResponseEntity.ok(membershipService.getRequestsMembershipsByOrganization(organizationId, pageNo, pageSize, sortField, sortOrder, membershipFilters));
     }
 
     @PostMapping(path = "/request")

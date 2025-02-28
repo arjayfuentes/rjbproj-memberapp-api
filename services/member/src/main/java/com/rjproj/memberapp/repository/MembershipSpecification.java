@@ -124,6 +124,16 @@ public class MembershipSpecification {
         };
     }
 
+    public static Specification<Membership> hadMembershipTypeDenied() {
+        return (root, query, criteriaBuilder) -> {
+
+            Predicate membershipStatusPredicatePending = criteriaBuilder.equal(root.get("membershipStatus").get("name"), "Denied");
+
+            // Combine the two predicates
+            return criteriaBuilder.or(membershipStatusPredicatePending);
+        };
+    }
+
     public static Specification<Membership> hasOrganizationId(UUID organizationId) {
         return (root, query, criteriaBuilder) -> {
             // Filter by organizationId

@@ -234,7 +234,7 @@ public class MembershipService {
         return new PageImpl<>(membershipResponses, pageable, membershipPage.getTotalElements());
     }
 
-    public Page<MembershipResponse> getPendingMembershipsByOrganization(
+    public Page<MembershipResponse> getRequestsMembershipsByOrganization(
             UUID organizationId,
             Integer pageNo,
             Integer pageSize,
@@ -258,6 +258,7 @@ public class MembershipService {
 
         Specification<Membership> spec = Specification.where(MembershipSpecification.hasOrganizationId(organizationId));
         spec = spec.and(MembershipSpecification.hadMembershipTypePending());
+        spec = spec.or(MembershipSpecification.hadMembershipTypeDenied());
         spec = spec.and(MembershipSpecification.filterByFirstName(membershipFilters.memberFirstName()));
         spec = spec.and(MembershipSpecification.filterByEmail(membershipFilters.memberEmail()));
         spec = spec.and(MembershipSpecification.filterByCity(membershipFilters.memberMemberAddressCity()));
