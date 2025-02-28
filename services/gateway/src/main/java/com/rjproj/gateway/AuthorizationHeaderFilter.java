@@ -1,10 +1,6 @@
 package com.rjproj.gateway;
 
-import java.io.PrintWriter;
-import java.util.Base64;
 import java.util.List;
-
-import javax.crypto.SecretKey;
 
 import io.jsonwebtoken.security.SignatureException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,18 +8,11 @@ import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 
-
-import io.jsonwebtoken.JwtParser;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 import reactor.core.publisher.Mono;
 
 @Component
@@ -76,11 +65,6 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
         return null;
     }
 
-    private boolean hasPermissionForRequest(ServerWebExchange exchange, List<String> permissions) {
-        String requiredPermission = getRequiredPermissionForRequest(exchange);
-        return permissions != null && permissions.contains(requiredPermission);
-    }
-
     private String getRequiredPermissionForRequest(ServerWebExchange exchange) {
         String path = exchange.getRequest().getURI().getPath();
         if (path.contains("/api/v1/organization/findOrganizationsByIds")) {
@@ -90,9 +74,6 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
             return "com.rjproj.memberapp.permission.organization.viewOwn";
         }
         if (path.contains("/api/v1/organization/getOrganizationsByMemberId")) {
-            return "com.rjproj.memberapp.permission.organization.viewAll";
-        }
-        if (path.contains("/api/v1/organization/viewAllOrganization")) {
             return "com.rjproj.memberapp.permission.organization.viewAll";
         }
         if (path.contains("/api/v1/organization/getAllOrganizations")) {
@@ -107,45 +88,19 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
         if (path.contains("/api/v1/organization/organizationCountries")) {
             return "com.rjproj.memberapp.permission.organization.viewAll";
         }
-        if (path.contains("/api/v1/organization/organizationCitiesByCountry")) {
-            return "com.rjproj.memberapp.permission.organization.viewAll";
-        }
-        if (path.contains("/api/v1/organization/saveOrganizations")) {
-            return "com.rjproj.memberapp.permission.organization.viewAll";
-        }
-        if (path.contains("/api/v1/organization/uploadOrganizationImage")) {
-            return "com.rjproj.memberapp.permission.organization.viewAll";
-        }
-        if (path.contains("/api/v1/organization/getOrganizationImages")) {
-            return "com.rjproj.memberapp.permission.organization.viewAll";
-        }
         if (path.contains("/api/v1/organization/findMyOrganizationById")) {
             return "com.rjproj.memberapp.permission.organization.viewAll";
-        }
-        if (path.contains("/api/v1/organization/viewMyOrganization")) {
-            return "com.rjproj.memberapp.permission.organization.viewOwn";
         }
         if (path.contains("/api/v1/organization/findOrganizationById")) {
             return "com.rjproj.memberapp.permission.organization.viewAll";
         }
-        if (path.contains("/api/v1/organization/findOrganization")) {
-            return "com.rjproj.memberapp.permission.organization.viewAll";
-        }
-        if (path.contains("/api/v1/organization")) {
-            return "com.rjproj.memberapp.permission.organization.editAll";
-        }
-
-
-        return null;  // Def
+        return null;
     }
 
-
-    // Handle FORBIDDEN response with custom message in the body
     private Mono<Void> handleForbiddenResponse(ServerWebExchange exchange, String message) {
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(HttpStatus.FORBIDDEN);
 
-        // Set the response body with a custom JSON message
         response.getHeaders().set("Content-Type", "application/json");
         String body = "{ \"error\": \"Access denied\", \"message\": \"" + message + "\" }";  // Correct JSON format
 
@@ -154,12 +109,10 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
         return response.writeWith(Mono.just(buffer));
     }
 
-    // Handle UNAUTHORIZED response with custom message in the body
     private Mono<Void> handleUnauthorizedResponse(ServerWebExchange exchange, String message) {
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(HttpStatus.UNAUTHORIZED);
 
-        // Set the response body with a custom JSON message
         response.getHeaders().set("Content-Type", "application/json");
         String body = "{ \"error\": \"Unauthorized\", \"message\": \"" + message + "\" }";  // Correct JSON format
 
@@ -168,6 +121,9 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
         return response.writeWith(Mono.just(buffer));
     }
 
-
+    private boolean hasPermissionForRequest(ServerWebExchange exchange, List<String> permissions) {
+        String requiredPermission = getRequiredPermissionForRequest(exchange);
+        return permissions != null && permissions.contains(requiredPermission);
+    }
 
 }

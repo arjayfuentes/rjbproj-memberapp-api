@@ -44,17 +44,17 @@ public class OrganizationController {
         return ResponseEntity.ok(organizationService.createOrganization(logoImage, backgroundImage, createOrganizationRequest));
     }
 
-    @GetMapping("/findMyOrganizationById/{organization-id}")
+    @GetMapping("/findMyOrganizationById/{organizationId}")
     public ResponseEntity<OrganizationResponse> findMyOrganizationById(
-            @PathVariable("organization-id") String organizationId
+            @PathVariable("organizationId") String organizationId
     ) {
         return ResponseEntity.ok(organizationService.findById(organizationId));
     }
 
     /*from other service*/
-    @GetMapping("/findOrganizationById/{organization-id}")
+    @GetMapping("/findOrganizationById/{organizationId}")
     public ResponseEntity<OrganizationResponse> findOrganizationById(
-            @PathVariable("organization-id") String organizationId
+            @PathVariable("organizationId") String organizationId
     ) {
         return ResponseEntity.ok(organizationService.findById(organizationId));
     }
@@ -95,11 +95,11 @@ public class OrganizationController {
         return new ResponseEntity(updatedOrganizationResponse, HttpStatus.ACCEPTED);
     }
 
-    @PostMapping(path="/updateOrganizationPhoto/{organization-id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(path="/updateOrganizationPhoto/{organizationId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<OrganizationResponse> updateOrganizationPhoto(
             @RequestPart(value = "image", required = false) MultipartFile image,
             @RequestParam("imageType") String imageType,
-            @PathVariable("organization-id") String organizationId
+            @PathVariable("organizationId") String organizationId
     ) {
         return ResponseEntity.ok(organizationService.updateOrganizationPhoto(organizationId, image, imageType));
     }
