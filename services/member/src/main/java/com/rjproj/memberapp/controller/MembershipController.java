@@ -48,6 +48,16 @@ public class MembershipController {
                 HttpStatus.ACCEPTED);
     }
 
+    @DeleteMapping(path = "/organizations/{organizationId}/memberships/bulk")
+    public ResponseEntity<List<UUID>> deleteMembershipsFromOrganization(
+            @PathVariable("organizationId") UUID organizationId,
+            @RequestBody @Valid List<MembershipRequest> membershipRequests
+    ){
+        return new ResponseEntity<>(
+                membershipService.deleteMembershipsFromOrganization(organizationId, membershipRequests),
+                HttpStatus.ACCEPTED);
+    }
+
     @PutMapping(path = "/{membershipId}/deny")
     public ResponseEntity<MembershipResponse> denyMembershipRequest(@PathVariable("membershipId") UUID membershipId, @RequestBody @Valid MembershipRequest membershipRequest){
         return new ResponseEntity<>(
@@ -99,6 +109,13 @@ public class MembershipController {
     public ResponseEntity<MembershipResponse> updateMembership(@PathVariable("membershipId") UUID membershipId, @RequestBody @Valid MembershipRequest membershipRequest){
         return new ResponseEntity<>(
                 membershipService.updateMembership(membershipId, membershipRequest),
+                HttpStatus.ACCEPTED);
+    }
+
+    @PutMapping(path = "/bulk")
+    public ResponseEntity<List<MembershipResponse>> updateMemberships(@RequestBody @Valid UpdateMembershipRequests updateMembershipRequests){
+        return new ResponseEntity<>(
+                membershipService.updateMemberships(updateMembershipRequests),
                 HttpStatus.ACCEPTED);
     }
 

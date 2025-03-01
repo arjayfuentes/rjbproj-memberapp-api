@@ -24,10 +24,8 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.Month;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Service
@@ -126,6 +124,32 @@ public class MembershipService {
 
         return member.getMemberId();
     }
+
+    @Transactional
+    public List<UUID> deleteMembershipsFromOrganization(UUID organizationId, @Valid List<MembershipRequest> membershipRequests) {
+        List<UUID> deletedMembershipIds = new ArrayList<>();
+
+        List<Membership> memberships = membershipRequests.stream()
+                .map(membershipMapper::toMembership)
+                .collect(Collectors.toList());
+
+        for (Membership membership : memberships) {
+            if (membership.getOrganizationId().equals(organizationId)) {
+                Membership existingMembership = membershipRepository.findByMembershipIdAndOrganizationId(
+                                membership.getMembershipId(), organizationId)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                "Membership not found with ID: " + membership.getMembershipId() + " and Organization ID: " + organizationId));
+
+                membershipRepository.delete(existingMembership);
+                deletedMembershipIds.add(existingMembership.getMembershipId());
+            } else {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Membership's organization ID does not match the provided organization ID");
+            }
+        }
+        return deletedMembershipIds;
+    }
+
+
 
     public MembershipResponse denyMembershipRequest(UUID membershipId, @Valid MembershipRequest membershipRequest) {
         Membership membership = getMembershipById(membershipId);
@@ -263,6 +287,7 @@ public class MembershipService {
         spec = spec.and(MembershipSpecification.filterByEmail(membershipFilters.memberEmail()));
         spec = spec.and(MembershipSpecification.filterByCity(membershipFilters.memberMemberAddressCity()));
         spec = spec.and(MembershipSpecification.filterByCountry(membershipFilters.memberMemberAddressCountry()));
+        spec = spec.and(MembershipSpecification.filterByMembershipStatus(membershipFilters.membershipStatusNames()));
 
         Page<Membership> membershipPage = membershipRepository.findAll(spec, pageable);
 
@@ -335,6 +360,81 @@ public class MembershipService {
 
         return membershipMapper.fromMembershipWithRole(membership, updatedMemberRole.get().getRole());
     }
+
+
+    @Transactional
+    public List<MembershipResponse> updateMemberships(@Valid UpdateMembershipRequests updateMembershipRequests) {
+        List<MembershipResponse> updatedMemberships = new ArrayList<>();
+
+        // Loop through the list of membership requests
+        for (MembershipRequest membershipRequest : updateMembershipRequests.membershipRequests()) {
+            Optional<Membership> membershipOptional = membershipRepository.findByMembershipId(membershipRequest.membershipId());
+            if (membershipOptional.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Membership not found with ID: " + membershipRequest.membershipId());
+            }
+            Membership membership = membershipOptional.get();
+
+            // Update the membership fields if they are not null
+            if (updateMembershipRequests.membershipType() != null) {
+                membership.setMembershipType(updateMembershipRequests.membershipType());
+            }
+
+            if (updateMembershipRequests.membershipStatus() != null) {
+                Optional<MembershipStatus> membershipStatusOptional = membershipStatusRepository.findById(updateMembershipRequests.membershipStatus().membershipStatusId());
+                if (membershipStatusOptional.isEmpty()) {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "MembershipStatus not found with ID: " + updateMembershipRequests.membershipStatus().membershipStatusId());
+                }
+                membership.setMembershipStatus(membershipStatusOptional.get());
+            }
+
+            if (updateMembershipRequests.role() != null) {
+                Optional<Role> roleOptional = roleRepository.findById(updateMembershipRequests.role().roleId());
+                if (roleOptional.isEmpty()) {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Role not found with ID: " + updateMembershipRequests.role().roleId());
+                }
+                Role role = roleOptional.get();
+
+                Optional<MemberRole> memberRoleOptional = memberRoleRepository.findByMemberIdAndOrganizationId(
+                        membershipRequest.member().getMemberId(), updateMembershipRequests.organizationId());
+
+                if (memberRoleOptional.isEmpty()) {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "MemberRole not found for memberId: "
+                            + membershipRequest.member().getMemberId() + " and organizationId: " + updateMembershipRequests.organizationId());
+                }
+
+                memberRoleRepository.updateMemberRole(
+                        memberRoleOptional.get().getId().getMemberId(),
+                        memberRoleOptional.get().getId().getOrganizationId(),
+                        role.getRoleId()
+                );
+            }
+
+            if (updateMembershipRequests.startDate() != null) {
+                membership.setStartDate(updateMembershipRequests.startDate());
+            }
+
+            if (updateMembershipRequests.endDate() != null) {
+                membership.setEndDate(updateMembershipRequests.endDate());
+            }
+
+            // Save the updated membership
+            membershipRepository.save(membership);
+
+            // After updating, map the membership entity to a response
+            Optional<MemberRole> updatedMemberRole = memberRoleRepository.findByMemberIdAndOrganizationId(
+                    membershipRequest.member().getMemberId(), updateMembershipRequests.organizationId());
+
+            if (updatedMemberRole.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to update MemberRole.");
+            }
+
+            updatedMemberships.add(membershipMapper.fromMembershipWithRole(membership, updatedMemberRole.get().getRole()));
+        }
+
+        return updatedMemberships;
+    }
+
+
 
     private MembershipResponse createMembership(@Valid MembershipRequest membershipRequest) {
         Membership membership = membershipMapper.toMembership(membershipRequest);
@@ -433,6 +533,7 @@ public class MembershipService {
             membership.setMembershipStatus(null);
         }
     }
+
 
 
 }

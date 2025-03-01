@@ -29,4 +29,12 @@ public class MembershipStatusService {
         return membershipStatuses.stream().map(membershipStatusMapper::fromMembershipStatus).collect(Collectors.toList()) ;
     }
 
+    public List<MembershipStatusResponse> getJoinRequestsMembershipStatuses() {
+        List<String> memberMembershipStatuses = new ArrayList<>();
+        memberMembershipStatuses.add("Pending");
+        memberMembershipStatuses.add("Denied");
+        List<MembershipStatus> membershipStatuses = membershipStatusRepository.findByNameIn(memberMembershipStatuses);
+        return membershipStatuses.stream().map(membershipStatusMapper::fromMembershipStatus).collect(Collectors.toList()) ;
+    }
+
 }

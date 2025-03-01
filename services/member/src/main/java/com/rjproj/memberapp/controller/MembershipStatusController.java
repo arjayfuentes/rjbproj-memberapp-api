@@ -21,4 +21,9 @@ public class MembershipStatusController {
     public ResponseEntity<List<MembershipStatusResponse>> getApprovedMembershipStatuses() {
         return ResponseEntity.ok(membershipStatusService.getApprovedMembershipStatuses());
     }
+
+    @GetMapping("/join-requests")
+    public ResponseEntity<List<MembershipStatusResponse>> getJoinRequestsMembershipStatuses() {
+        return ResponseEntity.ok(membershipStatusService.getJoinRequestsMembershipStatuses());
+    }
 }
