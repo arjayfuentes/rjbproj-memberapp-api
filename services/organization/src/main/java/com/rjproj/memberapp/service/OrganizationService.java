@@ -126,7 +126,10 @@ public class OrganizationService {
         }
         List<String> organizationIds = membershipResponsesOpt.get().stream().map(membershipResponse -> membershipResponse.organizationId().toString()).collect(Collectors.toList());
         List<Organization> organizations = organizationRepository.findAllById(organizationIds);
-        return organizations.stream().map(organizationMapper::fromOrganization).collect(Collectors.toList());
+        return organizations.stream()
+                .map(organizationMapper::fromOrganization)
+                .sorted(Comparator.comparing(OrganizationResponse::name))
+                .collect(Collectors.toList());
     }
 
     public List<String> getUniqueOrganizationCountries() {
