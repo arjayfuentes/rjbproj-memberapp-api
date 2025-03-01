@@ -21,10 +21,22 @@ public class MembershipController {
 
     private final MembershipService membershipService;
 
-    @PutMapping(path = "/{membershipId}/approve")
-    public ResponseEntity<MembershipResponse> approveMembershipRequest(@PathVariable("membershipId") UUID membershipId, @RequestBody @Valid MembershipRequest membershipRequest){
+    @PutMapping(path = "/organizations/{organizationId}/memberships/{membershipId}/approve")
+    public ResponseEntity<MembershipResponse> approveMembershipRequest(
+            @PathVariable("organizationId") UUID organizationId,
+            @PathVariable("membershipId") UUID membershipId,
+            @RequestBody @Valid MembershipRequest membershipRequest){
         return new ResponseEntity<>(
-                membershipService.approveMembershipRequest(membershipId, membershipRequest),
+                membershipService.approveMembershipRequest(organizationId, membershipId, membershipRequest),
+                HttpStatus.ACCEPTED);
+    }
+
+    @PutMapping(path = "/organizations/{organizationId}/memberships/approve")
+    public ResponseEntity<List<MembershipResponse>> approveMembershipRequests(
+            @PathVariable("organizationId") UUID organizationId,
+            @RequestBody @Valid ApproveMembershipsRequest approveMembershipsRequest){
+        return new ResponseEntity<>(
+                membershipService.approveMembershipRequests(organizationId, approveMembershipsRequest),
                 HttpStatus.ACCEPTED);
     }
 
@@ -48,7 +60,7 @@ public class MembershipController {
                 HttpStatus.ACCEPTED);
     }
 
-    @DeleteMapping(path = "/organizations/{organizationId}/memberships/bulk")
+    @DeleteMapping(path = "/organizations/{organizationId}/memberships/delete")
     public ResponseEntity<List<UUID>> deleteMembershipsFromOrganization(
             @PathVariable("organizationId") UUID organizationId,
             @RequestBody @Valid List<MembershipRequest> membershipRequests
@@ -58,10 +70,32 @@ public class MembershipController {
                 HttpStatus.ACCEPTED);
     }
 
-    @PutMapping(path = "/{membershipId}/deny")
-    public ResponseEntity<MembershipResponse> denyMembershipRequest(@PathVariable("membershipId") UUID membershipId, @RequestBody @Valid MembershipRequest membershipRequest){
+    @DeleteMapping(path = "/organizations/{organizationId}/memberships/delete-requests")
+    public ResponseEntity<List<UUID>> deleteMembershipRequests(
+            @PathVariable("organizationId") UUID organizationId,
+            @RequestBody @Valid List<MembershipRequest> membershipRequests
+    ){
         return new ResponseEntity<>(
-                membershipService.denyMembershipRequest(membershipId, membershipRequest),
+                membershipService.deleteMembershipRequests(organizationId, membershipRequests),
+                HttpStatus.ACCEPTED);
+    }
+
+    @PutMapping(path = "/organizations/{organizationId}/memberships/{membershipId}/deny")
+    public ResponseEntity<MembershipResponse> denyMembershipRequest(
+            @PathVariable("organizationId") UUID organizationId,
+            @PathVariable("membershipId") UUID membershipId,
+            @RequestBody @Valid MembershipRequest membershipRequest){
+        return new ResponseEntity<>(
+                membershipService.denyMembershipRequest(organizationId, membershipId, membershipRequest),
+                HttpStatus.ACCEPTED);
+    }
+
+    @PutMapping(path = "/organizations/{organizationId}/memberships/deny")
+    public ResponseEntity<List<UUID>> denyMembershipRequests(
+            @PathVariable("organizationId") UUID organizationId,
+            @RequestBody @Valid DenyMembershipsRequest denyMembershipsRequest){
+        return new ResponseEntity<>(
+                membershipService.denyMembershipRequests(organizationId, denyMembershipsRequest),
                 HttpStatus.ACCEPTED);
     }
 
@@ -105,17 +139,22 @@ public class MembershipController {
         return ResponseEntity.ok(membershipService.requestMembership(organizationRequest));
     }
 
-    @PutMapping(path = "/{membershipId}")
-    public ResponseEntity<MembershipResponse> updateMembership(@PathVariable("membershipId") UUID membershipId, @RequestBody @Valid MembershipRequest membershipRequest){
+    @PutMapping(path = "/organizations/{organizationId}/memberships/{membershipId}")
+    public ResponseEntity<MembershipResponse> updateMembershipFromOrganization(
+            @PathVariable("organizationId") UUID organizationId,
+            @PathVariable("membershipId") UUID membershipId,
+            @RequestBody @Valid MembershipRequest membershipRequest){
         return new ResponseEntity<>(
-                membershipService.updateMembership(membershipId, membershipRequest),
+                membershipService.updateMembershipFromOrganization(organizationId, membershipId, membershipRequest),
                 HttpStatus.ACCEPTED);
     }
 
-    @PutMapping(path = "/bulk")
-    public ResponseEntity<List<MembershipResponse>> updateMemberships(@RequestBody @Valid UpdateMembershipRequests updateMembershipRequests){
+    @PutMapping(path = "/organizations/{organizationId}/memberships/update")
+    public ResponseEntity<List<MembershipResponse>> updateMembershipsFromOrganization(
+            @PathVariable("organizationId") UUID organizationId,
+            @RequestBody @Valid UpdateMembershipRequests updateMembershipRequests){
         return new ResponseEntity<>(
-                membershipService.updateMemberships(updateMembershipRequests),
+                membershipService.updateMembershipsFromOrganization(organizationId, updateMembershipRequests),
                 HttpStatus.ACCEPTED);
     }
 

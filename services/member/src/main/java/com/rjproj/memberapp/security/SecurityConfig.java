@@ -84,12 +84,17 @@ public class SecurityConfig {
                                         "com.rjproj.memberapp.permission.user.createOrg",
                                         "com.rjproj.memberapp.permission.user.createAll")
                         .requestMatchers(
-                            "/api/v1/memberships/{membershipId}/approve",
-                            "/api/v1/memberships/{membershipId}/deny",
-                            "/api/v1/memberships/{membershipId}")
-                                .hasAnyAuthority(
-                                        "com.rjproj.memberapp.permission.user.editOrgAll",
-                                        "com.rjproj.memberapp.permission.user.editAll")
+                                "/api/v1/memberships/organizations/{organizationId}/memberships/approve",
+                                "/api/v1/memberships/organizations/{organizationId}/memberships/{membershipId}/approve",
+                                "/api/v1/memberships/organizations/{organizationId}/memberships/deny",
+                                "/api/v1/memberships/organizations/{organizationId}/memberships/{membershipId}/deny",
+                                "/api/v1/memberships/organizations/{organizationId}/memberships/{membershipId}",
+                                "/api/v1/memberships/organizations/{organizationId}/memberships/update",
+                                "/api/v1/memberships/organizations/{organizationId}/memberships/delete-requests",
+                                "/api/v1/memberships/organizations/{organizationId}/memberships/delete")
+                                    .hasAnyAuthority(
+                                            "com.rjproj.memberapp.permission.user.editOrgAll",
+                                            "com.rjproj.memberapp.permission.user.editAll")
                         .requestMatchers(
                             "/api/v1/memberships/organizations/{organizationId}/members",
                             "/api/v1/memberships/organizations/{organizationId}/members/requests")
@@ -99,7 +104,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/v1/memberships/organizations/{organizationId}/members/{memberId}",
                                 "/api/v1/memberships/members/{memberId}")
-                                        .permitAll()
+                                    .permitAll()
+
 
                         //MEMBERSHIP-TYPES
                         .requestMatchers(
