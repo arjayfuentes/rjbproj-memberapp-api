@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class JWTFilter extends OncePerRequestFilter {
+
     @Autowired
     private UserDetailsServiceImpl userDetailsServiceImpl;
 
@@ -50,9 +51,8 @@ public class JWTFilter extends OncePerRequestFilter {
             MemberDetails memberDetails = (MemberDetails) userDetailsServiceImpl.loadUserByUsername(username);
             permissions = jwtUtil.extractPermissions(jwt);
             System.out.println("Extracted Permissions: " + permissions);
-            if (jwtUtil.validateToken(jwt)) {
+            if (memberDetails != null && jwtUtil.validateToken(jwt)) {
                 Collection<? extends GrantedAuthority> authorities = getAuthorities(permissions);
-                System.out.println("Authorities: " + authorities);
                 UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(memberDetails, null, authorities);
                 auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(auth);

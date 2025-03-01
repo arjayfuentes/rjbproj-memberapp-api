@@ -1,6 +1,5 @@
 package com.rjproj.memberapp.security;
 
-import com.rjproj.memberapp.model.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -20,10 +19,6 @@ public class JWTUtil {
     private long jwtExpirationTime;
 
     private String token;
-
-    private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(jwtSecretKey.getBytes());
-    }
 
     public String extractUsername(String token) {
         Claims claims = extractAllClaims(token);
@@ -61,6 +56,10 @@ public class JWTUtil {
         return UUID.fromString((String) claims.get("memberId"));
     }
 
+    public String getToken() {
+        return token;
+    }
+
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getSigningKey())
@@ -69,41 +68,16 @@ public class JWTUtil {
                 .getPayload();
     }
 
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(jwtSecretKey.getBytes());
+    }
+
     private Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
-    }
-
-    public String generateToken(String username, Role role, List<String> permissions, UUID selectedOrganizationId, UUID memberId) {
-        Map<String, Object> claims = new HashMap<>();
-        //claims.put("role", role);
-        claims.put("permissions", permissions);
-        claims.put("selectedOrganizationId", selectedOrganizationId);
-        claims.put("memberId", memberId);
-        return createToken(claims, username);
-    }
-
-    private String createToken(Map<String, Object> claims, String subject) {
-        token = Jwts.builder()
-                .claims(claims)
-                .subject(subject)
-                .header().empty().add("typ","JWT")
-                .and()
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + jwtExpirationTime)) // 5 minutes expiration time
-                .signWith(getSigningKey())
-                .compact();
-        return token;
     }
 
     public Boolean validateToken(String token) {
         return !isTokenExpired(token);
     }
 
-    public void deleteToken() {
-        this.token = null;
-    }
-
-    public String getToken() {
-        return token;
-    }
 }
