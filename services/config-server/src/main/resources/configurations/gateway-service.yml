@@ -65,7 +65,6 @@ token:
   secret: TaK+HaV^uvCHEFsEVfypW#7g9^k*Z8$V
 
 
-
 #eureka:
 #  client:
 #    serviceUrl:
