@@ -10,6 +10,8 @@ spring:
   cloud:
     config:
       override-system-properties: false
+#  profiles:
+#    active: dev
 
 management:
   tracing:

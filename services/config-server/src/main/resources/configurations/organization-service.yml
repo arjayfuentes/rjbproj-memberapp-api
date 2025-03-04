@@ -24,3 +24,4 @@ application:
     membership-url: http://localhost:8222/api/v1/memberships
     member-url: http://localhost:8222/api/v1/members
     role-url: http://localhost:8222/api/v1/roles
+

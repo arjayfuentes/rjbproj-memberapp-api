@@ -1,0 +1,9 @@
+spring:
+  data:
+    mongodb:
+      username: arjay
+      password: Miyembro24122022
+      host: ec2-16-171-23-67.eu-north-1.compute.amazonaws.com
+      port: 27017
+      database: organization
+      authentication-database: admin

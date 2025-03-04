@@ -10,10 +10,36 @@
       <user-name>arjay</user-name>
       <schema-mapping>
         <introspection-scope>
-          <node kind="database">
-            <name qname="event" />
-            <name qname="member" />
-            <node kind="schema" qname="public" />
+          <node negative="1">
+            <node kind="database" qname="event">
+              <node kind="schema" qname="public" />
+            </node>
+            <node kind="database" qname="member">
+              <node kind="schema" negative="1" />
+            </node>
+          </node>
+        </introspection-scope>
+      </schema-mapping>
+    </data-source>
+    <data-source name="dev member db - aws" uuid="deb933c4-0277-4e93-8601-0b384b84eae0">
+      <database-info product="PostgreSQL" version="16.3" jdbc-version="4.2" driver-name="PostgreSQL JDBC Driver" driver-version="42.7.3" dbms="POSTGRES" exact-version="16.3" exact-driver-version="42.7">
+        <identifier-quote-string>&quot;</identifier-quote-string>
+      </database-info>
+      <case-sensitivity plain-identifiers="lower" quoted-identifiers="exact" />
+      <secret-storage>master_key</secret-storage>
+      <user-name>arjay</user-name>
+      <schema-mapping>
+        <introspection-scope>
+          <node negative="1">
+            <node kind="database" qname="@">
+              <node kind="schema" qname="@" />
+            </node>
+            <node kind="database" qname="member">
+              <node kind="schema" qname="public" />
+            </node>
+            <node kind="database" qname="postgres">
+              <node kind="schema" negative="1" />
+            </node>
           </node>
         </introspection-scope>
       </schema-mapping>

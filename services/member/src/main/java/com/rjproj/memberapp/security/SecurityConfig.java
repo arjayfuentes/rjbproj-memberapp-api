@@ -99,8 +99,13 @@ public class SecurityConfig {
                                                 "com.rjproj.memberapp.permission.user.viewAll")
 
                         //MEMBER
+                        //MEMBER
                         .requestMatchers(
-                                "/api/v1/member/{memberId}")
+
+                                "/api/v1/members/{memberId}/register").permitAll()
+                        .requestMatchers(
+
+                                "/api/v1/members/{memberId}")
                                         .hasAnyAuthority(
                                                 "com.rjproj.memberapp.permission.user.editOwn",
                                                 "com.rjproj.memberapp.permission.user.editOrgAll",
@@ -119,7 +124,8 @@ public class SecurityConfig {
 
 
 
-                        .requestMatchers("/api/v1/member/createDefaultAdminOrganizationRoleForOwner").permitAll()
+                        .requestMatchers(
+                                "/api/v1/members/createDefaultAdminOrganizationRoleForOwner").permitAll()
                         .requestMatchers("/api/v1/member/organization/**").hasAnyAuthority("com.rjproj.memberapp.permission.user.viewOrgAll", "com.rjproj.memberapp.permission.user.viewAll")
                         .requestMatchers("/api/v1/member/organizationPage/**").hasAnyAuthority("com.rjproj.memberapp.permission.user.viewOrgAll", "com.rjproj.memberapp.permission.user.viewAll")
 
