@@ -3,8 +3,5 @@ spring:
     import: optional:configserver:http://localhost:8888
   application:
     name: member-service
-
-logging:
-  level:
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql: TRACE
+  profiles:
+    active: prod

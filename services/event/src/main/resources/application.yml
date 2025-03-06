@@ -1,5 +1,5 @@
 spring:
   config:
-    import: optional:configserver:http://localhost:8888
+    import: optional:configserver:http://ec2-51-21-191-162.eu-north-1.compute.amazonaws.com:8888
   application:
     name: event-service

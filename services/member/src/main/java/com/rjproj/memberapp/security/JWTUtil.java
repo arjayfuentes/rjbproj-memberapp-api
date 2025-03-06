@@ -4,6 +4,7 @@ import com.rjproj.memberapp.model.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -19,10 +20,18 @@ public class JWTUtil {
     @Value("${jwt.expiration}")
     private long jwtExpirationTime;
 
+    @Value("${management.tracing.zipkin.tracing.endpoint:NOT SET}")
+    private String zipkinEndpoint;
+
     private String token;
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecretKey.getBytes());
+    }
+
+    @PostConstruct
+    public void logZipkinEndpoint() {
+        System.out.println("Resolved Zipkin Endpoint: " + zipkinEndpoint);
     }
 
     public String extractUsername(String token) {

@@ -30,7 +30,7 @@ public class GoogleService {
     @Value("${spring.security.oauth2.client.registration.google.client-secret}")
     private String googleClientSecret;
 
-    private final String redirectUri = "https://localhost:4200";
+    private final String redirectUri = "http://localhost:4200";
 
     public GoogleInfo getGoogleInfo(String googleCode) {
         try {

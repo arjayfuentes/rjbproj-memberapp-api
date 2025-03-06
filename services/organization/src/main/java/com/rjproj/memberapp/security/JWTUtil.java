@@ -18,6 +18,7 @@ public class JWTUtil {
     @Value("${jwt.expiration}")
     private long jwtExpirationTime;
 
+
     private String token;
 
     public String extractUsername(String token) {

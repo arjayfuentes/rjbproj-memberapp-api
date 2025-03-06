@@ -21,8 +21,5 @@ spring:
 
 application:
   config:
-#    member-url: http://localhost:8050/api/v1/member
-#    organization-url: http://localhost:8090/api/v1/organization
-
     member-url: http://localhost:8222/api/v1/members
     organization-url: http://localhost:8222/api/v1/organizations

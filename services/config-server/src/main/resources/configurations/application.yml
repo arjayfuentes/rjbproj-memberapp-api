@@ -1,23 +1,22 @@
-eureka:
-  instance:
-    hostname: localhost
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka
+
 name:
   value: arjay
+
 spring:
   cloud:
     config:
       override-system-properties: false
-#  profiles:
-#    active: dev
 
 management:
   tracing:
+    enabled: true
     sampling:
       probability: 1.0
 
 keyStore:
   path: keystore.jks
   password: password
+
+logging:
+  level:
+    org.springframework.cloud: DEBUG

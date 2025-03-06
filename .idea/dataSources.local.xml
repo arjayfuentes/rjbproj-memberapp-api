@@ -34,12 +34,28 @@
             <node kind="database" qname="@">
               <node kind="schema" qname="@" />
             </node>
-            <node kind="database" qname="member">
-              <node kind="schema" qname="public" />
-            </node>
-            <node kind="database" qname="postgres">
+            <node kind="database">
+              <name qname="member" />
+              <name qname="postgres" />
               <node kind="schema" negative="1" />
             </node>
+          </node>
+        </introspection-scope>
+      </schema-mapping>
+    </data-source>
+    <data-source name="dev organization db - aws mongo" uuid="ddc023e6-e6f6-427d-af1e-68430d0110e0">
+      <database-info product="Mongo DB" version="7.0.17" jdbc-version="4.2" driver-name="MongoDB JDBC Driver" driver-version="1.20" dbms="MONGO" exact-version="7.0.17" exact-driver-version="1.20" />
+      <case-sensitivity plain-identifiers="mixed" quoted-identifiers="mixed" />
+      <secret-storage>master_key</secret-storage>
+      <user-name>arjay</user-name>
+      <schema-mapping>
+        <introspection-scope>
+          <node kind="schema">
+            <name qname="@" />
+            <name qname="admin" />
+            <name qname="config" />
+            <name qname="local" />
+            <name qname="organization" />
           </node>
         </introspection-scope>
       </schema-mapping>
